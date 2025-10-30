@@ -18,6 +18,10 @@ use HasFactory;
         'status_id',
     ];
 
+     protected $casts = [
+        'pickup_at' => 'datetime',
+        'return_at' => 'datetime',
+    ];
     // Relationships
     public function user()
     {

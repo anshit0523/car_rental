@@ -23,7 +23,7 @@
                     <i class="fas fa-chart-line w-5"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="{{ route('admin.bookings') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition">
+                <a href="{{ route('admin.bookings.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition">
                     <i class="fas fa-calendar-check w-5"></i>
                     <span>Bookings</span>
                 </a>
@@ -64,7 +64,7 @@
                         <i class="fas fa-chart-line w-5"></i>
                         <span>Dashboard</span>
                     </a>
-                    <a href="{{ route('admin.bookings') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition block">
+                    <a href="{{ route('admin.bookings.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition block">
                         <i class="fas fa-calendar-check w-5"></i>
                         <span>Bookings</span>
                     </a>

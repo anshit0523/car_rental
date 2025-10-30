@@ -101,7 +101,7 @@ class AdminDashboardController extends Controller
     {
        $cars = Car::with(['brand', 'transmission', 'fuelType'])
         ->withCount(['bookings'])
-        ->paginate(15);
+        ->paginate(9);
     
         $brands = Brand::all();
         $transmissions = Transmission::all();

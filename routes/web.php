@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\CarsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CarsController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminDashboardController;
@@ -31,7 +32,9 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/bookings', [AdminDashboardController::class, 'bookings'])->name('bookings');
+        
+       
+        Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
 
         Route::get('/cars', [AdminDashboardController::class, 'cars'])->name('cars');
         Route::post('/cars', [CarsController::class, 'store'])->name('cars.store');
