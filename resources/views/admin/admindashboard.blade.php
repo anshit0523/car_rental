@@ -39,6 +39,12 @@
                     <i class="fas fa-chart-bar w-5"></i>
                     <span>Revenue</span>
                 </a>
+                <form method="POST" action="{{ route('logout') }}">
+                 @csrf
+                <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-red-600/80 transition" >
+            <i class="fas fa-sign-out-alt w-5"></i>
+            <span>Logout</span> </button>
+           </form>
             </nav>
         </div>
 
@@ -79,7 +85,18 @@
                     <a href="{{ route('admin.revenue') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition block">
                         <i class="fas fa-chart-bar w-5"></i>
                         <span>Revenue</span>
-                    </a>
+                    </a> 
+                    <form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button 
+        type="submit" 
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-red-600/80 transition block"
+    >
+        <i class="fas fa-sign-out-alt w-5"></i>
+        <span>Logout</span>
+    </button>
+</form>
+
                 </nav>
             </div>
         </div>
