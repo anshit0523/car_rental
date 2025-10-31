@@ -1,89 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fleet Management</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-</head>
+@extends('layouts.adminlayout')
+    
+@section('content')
 
-<body class="bg-gray-100 font-sans">
-    <div class="flex flex-col lg:flex-row min-h-screen">
-        <!-- Sidebar -->
-        <div class="fixed lg:relative top-0 left-0 z-50 h-screen w-64 bg-gray-900  text-white p-6 overflow-y-auto lg:block hidden">
-            <div class="mb-8 flex items-center gap-2 text-xl font-bold">
-                <i class="fas fa-car"></i>
-                <span>Car Rental</span>
-            </div>
-            
-            <nav class="space-y-2">
-                <a href="dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition">
-                    <i class="fas fa-chart-line w-5"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="bookings.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition">
-                    <i class="fas fa-calendar-check w-5"></i>
-                    <span>Bookings</span>
-                </a>
-                <a href="cars.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white bg-white/20">
-                    <i class="fas fa-car w-5"></i>
-                    <span>Fleet</span>
-                </a>
-                <a href="users.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition">
-                    <i class="fas fa-users w-5"></i>
-                    <span>Users</span>
-                </a>
-                <a href="revenue.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition">
-                    <i class="fas fa-chart-bar w-5"></i>
-                    <span>Revenue</span>
-                </a>
-            </nav>
-        </div>
-
-        <!-- Mobile Menu Toggle -->
-        <div class="lg:hidden bg-gradient-to-b from-indigo-600 to-purple-700 text-white p-4 flex items-center justify-between">
-            <h1 class="text-xl font-bold flex items-center gap-2">
-                <i class="fas fa-car"></i>
-                <span>Car Rental</span>
-            </h1>
-            <button class="text-2xl" id="menuToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="hidden fixed top-0 left-0 w-full h-screen bg-gradient-to-b from-indigo-600 to-purple-700 text-white z-40 p-6 lg:hidden">
-            <button class="absolute top-4 right-4 text-2xl" id="menuClose">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="mt-8">
-                <nav class="space-y-2">
-                    <a href="dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition block">
-                        <i class="fas fa-chart-line w-5"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="bookings.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition block">
-                        <i class="fas fa-calendar-check w-5"></i>
-                        <span>Bookings</span>
-                    </a>
-                    <a href="cars.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white bg-white/20 block">
-                        <i class="fas fa-car w-5"></i>
-                        <span>Fleet</span>
-                    </a>
-                    <a href="users.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition block">
-                        <i class="fas fa-users w-5"></i>
-                        <span>Users</span>
-                    </a>
-                    <a href="revenue.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition block">
-                        <i class="fas fa-chart-bar w-5"></i>
-                        <span>Revenue</span>
-                    </a>
-                </nav>
-            </div>
-        </div>
-
-        <!-- Main Content -->
+    <!-- Main Content -->
         <div class="flex-1 p-6 lg:p-8 w-full lg:ml-0">
             <!-- Page Header -->
             <div class="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -296,57 +215,10 @@
 </div>
 
 
+@endsection
 
+@section('scripts')
+<script src="{{ asset('js/admincars.js') }}"></script>
 
-
-    </div>
-
-    <script>
-        const menuToggle = document.getElementById('menuToggle');
-        const menuClose = document.getElementById('menuClose');
-        const mobileMenu = document.getElementById('mobileMenu');
-
-        menuToggle.addEventListener('click', () => {
-            mobileMenu.classList.remove('hidden');
-        });
-
-        menuClose.addEventListener('click', () => {
-            mobileMenu.classList.add('hidden');
-        });
-
-        // Close menu when clicking on a link
-        mobileMenu.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                mobileMenu.classList.add('hidden');
-            });
-        });
-
-        const addCarBtn = document.getElementById('addCarBtn');
-    const addCarModal = document.getElementById('addCarModal');
-    const closeModal = document.getElementById('closeModal');
-    const cancelBtn = document.getElementById('cancelBtn');
-
-    // Open modal
-    addCarBtn.addEventListener('click', () => {
-        addCarModal.classList.remove('hidden');
-    });
-
-    // Close modal
-    closeModal.addEventListener('click', () => {
-        addCarModal.classList.add('hidden');
-    });
-
-    cancelBtn.addEventListener('click', () => {
-        addCarModal.classList.add('hidden');
-    });
-
-    // Close modal when clicking outside
-    addCarModal.addEventListener('click', (e) => {
-        if (e.target === addCarModal) {
-            addCarModal.classList.add('hidden');
-        }
-    });
-
-    </script>
-</body>
-</html>
+@endsection
+    

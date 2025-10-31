@@ -1,50 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bookings Management</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-100 font-sans">
-    <div class="flex min-h-screen">
-       
+@extends('layouts.adminlayout')
 
-       <!-- Sidebar/Navbar -->
-<div class="fixed left-0 top-0 h-screen w-64 bg-gray-900 text-white p-6 text-white p-6 overflow-y-auto">
-    <div class="mb-8 flex items-center gap-2 text-xl font-bold">
-        <i class="fas fa-car"></i>
-        <span>Car Rental</span>
-    </div>
+@section('content')
     
-    <nav class="space-y-4">
-        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10 transition">
-            <i class="fas fa-chart-line"></i>
-            <span>Dashboard</span>
-        </a>
-
-       <a href="{{ route('admin.bookings.index') }}" class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10 transition">
-            <i class="fas fa-calendar-check"></i>
-            <span>Bookings</span>
-        </a>
-        <a href="{{ route('admin.cars') }}" class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10 transition">
-            <i class="fas fa-car"></i>
-            <span>Cars</span>
-        </a>
-        <a href="{{ route('admin.users') }}" class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10 transition">
-            <i class="fas fa-users"></i>
-            <span>Users</span>
-        </a>
-        <a href="{{ route('admin.revenue') }}" class="flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10 transition">
-            <i class="fas fa-chart-bar"></i>
-            <span>Revenue</span>
-        </a>
-    </nav>
-</div>
-
         <!-- Main Content -->
-        <div class="ml-64 w-full p-8">
+      <div class="p-6 lg:p-8">
             <!-- Page Header -->
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">Bookings Management</h1>
@@ -84,7 +43,6 @@
         </div>
     </form>
 </div>
-
 
       <!-- Bookings Table -->
    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -169,7 +127,6 @@
     </div>
 </div>
 
-
             <!-- Pagination -->
             <div class="mt-6 flex justify-center">
                 <nav class="flex items-center gap-1">
@@ -185,25 +142,14 @@
                 </nav>
             </div>
         </div>
-    </div>
-</body>
+    
+@endsection
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('filterForm');
-    const searchInput = form.querySelector('input[name="search"]');
-    const statusSelect = form.querySelector('select[name="status_id"]');
+@section('scripts')
+<script src="{{ asset('js/adminbooking.js') }}"></script>
 
-    // Auto-submit when typing stops (after 500ms)
-    let typingTimer;
-    searchInput.addEventListener('keyup', () => {
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(() => form.submit(), 500);
-    });
+@endsection
 
-    // Submit immediately when status changes
-    statusSelect.addEventListener('change', () => form.submit());
-});
-</script>
 
-</html>
+
+

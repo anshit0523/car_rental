@@ -109,7 +109,7 @@ class AdminDashboardController extends Controller
     public function users()
     {
         $users = User::with('role')->paginate(15);
-        return view('admin.users', ['users' => $users]);
+        return view('admin.adminuser', ['users' => $users]);
     }
 
     public function revenue()
@@ -121,6 +121,6 @@ class AdminDashboardController extends Controller
             ->limit(12)
             ->get();
 
-        return view('admin.revenue', ['monthlyRevenue' => $monthlyRevenue]);
+        return view('admin.adminrevenue', ['monthlyRevenue' => $monthlyRevenue]);
     }
 }

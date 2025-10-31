@@ -3,7 +3,6 @@
 @section('content')
 <div class="p-6 lg:p-8">
  
-
       <!-- KPI Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <!-- Total Bookings Card -->
@@ -136,4 +135,12 @@
         statusData: {!! json_encode($statusData) !!}
     };
 </script>
+
+<script src="{{ asset('js/admindashboard.js') }}"></script>
+
 @endsection
+
+
+    
+
+
