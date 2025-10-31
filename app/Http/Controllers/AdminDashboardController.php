@@ -91,11 +91,7 @@ class AdminDashboardController extends Controller
         
     }
 
-    public function bookings()
-    {
-        $bookings = Booking::with(['user', 'car.brand', 'status'])->paginate(15);
-        return view('admin.adminbooking', ['bookings' => $bookings]);
-    }
+   
 
     public function cars()
     {

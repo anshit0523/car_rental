@@ -1,110 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-</head>
-<body class="bg-gray-100 font-sans">
-    <div class="flex flex-col lg:flex-row min-h-screen">
-      
-        <!-- Sidebar -->
-        <div class="fixed lg:relative top-0 left-0 z-50 h-screen w-64 bg-gray-900 text-white p-6 overflow-y-auto lg:block hidden">
-            <div class="mb-8 flex items-center gap-2 text-xl font-bold">
-                <i class="fas fa-car"></i>
-                <span>Car Rental</span>
-            </div>
-            
-            <nav class="space-y-2">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white bg-white/20">
-                    <i class="fas fa-chart-line w-5"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="{{ route('admin.bookings.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition">
-                    <i class="fas fa-calendar-check w-5"></i>
-                    <span>Bookings</span>
-                </a>
-                <a href="{{ route('admin.cars') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition">
-                    <i class="fas fa-car w-5"></i>
-                    <span>Fleet</span>
-                </a>
-                <a href="{{ route('admin.users') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition">
-                    <i class="fas fa-users w-5"></i>
-                    <span>Users</span>
-                </a>
-                <a href="{{ route('admin.revenue') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition">
-                    <i class="fas fa-chart-bar w-5"></i>
-                    <span>Revenue</span>
-                </a>
-                <form method="POST" action="{{ route('logout') }}">
-                 @csrf
-                <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-red-600/80 transition" >
-            <i class="fas fa-sign-out-alt w-5"></i>
-            <span>Logout</span> </button>
-           </form>
-            </nav>
-        </div>
+@extends('layouts.adminlayout')
 
-        <!-- Mobile Menu Toggle -->
-        <div class="lg:hidden bg-gray-900 text-white p-4 flex items-center justify-between">
-            <h1 class="text-xl font-bold flex items-center gap-2">
-                <i class="fas fa-car"></i>
-                <span>Car Rental</span>
-            </h1>
-            <button class="text-2xl" id="menuToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
+@section('content')
+<div class="p-6 lg:p-8">
+ 
 
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="hidden fixed top-0 left-0 w-full h-screen bg-gray-900 text-white z-40 p-6 lg:hidden">
-            <button class="absolute top-4 right-4 text-2xl" id="menuClose">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="mt-8">
-                <nav class="space-y-2">
-                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white bg-white/20 block">
-                        <i class="fas fa-chart-line w-5"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="{{ route('admin.bookings.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition block">
-                        <i class="fas fa-calendar-check w-5"></i>
-                        <span>Bookings</span>
-                    </a>
-                    <a href="{{ route('admin.cars') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition block">
-                        <i class="fas fa-car w-5"></i>
-                        <span>Fleet</span>
-                    </a>
-                    <a href="{{ route('admin.users') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition block">
-                        <i class="fas fa-users w-5"></i>
-                        <span>Users</span>
-                    </a>
-                    <a href="{{ route('admin.revenue') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition block">
-                        <i class="fas fa-chart-bar w-5"></i>
-                        <span>Revenue</span>
-                    </a> 
-                    <form method="POST" action="{{ route('logout') }}">
-    @csrf
-    <button 
-        type="submit" 
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-red-600/80 transition block"
-    >
-        <i class="fas fa-sign-out-alt w-5"></i>
-        <span>Logout</span>
-    </button>
-</form>
-
-                </nav>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="flex-1 overflow-auto w-full lg:ml-0">
-            <div class="p-6 lg:p-8">
-                <!-- KPI Cards -->
+      <!-- KPI Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <!-- Total Bookings Card -->
                     <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
@@ -223,114 +123,17 @@
                         </table>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
+            </div> 
+            @endsection
 
-    <script>
-        const menuToggle = document.getElementById('menuToggle');
-        const menuClose = document.getElementById('menuClose');
-        const mobileMenu = document.getElementById('mobileMenu');
-
-        menuToggle.addEventListener('click', () => {
-            mobileMenu.classList.remove('hidden');
-        });
-
-        menuClose.addEventListener('click', () => {
-            mobileMenu.classList.add('hidden');
-        });
-
-        // Close menu when clicking on a link
-        mobileMenu.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                mobileMenu.classList.add('hidden');
-            });
-        });
-
-        // Trend Chart
-        const trendCtx = document.getElementById('trendChart').getContext('2d');
-        new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: {!! json_encode($months) !!},
-                datasets: [
-                    {
-                        label: 'Bookings',
-                        data: {!! json_encode($bookingsData) !!},
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: 'Revenue ($)',
-                        data: {!! json_encode($revenueData) !!},
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        yAxisID: 'y1'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
-                },
-                scales: {
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: {
-                            display: true,
-                            text: 'Bookings'
-                        }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: {
-                            display: true,
-                            text: 'Revenue'
-                        },
-                        grid: {
-                            drawOnChartArea: false,
-                        },
-                    }
-                }
-            }
-        });
-
-        // Status Chart
-        const statusCtx = document.getElementById('statusChart').getContext('2d');
-        new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: {!! json_encode($statusLabels) !!},
-                datasets: [{
-                    data: {!! json_encode($statusData) !!},
-                    backgroundColor: [
-                        '#10b981',
-                        '#f59e0b',
-                        '#ef4444',
-                        '#3b82f6'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                    }
-                }
-            }
-        });
-    </script>
-</body>
-</html>
+@section('scripts')
+<script>
+    window.dashboardData = {
+        months: {!! json_encode($months) !!},
+        bookingsData: {!! json_encode($bookingsData) !!},
+        revenueData: {!! json_encode($revenueData) !!},
+        statusLabels: {!! json_encode($statusLabels) !!},
+        statusData: {!! json_encode($statusData) !!}
+    };
+</script>
+@endsection
