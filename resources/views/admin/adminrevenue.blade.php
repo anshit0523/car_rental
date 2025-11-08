@@ -12,15 +12,15 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-600">
                     <h6 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-2">Total Revenue</h6>
-                    <div class="text-3xl font-bold text-gray-900">${{ number_format($monthlyRevenue->sum('total') ?? 156890, 2) }}</div>
+                    <div class="text-3xl font-bold text-gray-900">&#8369;{{ number_format($monthlyRevenue->sum('total') ?? 156890, 2) }}</div>
                 </div>
                 <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-indigo-600">
                     <h6 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-2">Average Monthly</h6>
-                    <div class="text-3xl font-bold text-gray-900">${{ number_format($monthlyRevenue->count() > 0 ? $monthlyRevenue->sum('total') / $monthlyRevenue->count() : 13074, 2) }}</div>
+                    <div class="text-3xl font-bold text-gray-900">&#8369;{{ number_format($monthlyRevenue->count() > 0 ? $monthlyRevenue->sum('total') / $monthlyRevenue->count() : 13074, 2) }}</div>
                 </div>
                 <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-amber-600">
                     <h6 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-2">Peak Revenue</h6>
-                    <div class="text-3xl font-bold text-gray-900">${{ number_format($monthlyRevenue->max('total') ?? 18500, 2) }}</div>
+                    <div class="text-3xl font-bold text-gray-900">&#8369;{{ number_format($monthlyRevenue->max('total') ?? 18500, 2) }}</div>
                 </div>
             </div>
 
@@ -51,7 +51,7 @@
                                     <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $revenue->month }}</td>
                                     <td class="px-6 py-4 text-sm">
                                         <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            ${{ number_format($revenue->total, 2) }}
+                                            &#8369;{{ number_format($revenue->total, 2) }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-sm">

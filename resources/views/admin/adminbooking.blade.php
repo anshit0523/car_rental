@@ -85,7 +85,7 @@
                         </td>
 
                         <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                            ${{ number_format($booking->total_price, 2) }}
+                            &#8369;{{ number_format($booking->total_price, 2) }}
                         </td>
 
                         <td class="px-6 py-4 text-sm">

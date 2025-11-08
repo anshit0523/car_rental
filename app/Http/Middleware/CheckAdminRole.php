@@ -7,22 +7,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckRole
+class CheckAdminRole
 {
     /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $role = null)
+    public function handle(Request $request, Closure $next)
     {
         if (!Auth::check()) {
             return redirect('/login')->with('error', 'Please login first.');
         }
 
-        // If role is defined in the middleware call
-        if ($role && Auth::user()->role !== $role) {
-            return redirect('/')->with('error', 'Access denied.');
+        // Allow only admins (role_id = 1)
+        if (Auth::user()->role_id != 1) {
+            return redirect('/dashboard')->with('error', 'Access denied. Admins only.');
         }
 
         return $next($request);

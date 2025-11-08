@@ -11,7 +11,7 @@
                             <div>
                                 <p class="text-gray-600 text-sm font-medium">Total Bookings</p>
                                 <p class="text-3xl font-bold text-gray-900 mt-2">{{ $totalBookings }}</p>
-                                <p class="text-green-600 text-sm mt-2">↑ {{ $bookingsTrend }}% this month</p>
+                                <p class="text-green-600 text-sm mt-2">↑ {{ $bookingsTrend }}&#8369; this month</p>
                             </div>
                             <div class="p-3 rounded-full bg-blue-100">
                                 <i class="fas fa-calendar-check text-blue-500 text-2xl"></i>
@@ -24,11 +24,11 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-gray-600 text-sm font-medium">Total Revenue</p>
-                                <p class="text-3xl font-bold text-gray-900 mt-2">${{ number_format($totalRevenue, 2) }}</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-2">&#8369;{{ number_format($totalRevenue, 2) }}</p>
                                 <p class="text-green-600 text-sm mt-2">↑ {{ $revenueTrend }}% this month</p>
                             </div>
                             <div class="p-3 rounded-full bg-green-100">
-                                <i class="fas fa-dollar-sign text-green-500 text-2xl"></i>
+                                <i class="fas fa-peso-sign text-green-500 text-2xl"></i>
                             </div>
                         </div>
                     </div>
@@ -101,7 +101,7 @@
                                         <td class="px-6 py-4 text-sm text-gray-600">{{ $booking->car->brand->name ?? 'N/A' }} {{ $booking->car->model ?? 'N/A' }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-600">{{ $booking->pickup_at->format('M d, Y') ?? 'N/A' }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-600">{{ $booking->return_at->format('M d, Y') ?? 'N/A' }}</td>
-                                        <td class="px-6 py-4 text-sm font-semibold text-gray-900">${{ number_format($booking->total_price, 2) }}</td>
+                                        <td class="px-6 py-4 text-sm font-semibold text-gray-900">&#8369;{{ number_format($booking->total_price, 2) }}</td>
                                         <td class="px-6 py-4 text-sm">
                                             <span class="px-3 py-1 rounded-full text-xs font-medium
                                                 @if($booking->status->id == 1) bg-green-100 text-green-800

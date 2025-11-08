@@ -75,7 +75,7 @@
                     </p>
                     <p>
                         <i class="fas fa-dollar-sign w-4"></i>
-                        ${{ number_format($car->price_per_day, 2) }}/Day
+                        &#8369;{{ number_format($car->price_per_day, 2) }}/Day
                     </p>
                 </div>
 

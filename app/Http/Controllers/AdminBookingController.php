@@ -6,7 +6,7 @@ use App\Models\Booking;
 use App\Models\Status;
 use Illuminate\Http\Request;
 
-class BookingController extends Controller
+class AdminBookingController extends Controller
 {
     // Main index function with search + filter
     public function index(Request $request)
