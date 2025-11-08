@@ -1,361 +1,265 @@
 @extends('layouts.userlayout')
 
 @section('content')
-<div class="flex h-screen bg-gray-100">
-    <!-- Sidebar -->
-    <aside id="sidebar" class="w-56 bg-white shadow-md transition-all duration-300 flex flex-col border-r border-gray-200">
-        <div class="p-5 flex items-center justify-between border-b border-gray-200">
-            <h1 class="font-bold text-lg">🚗 CarRental Pro</h1>
-            <button id="toggleSidebar" class="p-2 hover:bg-gray-100 rounded-lg transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+<div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div class="px-6 py-4 flex items-center">
+            <a href="{{ route('user.browse') }}" class="text-gray-700 hover:text-gray-900">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
-            </button>
-        </div>
-
-        <nav class="flex-1 p-3 space-y-2">
-            <a href="{{ route('user.dashboard') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
-                <span class="text-lg">📊</span>
-                <span class="menu-label">Dashboard</span>
             </a>
-            <a href="{{ route('user.rentals') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
-                <span class="text-lg">🚗</span>
-                <span class="menu-label">My Rentals</span>
-            </a>
-            <a href="{{ route('user.browse') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
-                <span class="text-lg">🔍</span>
-                <span class="menu-label">Browse Cars</span>
-            </a>
-            <a href="{{ route('user.history') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-black text-white transition">
-                <span class="text-lg">📜</span>
-                <span class="menu-label">Rental History</span>
-            </a>
-            <a href="{{ route('user.payments') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
-                <span class="text-lg">💳</span>
-                <span class="menu-label">Payments</span>
-            </a>
-            <a href="{{ route('user.profile') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
-                <span class="text-lg">👤</span>
-                <span class="menu-label">Profile</span>
-            </a>
-            <a href="{{ route('user.settings') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
-                <span class="text-lg">⚙️</span>
-                <span class="menu-label">Settings</span>
-            </a>
-        </nav>
-
-        <div class="p-3 border-t border-gray-200">
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
-                    <span class="text-lg">🚪</span>
-                    <span class="menu-label">Logout</span>
-                </button>
-            </form>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <div class="flex-1 overflow-auto flex flex-col">
-          <!-- Header -->
-        <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center border-b border-gray-200">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900">Dashboard</h2>
-                <p class="text-gray-600 text-sm">Welcome back! Here's your rental overview.</p>
-            </div>
-            <div class="flex items-center space-x-4">
-                <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition relative">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                    </svg>
-                    <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
-                <div class="flex items-center space-x-3 pl-4 border-l border-gray-200">
-                    <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                    </div>
-                    <div class="hidden sm:block">
-                        <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-gray-500">Customer</p>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-    <!-- Breadcrumb -->
-    <div class="max-w-7xl mx-auto px-6 py-4">
-        <div class="flex items-center space-x-2 text-sm text-gray-600">
-            <a href="#" class="hover:text-gray-900">Home</a>
-            <span>›</span>
-            <a href="#" class="hover:text-gray-900">Search Results</a>
-            <span>›</span>
-            <span class="text-gray-900 font-semibold">Car Details</span>
+            <h1 class="text-2xl font-bold text-gray-900 ml-4">Payment</h1>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-6 py-8">
-        <div class="grid grid-cols-3 gap-8">
-            <!-- Left Section - Car Details -->
-            <div class="col-span-2">
-                <!-- Main Image -->
-                <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-                    <div class="relative bg-gray-300 h-96 flex items-center justify-center">
-                        <img src="https://images.unsplash.com/photo-1567818735868-e71b99932e29?w=600&h=400&fit=crop" alt="BMW 5 Series" class="w-full h-full object-cover">
-                        <button class="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:bg-gray-100">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
-                        </button>
-                        <button class="absolute bottom-4 left-4 p-2 bg-white rounded-full shadow-md hover:bg-gray-100">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                            </svg>
-                        </button>
-                        <button class="absolute bottom-4 right-4 p-2 bg-white rounded-full shadow-md hover:bg-gray-100">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Thumbnail Images -->
-                    <div class="p-4 flex space-x-3">
-                        <div class="w-20 h-20 bg-gray-300 rounded-lg overflow-hidden cursor-pointer hover:opacity-80">
-                            <img src="https://images.unsplash.com/photo-1567818735868-e71b99932e29?w=100&h=100&fit=crop" alt="Thumb" class="w-full h-full object-cover">
-                        </div>
-                        <div class="w-20 h-20 bg-gray-300 rounded-lg overflow-hidden cursor-pointer hover:opacity-80">
-                            <img src="https://images.unsplash.com/photo-1560958089-b8a63dd8b50?w=100&h=100&fit=crop" alt="Thumb" class="w-full h-full object-cover">
-                        </div>
-                        <div class="w-20 h-20 bg-gray-300 rounded-lg overflow-hidden cursor-pointer hover:opacity-80">
-                            <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=100&h=100&fit=crop" alt="Thumb" class="w-full h-full object-cover">
-                        </div>
-                        <div class="w-20 h-20 bg-gray-300 rounded-lg overflow-hidden cursor-pointer hover:opacity-80">
-                            <img src="https://images.unsplash.com/photo-1566023967268-de5d93b94088?w=100&h=100&fit=crop" alt="Thumb" class="w-full h-full object-cover">
-                        </div>
-                    </div>
+    <!-- Content -->
+    <div class="max-w-2xl mx-auto px-6 py-8">
+        <!-- Booking Summary Card -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-start gap-4">
+                <!-- Car Image -->
+                <div class="w-24 h-24 rounded-lg overflow-hidden bg-gray-300 flex-shrink-0">
+                    @if($booking->car->images && count(json_decode($booking->car->images)) > 0)
+                        @php $images = json_decode($booking->car->images); @endphp
+                        <img src="{{ asset('storage/' . $images[0]) }}" alt="{{ $booking->car->model }}" class="w-full h-full object-cover">
+                    @else
+                        <img src="https://images.unsplash.com/photo-1567818735868-e71b99932e29?w=200&h=200&fit=crop" alt="Car" class="w-full h-full object-cover">
+                    @endif
                 </div>
 
-                <!-- Car Title and Rating -->
-                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <!-- Booking Details -->
+                <div class="flex-1">
                     <div class="flex items-start justify-between mb-4">
                         <div>
-                            <h1 class="text-3xl font-bold text-gray-900 mb-2">BMW 5 Series 530i</h1>
-                            <div class="flex items-center space-x-2">
-                                <div class="flex items-center">
-                                    <span class="text-yellow-400">★</span>
-                                    <span class="text-yellow-400">★</span>
-                                    <span class="text-yellow-400">★</span>
-                                    <span class="text-yellow-400">★</span>
-                                    <span class="text-gray-300">★</span>
-                                </div>
-                                <span class="text-gray-700 font-semibold">4.8 (124 reviews)</span>
-                                <span class="text-gray-500">Downtown Location</span>
-                            </div>
+                            <h3 class="text-lg font-bold text-gray-900">{{ $booking->car->brand->name ?? 'N/A' }} {{ $booking->car->model }}</h3>
+                            <p class="text-gray-600 text-sm">Luxury Sedan</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-4xl font-bold text-gray-900">$89</p>
-                            <p class="text-gray-600">/day</p>
+                            <p class="text-lg font-bold text-gray-900">₱{{ number_format($booking->car->price_per_day, 0) }}/day</p>
+                            <p class="text-gray-600 text-xs">
+                                {{ \Carbon\Carbon::parse($booking->pickup_at)->diffInDays(\Carbon\Carbon::parse($booking->return_at)) }} days
+                            </p>
                         </div>
                     </div>
-                </div>
 
-                <!-- Key Features -->
-                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                    <div class="grid grid-cols-4 gap-4 mb-6">
-                        <div class="text-center">
-                            <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                <span class="text-2xl">🧑‍🤝‍🧑</span>
-                            </div>
-                            <p class="text-sm font-semibold text-gray-900">Passengers</p>
-                            <p class="text-gray-600">5 People</p>
-                        </div>
-                        <div class="text-center">
-                            <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                <span class="text-2xl">⚙️</span>
-                            </div>
-                            <p class="text-sm font-semibold text-gray-900">Transmission</p>
-                            <p class="text-gray-600">Automatic</p>
-                        </div>
-                        <div class="text-center">
-                            <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                <span class="text-2xl">⛽</span>
-                            </div>
-                            <p class="text-sm font-semibold text-gray-900">Fuel Type</p>
-                            <p class="text-gray-600">Gasoline</p>
-                        </div>
-                        <div class="text-center">
-                            <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                <span class="text-2xl">🧳</span>
-                            </div>
-                            <p class="text-sm font-semibold text-gray-900">Luggage</p>
-                            <p class="text-gray-600">3 Bags</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Features & Amenities -->
-                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4">Features & Amenities</h2>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="flex items-center space-x-3">
-                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                    <!-- Dates -->
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center gap-2 text-gray-700">
+                            <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
                             </svg>
-                            <span class="text-gray-700">Air Conditioning</span>
+                            <span>{{ \Carbon\Carbon::parse($booking->pickup_at)->format('M d') }} - {{ \Carbon\Carbon::parse($booking->return_at)->format('M d, Y') }}</span>
                         </div>
-                        <div class="flex items-center space-x-3">
-                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                        <div class="flex items-center gap-2 text-gray-700">
+                            <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
                             </svg>
-                            <span class="text-gray-700">GPS Navigation</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                            </svg>
-                            <span class="text-gray-700">USB Charging</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                            </svg>
-                            <span class="text-gray-700">Bluetooth</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                            </svg>
-                            <span class="text-gray-700">Leather Seats</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                            </svg>
-                            <span class="text-gray-700">Sunroof</span>
+                            <span>Downtown Location</span>
                         </div>
                     </div>
-                </div>
-
-                <!-- Rental Terms & Conditions -->
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4">Rental Terms & Conditions</h2>
-                    <div class="space-y-3">
-                        <div class="flex items-start space-x-3">
-                            <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                                </svg>
-                            </div>
-                            <span class="text-gray-700">Minimum age requirement: 25 years old</span>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                                </svg>
-                            </div>
-                            <span class="text-gray-700">Valid driver's license required for at least 2 years</span>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                                </svg>
-                            </div>
-                            <span class="text-gray-700">Security deposit of $500 will be held on your card</span>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                                </svg>
-                            </div>
-                            <span class="text-gray-700">Free cancellation up to 24 hours before pickup</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Section - Booking Form -->
-            <div class="col-span-1">
-                <div class="bg-white rounded-lg shadow-md p-6 sticky top-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Book This Car</h2>
-
-                    <!-- Pickup Date & Time -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-semibold text-gray-900 mb-2">Pickup Date & Time</label>
-                        <div class="flex items-center space-x-2">
-                            <input type="text" placeholder="dd/mm/yyyy" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                            <svg class="w-5 h-5 text-gray-400 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h14M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                        </div>
-                        <input type="text" placeholder="-- : -- --" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mt-2">
-                    </div>
-
-                    <!-- Return Date & Time -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-semibold text-gray-900 mb-2">Return Date & Time</label>
-                        <div class="flex items-center space-x-2">
-                            <input type="text" placeholder="dd/mm/yyyy" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                            <svg class="w-5 h-5 text-gray-400 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h14M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                        </div>
-                        <input type="text" placeholder="-- : -- --" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mt-2">
-                    </div>
-
-                    <!-- Pickup Location -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-semibold text-gray-900 mb-2">Pickup Location</label>
-                        <select class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                            <option>Downtown Office - 123 Main St</option>
-                            <option>Airport Terminal</option>
-                            <option>Downtown Office - 123 Main St</option>
-                        </select>
-                    </div>
-
-                    <!-- Pricing Breakdown -->
-                    <div class="border-t border-gray-200 pt-4 mb-6 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-600 text-sm">Daily rate (3 days)</span>
-                            <span class="text-gray-900 font-semibold">$267.00</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-600 text-sm">Insurance</span>
-                            <span class="text-gray-900 font-semibold">$45.00</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-600 text-sm">Taxes & fees</span>
-                            <span class="text-gray-900 font-semibold">$23.40</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-green-600 text-sm font-semibold">Discount (10%)</span>
-                            <span class="text-green-600 font-semibold">-$28.70</span>
-                        </div>
-                    </div>
-
-                    <!-- Total -->
-                    <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-900 font-bold">Total</span>
-                            <span class="text-2xl font-bold text-gray-900">$308.70</span>
-                        </div>
-                    </div>
-
-                    <!-- Confirm Button -->
-                    <button class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition mb-3">
-                        Confirm Booking
-                    </button>
-
-                    <!-- Cancellation Policy -->
-                    <p class="text-xs text-center text-gray-500">
-                        Free cancellation • No hidden fees
-                    </p>
                 </div>
             </div>
         </div>
+
+        <!-- Price Breakdown -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Price Breakdown</h2>
+            
+            @php
+                $rentalDays = \Carbon\Carbon::parse($booking->pickup_at)->diffInDays(\Carbon\Carbon::parse($booking->return_at));
+                $rentalCost = $booking->car->price_per_day * $rentalDays;
+                $insurance = 500;
+                $serviceFee = 200;
+                $subtotal = $rentalCost + $insurance + $serviceFee;
+                $tax = $subtotal * 0.12;
+                $total = $subtotal + $tax;
+            @endphp
+
+            <div class="space-y-3 mb-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700">Rental ({{ $rentalDays }} days)</span>
+                    <span class="text-gray-900 font-semibold">₱{{ number_format($rentalCost, 2) }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700">Insurance</span>
+                    <span class="text-gray-900 font-semibold">₱{{ number_format($insurance, 2) }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700">Service Fee</span>
+                    <span class="text-gray-900 font-semibold">₱{{ number_format($serviceFee, 2) }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700">Taxes</span>
+                    <span class="text-gray-900 font-semibold">₱{{ number_format($tax, 2) }}</span>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-200 pt-3 flex items-center justify-between">
+                <span class="font-bold text-gray-900">Total</span>
+                <span class="text-2xl font-bold text-gray-900">₱{{ number_format($total, 2) }}</span>
+            </div>
+        </div>
+
+        <!-- Payment Method Selection -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Payment Method</h2>
+            
+            <div class="space-y-3">
+                <!-- Credit/Debit Card -->
+                <label class="flex items-center p-4 border-2 border-blue-600 rounded-lg cursor-pointer bg-blue-50">
+                    <input type="radio" name="payment_method" value="card" checked class="w-4 h-4 text-blue-600">
+                    <div class="ml-3 flex items-center gap-2">
+                        <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20 8H4V6h16m0 10H4v-4h16m0 6H4v-2h16m2-10v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h16c1.1 0 2 .9 2 2z"/>
+                        </svg>
+                        <span class="font-semibold text-gray-900">Credit/Debit Card</span>
+                    </div>
+                </label>
+
+                <!-- PayPal -->
+                <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                    <input type="radio" name="payment_method" value="paypal" class="w-4 h-4 text-blue-600">
+                    <div class="ml-3 flex items-center gap-2">
+                        <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9.67 12c0 .5-.41.9-.91.9H7v-1.8h1.76c.5 0 .91.4.91.9zm3.9-2.3h-2.13V9h2.05c.47 0 .85.38.85.85 0 .47-.38.85-.77.85z"/>
+                        </svg>
+                        <span class="font-semibold text-gray-900">PayPal</span>
+                    </div>
+                </label>
+
+                <!-- Apple Pay -->
+                <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                    <input type="radio" name="payment_method" value="apple_pay" class="w-4 h-4 text-blue-600">
+                    <div class="ml-3 flex items-center gap-2">
+                        <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.05 13.5c-.91 0-1.64.54-2.05 1.27h-.08c-.4-.75-1.07-1.27-2.05-1.27-1.27 0-2.32 1.24-2.32 2.53 0 1.28 1.05 2.53 2.32 2.53.98 0 1.65-.52 2.05-1.27h.08c.41.75 1.14 1.27 2.05 1.27 1.27 0 2.32-1.24 2.32-2.53 0-1.29-1.05-2.53-2.32-2.53zM9.5 3h5v2h-5z"/>
+                        </svg>
+                        <span class="font-semibold text-gray-900">Apple Pay</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Card Details Form (shown for card payment) -->
+        <form action="{{ route('user.payment.process') }}" method="POST" id="paymentForm">
+            @csrf
+            <input type="hidden" name="booking_id" value="{{ $booking->id }}">
+            <input type="hidden" name="payment_method" id="paymentMethod" value="card">
+
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">Card Details</h2>
+
+                <!-- Card Number -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Card Number</label>
+                    <div class="relative">
+                        <input type="text" name="card_number" placeholder="1234 5678 9012 3456" maxlength="19" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
+                        <img src="https://www.visa.com/favicon.ico" alt="Visa" class="absolute right-3 top-2.5 w-6 h-6">
+                    </div>
+                </div>
+
+                <!-- Expiry and CVV -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Expiry Date</label>
+                        <input type="text" name="expiry_date" placeholder="MM/YY" maxlength="5" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">CVV</label>
+                        <input type="text" name="cvv" placeholder="123" maxlength="4" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
+                    </div>
+                </div>
+
+                <!-- Cardholder Name -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Cardholder Name</label>
+                    <input type="text" name="cardholder_name" placeholder="John Doe" class="w-full border border-gray-300 rounded-lg px-4 py-2" value="{{ auth()->user()->name }}" required>
+                </div>
+
+                <!-- Billing Address -->
+                <h3 class="font-bold text-gray-900 mb-3 mt-6">Billing Address</h3>
+                
+                <div class="mb-4 flex items-center gap-2">
+                    <input type="checkbox" id="sameAsPickup" name="same_as_pickup" checked class="w-4 h-4 rounded">
+                    <label for="sameAsPickup" class="text-sm font-semibold text-gray-700">Same as pickup</label>
+                </div>
+
+                <!-- Street Address -->
+                <div class="mb-4">
+                    <input type="text" name="street_address" placeholder="Street Address" class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                </div>
+
+                <!-- City and ZIP -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <input type="text" name="city" placeholder="City" class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    <input type="text" name="zip_code" placeholder="ZIP Code" class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                </div>
+
+                <!-- Security Info -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex gap-3">
+                    <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                    </svg>
+                    <div>
+                        <p class="font-semibold text-blue-900 text-sm">Secure Payment</p>
+                        <p class="text-blue-700 text-xs">Your payment information is encrypted and secure. We never store your card details.</p>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5s-5 2.24-5 5v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                    </svg>
+                    Pay ₱{{ number_format($total, 2) }}
+                </button>
+            </div>
+        </form>
+
+        @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                @foreach ($errors->all() as $error)
+                    <p class="text-sm">{{ $error }}</p>
+                @endforeach
+            </div>
+        @endif
     </div>
 </div>
+
+<script>
+    // Format card number
+    document.querySelector('input[name="card_number"]').addEventListener('input', function(e) {
+        const v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        const matches = v.match(/\d{4,16}/g);
+        const match = (matches && matches[0]) || '';
+        const parts = [];
+        for (let i = 0, len = match.length; i < len; i += 4) {
+            parts.push(match.substring(i, i + 4));
+        }
+        if (parts.length) {
+            e.target.value = parts.join(' ');
+        } else {
+            e.target.value = v;
+        }
+    });
+
+    // Format expiry date
+    document.querySelector('input[name="expiry_date"]').addEventListener('input', function(e) {
+        const v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        if (v.length >= 2) {
+            e.target.value = v.slice(0, 2) + '/' + v.slice(2, 4);
+        } else {
+            e.target.value = v;
+        }
+    });
+
+    // Update payment method
+    document.querySelectorAll('input[name="payment_method"]').forEach(el => {
+        el.addEventListener('change', function() {
+            document.getElementById('paymentMethod').value = this.value;
+        });
+    });
+</script>
 @endsection

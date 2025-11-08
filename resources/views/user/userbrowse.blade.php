@@ -89,6 +89,15 @@
                             <span>Search</span>
                         </button>
                     </div>
+                    <div class="flex items-center space-x-3 pl-4 border-l border-gray-200">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                    <div class="hidden sm:block">
+                        <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
+                        <p class="text-xs text-gray-500">Customer</p>
+                    </div>
+                </div>
                 </form>
             </div>
         </div>
@@ -147,7 +156,9 @@
                                             <p class="text-2xl font-bold text-gray-900">&#8369;{{ number_format($car->price_per_day, ) }}</p>
                                             <p class="text-gray-600 text-sm">/day</p>
                                         </div>
-                                        <a href="{{ route('user.car-detail', $car->id) }}" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 font-semibold text-sm">
+                                        <a href="{{ route('user.car-detail', 
+                                        ['id' => $car->id, 'pickup_date' => request('pickup_date'), 'return_date' => request('return_date'), 
+                                        'time' => request('time')]) }}" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 font-semibold text-sm">
                                             Rent Now
                                         </a>
                                     </div>

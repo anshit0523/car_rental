@@ -95,7 +95,7 @@ class UserCarBrowseController extends Controller
             ->limit(5)
             ->get();
 
-        return view('user.car-detail', [
+        return view('user.usercardetails', [
             'car' => $car,
             'relatedCars' => $relatedCars,
         ]);
