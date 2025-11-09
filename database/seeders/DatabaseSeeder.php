@@ -33,6 +33,8 @@ class DatabaseSeeder extends Seeder
         FuelTypeSeeder::class,
         CarSeeder::class,
         RoleSeeder::class,
+        PaymentMethodsSeeder::class,
+        PaymentStatusesSeeder::class,
     ]);
 
     $this->call(RoleSeeder::class);

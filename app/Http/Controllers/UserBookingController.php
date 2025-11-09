@@ -10,9 +10,8 @@ use Illuminate\Support\Carbon;
 
 class UserBookingController extends Controller
 {
-    /**
-     * Show car details page for booking
-     */
+    
+    /*** Show car details page for booking */
     public function show($carId)
     {
         $car = Car::with(['brand', 'fuelType', 'transmission'])->findOrFail($carId);
@@ -151,9 +150,7 @@ public function processPayment(Request $request)
             abort(403, 'Unauthorized');
         }
 
-        // TODO: Integrate with payment gateway (Stripe, PayPal, etc.)
-        // For now, we'll just mark it as confirmed
-
+       
         $confirmedStatus = Status::where('name', 'Confirmed')->first();
         if (!$confirmedStatus) {
             $confirmedStatus = Status::create(['name' => 'Confirmed']);

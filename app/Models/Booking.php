@@ -16,6 +16,7 @@ use HasFactory;
         'return_at',
         'total_price',
         'status_id',
+        'payment_id',
     ];
 
      protected $casts = [
@@ -37,4 +38,9 @@ use HasFactory;
     {
         return $this->belongsTo(Status::class);
     }
+
+    public function payments()
+{
+    return $this->hasMany(Payment::class);
+}
 }
