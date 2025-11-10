@@ -7,6 +7,7 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserBookingController;
 use App\Http\Controllers\AdminBookingController;
+use App\Http\Controllers\PayPalPaymentController;
 use App\Http\Controllers\UserCarBrowseController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\AdminDashboardController;
@@ -38,8 +39,14 @@ Route::middleware(['auth','user'])
     // Booking routes
     Route::get('/car/{id}/detail', [UserCarBrowseController::class, 'show'])->name('cardetail');
     Route::post('/booking/create', [UserBookingController::class, 'store'])->name('booking.create');
+    
     Route::get('/payments', [UserBookingController::class, 'showPayment'])->name('payments');  
-     Route::post('/payment/process', [UserBookingController::class, 'processPayment'])->name('payment.process'); 
+   Route::post('/payment/process', [UserBookingController::class, 'processPayment'])->name('payment.process'); 
+  
+ // PayPal routes
+    Route::get('/paypal/payment/{booking_id}', [App\Http\Controllers\PayPalPaymentController::class, 'createPayment'])->name('paypal.payment');
+    Route::get('/paypal/success/{booking_id}', [App\Http\Controllers\PayPalPaymentController::class, 'success'])->name('paypal.success');
+    Route::get('/paypal/cancel/{booking_id}', [App\Http\Controllers\PayPalPaymentController::class, 'cancel'])->name('paypal.cancel');
     Route::get('/my-bookings', [UserBookingController::class, 'myBookings'])->name('my-bookings');
     Route::post('/booking/{id}/cancel', [UserBookingController::class, 'cancel'])->name('booking.cancel');
     Route::get('/booking/{id}/confirmation', [UserBookingController::class, 'confirmation'])->name('booking.confirmation');

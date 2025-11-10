@@ -108,7 +108,7 @@
             
             <div class="space-y-3">
                 <!-- Credit/Debit Card -->
-                <label class="flex items-center p-4 border-2 border-blue-600 rounded-lg cursor-pointer bg-blue-50">
+                <label class="payment-method-label flex items-center p-4 border-2 border-blue-600 rounded-lg cursor-pointer bg-blue-50" data-method="card">
                     <input type="radio" name="payment_method" value="card" checked class="w-4 h-4 text-blue-600">
                     <div class="ml-3 flex items-center gap-2">
                         <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
@@ -119,7 +119,7 @@
                 </label>
 
                 <!-- PayPal -->
-                <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                <label class="payment-method-label flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-gray-300" data-method="paypal">
                     <input type="radio" name="payment_method" value="paypal" class="w-4 h-4 text-blue-600">
                     <div class="ml-3 flex items-center gap-2">
                         <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
@@ -130,7 +130,7 @@
                 </label>
 
                 <!-- Apple Pay -->
-                <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                <label class="payment-method-label flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-gray-300" data-method="apple_pay">
                     <input type="radio" name="payment_method" value="apple_pay" class="w-4 h-4 text-blue-600">
                     <div class="ml-3 flex items-center gap-2">
                         <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24">
@@ -142,13 +142,13 @@
             </div>
         </div>
 
-        <!-- Card Details Form (shown for card payment) -->
+        <!-- Card Details Form (shown only for card payment) -->
         <form action="{{ route('user.payment.process') }}" method="POST" id="paymentForm">
             @csrf
             <input type="hidden" name="booking_id" value="{{ $booking->id }}">
             <input type="hidden" name="payment_method" id="paymentMethod" value="card">
 
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div id="cardDetailsSection" class="bg-white rounded-lg shadow-md p-6 mb-6">
                 <h2 class="text-lg font-bold text-gray-900 mb-4">Card Details</h2>
 
                 <!-- Card Number -->
@@ -218,6 +218,34 @@
             </div>
         </form>
 
+        <!-- PayPal Redirect (shown when PayPal is selected) -->
+        <div id="paypalSection" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+            <div class="text-center">
+                <svg class="w-16 h-16 text-blue-600 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9.67 12c0 .5-.41.9-.91.9H7v-1.8h1.76c.5 0 .91.4.91.9zm3.9-2.3h-2.13V9h2.05c.47 0 .85.38.85.85 0 .47-.38.85-.77.85z"/>
+                </svg>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">PayPal Payment</h3>
+                <p class="text-gray-600 mb-6">You will be redirected to PayPal to complete your payment securely.</p>
+                <button onclick="redirectToPayPal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">
+                    Continue to PayPal
+                </button>
+            </div>
+        </div>
+
+        <!-- Apple Pay (shown when Apple Pay is selected) -->
+        <div id="applepaySection" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+            <div class="text-center">
+                <svg class="w-16 h-16 text-black mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.05 13.5c-.91 0-1.64.54-2.05 1.27h-.08c-.4-.75-1.07-1.27-2.05-1.27-1.27 0-2.32 1.24-2.32 2.53 0 1.28 1.05 2.53 2.32 2.53.98 0 1.65-.52 2.05-1.27h.08c.41.75 1.14 1.27 2.05 1.27 1.27 0 2.32-1.24 2.32-2.53 0-1.29-1.05-2.53-2.32-2.53zM9.5 3h5v2h-5z"/>
+                </svg>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Apple Pay</h3>
+                <p class="text-gray-600 mb-6">Complete your payment using Apple Pay on your device.</p>
+                <button onclick="redirectToApplePay()" class="w-full bg-black hover:bg-gray-900 text-white font-bold py-3 rounded-lg transition">
+                    Pay with Apple Pay
+                </button>
+            </div>
+        </div>
+
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                 @foreach ($errors->all() as $error)
@@ -229,37 +257,98 @@
 </div>
 
 <script>
-    // Format card number
-    document.querySelector('input[name="card_number"]').addEventListener('input', function(e) {
-        const v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-        const matches = v.match(/\d{4,16}/g);
-        const match = (matches && matches[0]) || '';
-        const parts = [];
-        for (let i = 0, len = match.length; i < len; i += 4) {
-            parts.push(match.substring(i, i + 4));
+    const cardDetailsSection = document.getElementById('cardDetailsSection');
+    const paypalSection = document.getElementById('paypalSection');
+    const applepaySection = document.getElementById('applepaySection');
+    const paymentMethodLabels = document.querySelectorAll('.payment-method-label');
+    const paymentMethodRadios = document.querySelectorAll('input[name="payment_method"]');
+    const paymentMethodInput = document.getElementById('paymentMethod');
+
+    // Initialize visibility
+    function updatePaymentMethodUI() {
+        const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+        
+        // Reset all sections
+        cardDetailsSection.classList.add('hidden');
+        paypalSection.classList.add('hidden');
+        applepaySection.classList.add('hidden');
+        
+        // Reset all labels
+        paymentMethodLabels.forEach(label => {
+            label.classList.remove('border-blue-600', 'bg-blue-50');
+            label.classList.add('border-gray-200', 'hover:border-gray-300');
+        });
+        
+        // Update active label
+        const activeLabel = document.querySelector(`.payment-method-label[data-method="${selectedMethod}"]`);
+        if (activeLabel) {
+            activeLabel.classList.remove('border-gray-200', 'hover:border-gray-300');
+            activeLabel.classList.add('border-blue-600', 'bg-blue-50');
         }
-        if (parts.length) {
-            e.target.value = parts.join(' ');
-        } else {
-            e.target.value = v;
+        
+        // Show appropriate section
+        if (selectedMethod === 'card') {
+            cardDetailsSection.classList.remove('hidden');
+        } else if (selectedMethod === 'paypal') {
+            paypalSection.classList.remove('hidden');
+        } else if (selectedMethod === 'apple_pay') {
+            applepaySection.classList.remove('hidden');
         }
+        
+        // Update hidden input
+        paymentMethodInput.value = selectedMethod;
+    }
+
+    // Event listeners for payment method change
+    paymentMethodRadios.forEach(radio => {
+        radio.addEventListener('change', updatePaymentMethodUI);
     });
+
+    // Format card number
+    const cardNumberInput = document.querySelector('input[name="card_number"]');
+    if (cardNumberInput) {
+        cardNumberInput.addEventListener('input', function(e) {
+            const v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            const matches = v.match(/\d{4,16}/g);
+            const match = (matches && matches[0]) || '';
+            const parts = [];
+            for (let i = 0, len = match.length; i < len; i += 4) {
+                parts.push(match.substring(i, i + 4));
+            }
+            if (parts.length) {
+                e.target.value = parts.join(' ');
+            } else {
+                e.target.value = v;
+            }
+        });
+    }
 
     // Format expiry date
-    document.querySelector('input[name="expiry_date"]').addEventListener('input', function(e) {
-        const v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-        if (v.length >= 2) {
-            e.target.value = v.slice(0, 2) + '/' + v.slice(2, 4);
-        } else {
-            e.target.value = v;
-        }
-    });
-
-    // Update payment method
-    document.querySelectorAll('input[name="payment_method"]').forEach(el => {
-        el.addEventListener('change', function() {
-            document.getElementById('paymentMethod').value = this.value;
+    const expiryInput = document.querySelector('input[name="expiry_date"]');
+    if (expiryInput) {
+        expiryInput.addEventListener('input', function(e) {
+            const v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            if (v.length >= 2) {
+                e.target.value = v.slice(0, 2) + '/' + v.slice(2, 4);
+            } else {
+                e.target.value = v;
+            }
         });
-    });
+    }
+
+    // PayPal redirect function
+    function redirectToPayPal() {
+        const bookingId = document.querySelector('input[name="booking_id"]').value;
+        window.location.href = `/user/paypal/payment/${bookingId}`;
+    }
+
+    // Apple Pay redirect function
+    function redirectToApplePay() {
+        // Submit form for Apple Pay processing
+        document.getElementById('paymentForm').submit();
+    }
+
+    // Initialize on page load
+    updatePaymentMethodUI();
 </script>
 @endsection

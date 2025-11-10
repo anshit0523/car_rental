@@ -65,9 +65,9 @@ class UserCarBrowseController extends Controller
         $cars = $query->with(['brand', 'fuelType', 'transmission'])->paginate(9)->appends($request->query());
 
         // Get filter options for the sidebar
-        $brands = \App\Models\Brand::all();
-        $fuelTypes = \App\Models\FuelType::all();
-        $transmissions = \App\Models\Transmission::all();
+        $brands = Brand::all();
+        $fuelTypes = FuelType::all();
+        $transmissions = Transmission::all();
 
         return view('user.userbrowse', [
             'cars' => $cars,

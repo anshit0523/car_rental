@@ -145,16 +145,19 @@ public function processPayment(Request $request)
     try {
         $booking = Booking::findOrFail($validated['booking_id']);
 
-        // Check if booking belongs to current user
+        // ✅ Ensure booking belongs to the logged-in user
         if ($booking->user_id !== auth()->id()) {
             abort(403, 'Unauthorized');
         }
 
-       
-        $confirmedStatus = Status::where('name', 'Confirmed')->first();
-        if (!$confirmedStatus) {
-            $confirmedStatus = Status::create(['name' => 'Confirmed']);
+        // ✅ Check payment method
+        if ($validated['payment_method'] === 'paypal') {
+            // Redirect user to PayPal payment route
+            return redirect()->route('paypal.payment', ['booking_id' => $booking->id]);
         }
+
+        // ✅ For card or Apple Pay, process immediately
+        $confirmedStatus = Status::firstOrCreate(['name' => 'Confirmed']);
 
         // Update booking status
         $booking->update(['status_id' => $confirmedStatus->id]);
@@ -168,6 +171,7 @@ public function processPayment(Request $request)
             ->withInput();
     }
 }
+
     /**
      * Show my bookings list
      */
