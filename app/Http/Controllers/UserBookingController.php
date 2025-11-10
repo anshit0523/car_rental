@@ -172,6 +172,26 @@ public function processPayment(Request $request)
     }
 }
 
+
+
+public function confirmation($id)
+{
+    $booking = Booking::with(['car', 'user', 'payments', 'receipts'])->findOrFail($id);
+
+    // Authorization check
+    if ($booking->user_id !== auth()->id()) {
+        abort(403, 'Unauthorized');
+    }
+
+    $payment = $booking->payments()->latest()->first();
+    $receipt = $booking->receipts()->latest()->first();
+
+    return view('user.booking-confirmation', [
+        'booking' => $booking,
+        'payment' => $payment,
+        'receipt' => $receipt,
+    ]);
+}
     /**
      * Show my bookings list
      */

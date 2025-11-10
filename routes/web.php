@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CarsController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserBookingController;
 use App\Http\Controllers\AdminBookingController;
@@ -50,6 +51,13 @@ Route::middleware(['auth','user'])
     Route::get('/my-bookings', [UserBookingController::class, 'myBookings'])->name('my-bookings');
     Route::post('/booking/{id}/cancel', [UserBookingController::class, 'cancel'])->name('booking.cancel');
     Route::get('/booking/{id}/confirmation', [UserBookingController::class, 'confirmation'])->name('booking.confirmation');
+    
+
+    // Receipt routes
+    Route::get('/receipts', [ReceiptController::class, 'index'])->name('receipts.index');
+    Route::get('/receipts/{receipt_id}', [ReceiptController::class, 'show'])->name('receipts.show');
+    Route::get('/receipts/{receipt_id}/download', [ReceiptController::class, 'download'])->name('receipts.download');
+    Route::post('/receipts/{receipt_id}/send', [ReceiptController::class, 'send'])->name('receipts.send');
     
     // AJAX routes
     Route::get('/api/car/{id}/details', [UserBookingController::class, 'getCarDetails'])->name('api.car-details');

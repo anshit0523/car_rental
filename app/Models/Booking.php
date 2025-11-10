@@ -43,4 +43,9 @@ use HasFactory;
 {
     return $this->hasMany(Payment::class);
 }
+public function receipts()
+{
+    return $this->hasMany(Receipt::class);
+}
+
 }

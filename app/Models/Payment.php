@@ -38,4 +38,9 @@ class Payment extends Model
     {
         return $this->belongsTo(PaymentStatus::class);
     }
+
+    public function receipt()
+    {
+        return $this->hasOne(Receipt::class);
+    }
 }
