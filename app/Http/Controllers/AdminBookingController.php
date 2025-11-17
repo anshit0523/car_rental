@@ -30,9 +30,25 @@ class AdminBookingController extends Controller
             $query->where('status_id', $request->status_id);
         }
 
-        $bookings = $query->paginate(15);
+        $bookings = $query->paginate(10);
         $statuses = Status::all();
 
         return view('admin.adminbooking', compact('bookings', 'statuses'));
     }
+
+    public function updateStatus(Request $request, Booking $booking)
+{
+    $request->validate([
+        'status_id' => 'required|exists:statuses,id',
+    ]);
+
+    $booking->update([
+        'status_id' => $request->status_id,
+    ]);
+
+    return redirect()
+        ->route('admin.bookings.index')
+        ->with('success', 'Booking status updated successfully.');
+}
+
 }

@@ -118,7 +118,7 @@
                 <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-gray-600 text-sm font-medium">Completed Trips</p>
+                            <p class="text-gray-600 text-sm font-medium">Complete Booking</p>
                             <p class="text-3xl font-bold text-gray-900 mt-2">{{ $completedTrips ?? 0 }}</p>
                         </div>
                         <div class="p-3 rounded-full bg-purple-100">
@@ -249,22 +249,14 @@
         </div>
     </main>
 </div>
-
-<script>
-    const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('toggleSidebar');
-    const menuLabels = document.querySelectorAll('.menu-label');
-
-    toggleBtn.addEventListener('click', function() {
-        sidebar.classList.toggle('w-56');
-        sidebar.classList.toggle('w-20');
-        menuLabels.forEach(label => label.classList.toggle('hidden'));
-    });
-</script>
-
 <style>
     .menu-label {
         transition: opacity 0.3s ease;
     }
 </style>
+
+@endsection
+@section('scripts')
+<script src="{{ asset('js/user/userdashboard.js') }}"></script>
+
 @endsection

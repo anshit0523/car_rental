@@ -202,7 +202,7 @@ public function confirmation($id)
             ->orderBy('pickup_at', 'desc')
             ->paginate(10);
 
-        return view('user.my-bookings', [
+        return view('user.userrentals', [
             'bookings' => $bookings,
         ]);
     }

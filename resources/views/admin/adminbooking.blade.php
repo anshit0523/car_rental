@@ -105,7 +105,10 @@
                             <button class="text-blue-600 hover:text-blue-800">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="text-amber-600 hover:text-amber-800">
+                            <button class="text-amber-600 hover:text-amber-800 editBookingBtn"
+                            
+                                data-booking-id="{{ $booking->id }}"
+                                data-status="{{ $booking->status_id }}">
                                 <i class="fas fa-edit"></i>
                             </button>
                         </td>
@@ -126,22 +129,48 @@
         {{ $bookings->links() }}
     </div>
 </div>
-
-            <!-- Pagination -->
-            <div class="mt-6 flex justify-center">
-                <nav class="flex items-center gap-1">
-                    <button class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="px-3 py-2 bg-indigo-600 text-white rounded-lg">1</button>
-                    <button class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">2</button>
-                    <button class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">3</button>
-                    <button class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </nav>
-            </div>
         </div>
+
+
+
+
+
+        
+        <!-- Edit Status Modal -->
+<div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white w-full max-w-md rounded-lg shadow-lg p-6">
+        
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Update Booking Status</h2>
+
+        <form id="updateStatusForm" method="POST">
+            @csrf
+            @method('PUT')
+
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-1">Select Status</label>
+                <select name="status_id" id="statusDropdown" 
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    @foreach($statuses as $status)
+                        <option value="{{ $status->id }}">{{ $status->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-6">
+                <button type="button" id="closeModal"
+                    class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
     
 @endsection
 

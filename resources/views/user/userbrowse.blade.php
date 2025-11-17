@@ -89,11 +89,11 @@
                             <span>Search</span>
                         </button>
                     </div>
-                    <div class="flex items-center space-x-3 pl-4 border-l border-gray-200">
+                    <div class="flex items-center space-x-4 pl-8 border-l border-gray-300">
                     <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </div>
-                    <div class="hidden sm:block">
+                    <div class="hidden sm:block ">
                         <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
                         <p class="text-xs text-gray-500">Customer</p>
                     </div>
@@ -187,8 +187,8 @@
                             <h4 class="font-semibold text-gray-900 mb-3">Price Range</h4>
                             <input type="range" name="max_price" min="0" max="8000" value="{{ request('max_price', 500) }}" class="w-full" onchange="document.getElementById('filterForm').submit()">
                             <div class="flex items-center justify-between text-sm text-gray-600 mt-2">
-                                <span>$0</span>
-                                <span>${{ request('max_price', 8000) }}</span>
+                               
+                                <span>&#8369;{{ request('max_price', 8000) }}</span>
                             </div>
                         </div>
 

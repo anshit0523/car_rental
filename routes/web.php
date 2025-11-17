@@ -80,13 +80,17 @@ Route::middleware(['auth', 'admin'])
     ->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         
-       
+
+
+       // Booking routes
         Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
-// Booking routes
-    Route::get('/bookings/create/{car}', [AdminBookingController::class, 'create'])->name('bookings.create');
-    Route::post('/bookings', [AdminBookingController::class, 'store'])->name('bookings.store');
-    Route::post('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
+        Route::get('/bookings/create/{car}', [AdminBookingController::class, 'create'])->name('bookings.create');
+        Route::post('/bookings', [AdminBookingController::class, 'store'])->name('bookings.store');
+
+        Route::put('/bookings/{booking}/update-status', [AdminBookingController::class, 'updateStatus']) ->name('bookings.updateStatus');
+        Route::post('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
         Route::get('/cars', [AdminDashboardController::class, 'cars'])->name('cars');
+       
         Route::post('/cars', [CarsController::class, 'store'])->name('cars.store');
         Route::get('/cars/{id}/edit', [CarsController::class, 'edit'])->name('cars.edit');
         Route::put('/cars/{id}', [CarsController::class, 'update'])->name('cars.update');

@@ -3,6 +3,7 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 py-12">
     <div class="max-w-2xl mx-auto px-6">
+        
         <!-- Success Message -->
         <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
             <div class="flex items-center gap-3">
@@ -17,72 +18,81 @@
         </div>
 
         <!-- Booking Details -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Booking Details</h3>
-            
-            <div class="space-y-3">
-                <div class="flex justify-between">
-                    <span class="text-gray-700">Booking ID:</span>
-                    <span class="font-semibold">#{{ $booking->id }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-700">Car:</span>
-                    <span class="font-semibold">{{ $booking->car->brand->name }} {{ $booking->car->model }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-700">Pickup Date:</span>
-                    <span class="font-semibold">{{ $booking->pickup_at }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-700">Return Date:</span>
-                    <span class="font-semibold">{{ $booking->return_at }}</span>
-                </div>
-            </div>
-        </div>
+       <form class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
+    <!-- Title -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Receipt</h1>
+    </div>
 
-        <!-- Payment Details -->
-        @if($payment)
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Payment Details</h3>
-            
-            <div class="space-y-3">
-                <div class="flex justify-between">
-                    <span class="text-gray-700">Amount:</span>
-                    <span class="text-2xl font-bold text-green-600">₱{{ number_format($payment->amount, 2) }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-700">Payment Method:</span>
-                    <span class="font-semibold">{{ $payment->paymentMethod->name }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-700">Status:</span>
-                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full font-semibold">{{ $payment->paymentStatus->name }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-700">Transaction ID:</span>
-                    <span class="font-mono text-sm">{{ $payment->transaction_id }}</span>
-                </div>
+    <!-- Booking Details -->
+    <div class="mb-8">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Booking Details</h3>
+        
+        <div class="space-y-3">
+            <div class="flex justify-between ">
+                <span class="text-gray-700">Booking ID:</span>
+                <span class="font-semibold">#{{ $booking->id }}</span>
+            </div>
+            <div class="flex justify-between ">
+                <span class="text-gray-700">Car:</span>
+                <span class="font-semibold">{{ $booking->car->brand->name }} {{ $booking->car->model }}</span>
+            </div>
+            <div class="flex justify-between ">
+                <span class="text-gray-700">Pickup Date:</span>
+                <span class="font-semibold">{{ $booking->pickup_at }}</span>
+            </div>
+            <div class="flex justify-between ">
+                <span class="text-gray-700">Return Date:</span>
+                <span class="font-semibold">{{ $booking->return_at }}</span>
             </div>
         </div>
-        @endif
+    </div>
 
-        <!-- Receipt -->
-        @if($receipt)
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Receipt</h3>
-            
-            <div class="space-y-3">
-                <div class="flex justify-between">
-                    <span class="text-gray-700">Receipt Number:</span>
-                    <span class="font-semibold">{{ $receipt->receipt_number }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-700">Generated:</span>
-                    <span class="font-semibold">{{ $receipt->generated_at->format('Y-m-d H:i') }}</span>
-                </div>
+    <!-- Payment Details -->
+    @if($payment)
+    <div class="mb-8">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Payment Details</h3>
+        
+        <div class="space-y-3">
+            <div class="flex justify-between ">
+                <span class="text-gray-700">Amount:</span>
+                <span class="text-2xl font-bold text-green-600">₱{{ number_format($payment->amount, 2) }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-700">Payment Method:</span>
+                <span class="font-semibold">{{ $payment->paymentMethod->name }}</span>
+            </div>
+            <div class="flex justify-between ">
+                <span class="text-gray-700">Status:</span>
+                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full font-semibold">{{ $payment->paymentStatus->name }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-700">Transaction ID:</span>
+                <span class="font-mono text-sm">{{ $payment->transaction_id }}</span>
             </div>
         </div>
-        @endif
+    </div>
+    @endif
+
+    <!-- Receipt Info -->
+    @if($receipt)
+    <div class="mb-8 pt-6">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Receipt Information</h3>
+        
+        <div class="space-y-3">
+            <div class="flex justify-between ">
+                <span class="text-gray-700">Receipt Number:</span>
+                <span class="font-semibold">{{ $receipt->receipt_number }}</span>
+            </div>
+            <div class="flex justify-between ">
+                <span class="text-gray-700">Generated:</span>
+                <span class="font-semibold">{{ $receipt->generated_at->format('Y-m-d H:i') }}</span>
+            </div>
+        </div>
+    </div>
+    @endif
+</form>
+      
 
         <!-- Actions -->
         <div class="flex gap-4">

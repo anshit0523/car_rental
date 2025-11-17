@@ -19,7 +19,7 @@ public function create()
     $fuelTypes = FuelType::all();
     $cars = Car::with(['brand', 'transmission', 'fuelType'])->paginate(15);
     
-    return view('admin.cars', compact('brands', 'transmissions', 'fuelTypes'));
+    return view('admin.cars', compact('brands', 'transmissions', 'fuelTypes','cars'));
 }
 
 public function store(Request $request)

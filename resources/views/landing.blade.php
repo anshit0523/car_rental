@@ -60,8 +60,8 @@
                                 <p class="card-text text-muted mb-2">
                                     <small>
                                         <i class="fas fa-user"></i> {{ $car->seats }} seats • 
-                                        <i class="fas fa-cogs"></i> {{ $car->transmission->name ?? '' }} • 
-                                        <i class="fas fa-gas-pump"></i> {{ $car->fuelType->name ?? '' }}
+                                        <i class="fas fa-cogs"></i> {{ $car->transmission->type ?? '' }} • 
+                                        <i class="fas fa-gas-pump"></i> {{ $car->fuelType->type ?? '' }}
                                     </small>
                                 </p>
                                 <p class="fw-bold text-dark mb-3">₱{{ number_format($car->price_per_day, 2) }} / day</p>

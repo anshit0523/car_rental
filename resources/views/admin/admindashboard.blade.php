@@ -24,7 +24,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-gray-600 text-sm font-medium">Total Revenue</p>
-                                <p class="text-3xl font-bold text-gray-900 mt-2">&#8369;{{ number_format($totalRevenue, 2) }}</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-2">&#8369;{{ number_format($totalRevenue, 1) }}</p>
                                 <p class="text-green-600 text-sm mt-2">↑ {{ $revenueTrend }}% this month</p>
                             </div>
                             <div class="p-3 rounded-full bg-green-100">
@@ -106,7 +106,10 @@
                                             <span class="px-3 py-1 rounded-full text-xs font-medium
                                                 @if($booking->status->id == 1) bg-green-100 text-green-800
                                                 @elseif($booking->status->id == 2) bg-blue-100 text-blue-800
-                                                @elseif($booking->status->id == 3) bg-yellow-100 text-yellow-800
+                                                @elseif($booking->status->id == 3) bg-emerald-100 text-emerald-800
+                                                @elseif($booking->status->id == 4) bg-blue-100 text-blue-800
+                                                @elseif($booking->status->id == 5) bg-yellow-100 text-yellow-800
+                                                @elseif($booking->status->id == 6) bg-blue-100 text-blue-800
                                                 @else bg-red-100 text-red-800
                                                 @endif">
                                                 {{ $booking->status->name ?? 'Unknown' }}
