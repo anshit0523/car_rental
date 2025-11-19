@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CarsController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserBookingController;
 use App\Http\Controllers\AdminBookingController;
@@ -95,8 +96,12 @@ Route::middleware(['auth', 'admin'])
         Route::get('/cars/{id}/edit', [CarsController::class, 'edit'])->name('cars.edit');
         Route::put('/cars/{id}', [CarsController::class, 'update'])->name('cars.update');
         Route::delete('/cars/{id}', [CarsController::class, 'destroy'])->name('cars.destroy');
-
-        Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
+        
+        // AdminUsermanagement routes
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
+        Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::get('/revenue', [AdminDashboardController::class, 'revenue'])->name('revenue');
     });
 

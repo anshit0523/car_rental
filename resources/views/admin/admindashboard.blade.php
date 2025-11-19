@@ -105,7 +105,7 @@
                                         <td class="px-6 py-4 text-sm">
                                             <span class="px-3 py-1 rounded-full text-xs font-medium
                                                 @if($booking->status->id == 1) bg-green-100 text-green-800
-                                                @elseif($booking->status->id == 2) bg-blue-100 text-blue-800
+                                                @elseif($booking->status->id == 2) bg-gray-100 text-gray-800
                                                 @elseif($booking->status->id == 3) bg-emerald-100 text-emerald-800
                                                 @elseif($booking->status->id == 4) bg-blue-100 text-blue-800
                                                 @elseif($booking->status->id == 5) bg-yellow-100 text-yellow-800

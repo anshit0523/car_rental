@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -36,17 +38,15 @@
                 @forelse ($cars as $car)
                     <div class="col-md-4 mb-4">
                         <div class="card shadow-sm border-0 h-100">
-                            
+
                             <!-- Car Image -->
                             <div class="position-relative" style="height: 200px; overflow: hidden;">
                                 @php
                                     $images = is_string($car->images) ? json_decode($car->images, true) : $car->images;
                                 @endphp
                                 @if($images && is_array($images) && count($images) > 0)
-                                    <img src="{{ asset('storage/' . $images[0]) }}" 
-                                         class="card-img-top w-100 h-100" 
-                                         alt="{{ $car->brand->name ?? 'Car' }} {{ $car->model }}"
-                                         style="object-fit: cover;">
+                                    <img src="{{ asset('storage/' . $images[0]) }}" class="card-img-top w-100 h-100"
+                                        alt="{{ $car->brand->name ?? 'Car' }} {{ $car->model }}" style="object-fit: cover;">
                                 @else
                                     <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
                                         <i class="fas fa-car fa-3x text-muted"></i>
@@ -56,11 +56,11 @@
 
                             <div class="card-body">
                                 <h5 class="card-title">{{ $car->brand->name ?? 'Unknown Brand' }} {{ $car->model }}</h5>
-                                
+
                                 <p class="card-text text-muted mb-2">
                                     <small>
-                                        <i class="fas fa-user"></i> {{ $car->seats }} seats • 
-                                        <i class="fas fa-cogs"></i> {{ $car->transmission->type ?? '' }} • 
+                                        <i class="fas fa-user"></i> {{ $car->seats }} seats •
+                                        <i class="fas fa-cogs"></i> {{ $car->transmission->type ?? '' }} •
                                         <i class="fas fa-gas-pump"></i> {{ $car->fuelType->type ?? '' }}
                                     </small>
                                 </p>
@@ -87,4 +87,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

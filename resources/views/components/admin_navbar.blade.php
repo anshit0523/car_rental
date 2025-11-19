@@ -27,11 +27,12 @@
         <span>Fleet</span>
     </a>
 
-    <a href="{{ route('admin.users') }}"
-       class="{{ $baseLinkClass }} {{ request()->routeIs('admin.users*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
-        <i class="fas fa-users w-5"></i>
-        <span>Users</span>
-    </a>
+    
+<a href="{{ route('admin.users.index') }}"
+   class="{{ $baseLinkClass }} {{ request()->routeIs('admin.users.*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+    <i class="fas fa-users w-5"></i>
+    <span>Users</span>
+</a>
 
     <a href="{{ route('admin.revenue') }}"
        class="{{ $baseLinkClass }} {{ request()->routeIs('admin.revenue*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
@@ -90,11 +91,11 @@
         <span>Fleet</span>
     </a>
 
-    <a href="{{ route('admin.users') }}"
-       class="{{ $baseLinkClass }} {{ request()->routeIs('admin.users*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
-        <i class="fas fa-users w-5"></i>
-        <span>Users</span>
-    </a>
+ <a href="{{ route('admin.users.index') }}"
+   class="{{ $baseLinkClass }} {{ request()->routeIs('admin.users.*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+    <i class="fas fa-users w-5"></i>
+    <span>Users</span>
+</a>
 
     <a href="{{ route('admin.revenue') }}"
        class="{{ $baseLinkClass }} {{ request()->routeIs('admin.revenue*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
