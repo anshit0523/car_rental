@@ -91,6 +91,8 @@ Route::middleware(['auth', 'admin'])
         Route::put('/bookings/{booking}/update-status', [AdminBookingController::class, 'updateStatus']) ->name('bookings.updateStatus');
         Route::post('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
         Route::get('/cars', [AdminDashboardController::class, 'cars'])->name('cars');
+         Route::get('/calendar', [AdminBookingController::class, 'calendar'])->name('calendar');
+   
        
         Route::post('/cars', [CarsController::class, 'store'])->name('cars.store');
         Route::get('/cars/{id}/edit', [CarsController::class, 'edit'])->name('cars.edit');

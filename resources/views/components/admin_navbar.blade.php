@@ -26,6 +26,12 @@
         <i class="fas fa-car w-5"></i>
         <span>Fleet</span>
     </a>
+   
+    <a href="{{ route('admin.calendar') }}"
+   class="{{ $baseLinkClass }} {{ request()->routeIs('admin.calendar') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+    <i class="fas fa-calendar w-5"></i>
+    <span>Vehicle Availability</span>
+</a>
 
     
 <a href="{{ route('admin.users.index') }}"
@@ -90,6 +96,12 @@
         <i class="fas fa-car w-5"></i>
         <span>Fleet</span>
     </a>
+
+      <a href="{{ route('admin.calendar') }}"
+   class="{{ $baseLinkClass }} {{ request()->routeIs('admin.cars.calendar') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+    <i class="fas fa-calendar w-5"></i>
+    <span>Car Calendar</span>
+</a>
 
  <a href="{{ route('admin.users.index') }}"
    class="{{ $baseLinkClass }} {{ request()->routeIs('admin.users.*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">

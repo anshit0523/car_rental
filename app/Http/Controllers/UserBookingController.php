@@ -81,7 +81,7 @@ class UserBookingController extends Controller
                 'status_id' => $pendingStatus->id,
             ]);
 
-            // Log the booking creation for debugging
+         
             \Log::info('Booking created: ' . $booking->id . ' for user: ' . auth()->id());
 
             // Redirect with proper query string

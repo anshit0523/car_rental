@@ -7,6 +7,7 @@ use App\Models\Brand;
 use App\Models\FuelType;
 use App\Models\Transmission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CarsController extends Controller
 {
@@ -56,16 +57,6 @@ public function store(Request $request)
 
 
 
-public function edit($id)
-{
-    $car = Car::findOrFail($id);
-    $brands = Brand::all();
-    $transmissions = Transmission::all();
-    $fuelTypes = FuelType::all();
-    
-    return view('admin.cars-edit', compact('car', 'brands', 'transmissions', 'fuelTypes'));
-}
-
 public function update(Request $request, $id)
 {
     $car = Car::findOrFail($id);
@@ -83,13 +74,26 @@ public function update(Request $request, $id)
         'active' => 'boolean',
     ]);
 
-    // Handle images upload
-    $images = $car->images ? json_decode($car->images, true) : [];
+    // Handle images upload - REPLACE old images
+    $images = [];
+    
     if ($request->hasFile('images')) {
+        // Delete old images from storage
+        if ($car->images) {
+            $oldImages = json_decode($car->images, true);
+            foreach ($oldImages as $oldImage) {
+                \Storage::disk('public')->delete($oldImage);
+            }
+        }
+        
+        // Upload new images
         foreach ($request->file('images') as $image) {
             $path = $image->store('cars', 'public');
             $images[] = $path;
         }
+    } else {
+        // If no new images uploaded, keep the old ones
+        $images = $car->images ? json_decode($car->images, true) : [];
     }
 
     $validated['images'] = json_encode($images);
@@ -99,7 +103,6 @@ public function update(Request $request, $id)
 
     return redirect()->route('admin.cars')->with('success', 'Car updated successfully!');
 }
-
 public function destroy($id)
 {
     $car = Car::findOrFail($id);

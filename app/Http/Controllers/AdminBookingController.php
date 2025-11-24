@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Booking;
+use App\Models\Car;
+use App\Models\Brand;
 use App\Models\Status;
+use App\Models\Booking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class AdminBookingController extends Controller
 {
@@ -50,5 +53,73 @@ class AdminBookingController extends Controller
         ->route('admin.bookings.index')
         ->with('success', 'Booking status updated successfully.');
 }
+
+public function calendar(Request $request)
+    {
+        $view = $request->get('view', 'weekly');
+        $dateString = $request->get('date');
+        
+        // Set start date
+        $startDate = $dateString 
+            ? Carbon::parse($dateString) 
+            : now();
+        
+        $startDate->startOfDay();
+
+        // Generate calendar dates
+        if ($view === '30days') {
+            $endDate = $startDate->copy()->addDays(29);
+        } else {
+            $endDate = $startDate->copy()->addDays(6);
+        }
+
+        $calendarDates = [];
+        $current = $startDate->copy();
+
+        while ($current <= $endDate) {
+            $calendarDates[] = [
+                'full' => $current->copy(),
+                'date' => $current->format('d'),
+                'day' => $current->format('D'),
+            ];
+            $current->addDay();
+        }
+
+        // Get cars with relationships
+        $query = Car::with(['brand', 'transmission', 'fuelType', 'bookings.status'])
+            ->where('active', true);
+
+        // Apply filters
+        if ($request->filled('brand_id')) {
+            $query->where('brand_id', $request->get('brand_id'));
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('model', 'like', "%{$search}%")
+                  ->orWhere('plate', 'like', "%{$search}%");
+            });
+        }
+
+        $cars = $query->get();
+
+        // Calculate navigation dates
+        $previousWeek = $startDate->copy()->subDays($view === '30days' ? 30 : 7)->format('Y-m-d');
+        $nextWeek = $startDate->copy()->addDays($view === '30days' ? 30 : 7)->format('Y-m-d');
+
+        $brands = Brand::all();
+
+        return view('admin.admincalendar', [
+            'cars' => $cars,
+            'calendarDates' => $calendarDates,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'previousWeek' => $previousWeek,
+            'nextWeek' => $nextWeek,
+            'brands' => $brands,
+            'view' => $view,
+        ]);
+    }
 
 }

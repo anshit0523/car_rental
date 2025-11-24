@@ -48,7 +48,7 @@
    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full">
-            <thead class="bg-gray-50 border-b border-gray-200">
+            <thead class="bg-gray-50 border-b border-gray-20 w0 text-white-10">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Booking ID</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">User</th>

@@ -1,0 +1,214 @@
+@extends('layouts.adminlayout')
+
+@section('content')
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Section -->
+        <div class="mb-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 flex items-center gap-3">
+                      
+                        Vehicle Availability
+                    </h1>
+                    <p class="text-gray-600 mt-2">Manage and view vehicle bookings across all dates</p>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200">
+                    
+                    <span class="text-sm font-medium text-gray-700">{{ now()->format('M d, Y') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+            <!-- Filters Section -->
+            <div class="p-4 md:p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+                <form method="GET" class="space-y-6">
+                    <!-- Top Filters -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Brand Filter -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-tag text-blue-600 mr-2"></i>Filter by Brand
+                            </label>
+                            <select name="brand_id" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                <option value="">All Brands</option>
+                                @foreach($brands as $brand)
+                                    <option value="{{ $brand->id }}" {{ request('brand_id') == $brand->id ? 'selected' : '' }}>
+                                        {{ $brand->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Search -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-search text-blue-600 mr-2"></i>Search
+                            </label>
+                            <div class="relative">
+                                <input type="text" name="search" placeholder="License plate, model..." value="{{ request('search') }}" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Date Navigation -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-clock text-blue-600 mr-2"></i>Navigation
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('admin.calendar', ['date' => $previousWeek]) }}" class="p-2.5 hover:bg-gray-100 rounded-lg transition text-gray-600 hover:text-blue-600">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                                <span class="text-sm font-medium text-gray-700 px-3 py-2 bg-gray-50 rounded-lg min-w-fit">
+                                    {{ $startDate->format('M d') }} - {{ $endDate->format('M d, Y') }}
+                                </span>
+                                <a href="{{ route('admin.calendar', ['date' => $nextWeek]) }}" class="p-2.5 hover:bg-gray-100 rounded-lg transition text-gray-600 hover:text-blue-600">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                                <a href="{{ route('admin.calendar') }}" class="ml-auto px-3 py-2 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                                    Today
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- View Toggle -->
+                    <div class="flex items-center gap-4 pt-2 border-t border-gray-200">
+                        <span class="text-sm font-semibold text-gray-700">View:</span>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <input type="radio" name="view" value="weekly" {{ request('view', 'weekly') == 'weekly' ? 'checked' : '' }} onchange="this.form.submit()" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition">7 Days</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <input type="radio" name="view" value="30days" {{ request('view') == '30days' ? 'checked' : '' }} onchange="this.form.submit()" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition">30 Days</span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Calendar Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gradient-to-r from-gray-800 to-gray-900 text-white sticky top-0 z-20">
+                            <th class="sticky left-0 bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-4 text-left text-sm font-bold z-30 min-w-64">
+                                <i class="fas fa-car mr-2"></i>Vehicle Details
+                            </th>
+                            @foreach($calendarDates as $date)
+                                <th class="px-3 py-4 text-center min-w-24 whitespace-nowrap">
+                                    <div class="flex flex-col items-center gap-1">
+                                        <span class="font-bold text-base">{{ $date['day'] }}</span>
+                                        <span class="text-xs opacity-80">{{ $date['date'] }}</span>
+                                    </div>
+                                </th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @forelse($cars as $car)
+                            <tr class="hover:bg-blue-50 transition duration-200">
+                                <td class="sticky left-0 bg-white hover:bg-blue-50 px-6 py-3 font-medium z-10">
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2.5 bg-blue-100 rounded-lg flex-shrink-0">
+                                            <i class="fas fa-car text-blue-600 text-lg"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="font-bold text-gray-900 truncate">{{ $car->brand->name ?? 'Unknown' }},{{ $car->model }}</p>
+                                            <p class="text-xs text-gray-600 mt-1"></p>
+                                            <div class="flex gap-2 mt-2 flex-wrap">
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                                                    <i class="fas fa-cog"></i>{{ $car->transmission->type ?? 'N/A' }}
+                                                </span>
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                                                    <i class="fas fa-users"></i>{{ $car->seats }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                @foreach($calendarDates as $date)
+                                    <td class="px-3 py-2 text-center">
+                                        @php
+                                            $booking = $car->bookings()
+                                                ->whereDate('pickup_at', '<=', $date['full'])
+                                                ->whereDate('return_at', '>=', $date['full'])
+                                                ->first();
+                                            
+                                            if ($booking) {
+                                                $status = $booking->status->name ?? 'pending';
+                                                if ($status === 'confirmed') {
+                                                    $bgColor = 'bg-red-500';
+                                                    $icon = 'fa-lock';
+                                                    $label = 'Booked';
+                                                } elseif ($status === 'pending') {
+                                                    $bgColor = 'bg-amber-500';
+                                                    $icon = 'fa-hourglass-half';
+                                                    $label = 'Pending';
+                                                } else {
+                                                    $bgColor = 'bg-emerald-500';
+                                                    $icon = 'fa-check';
+                                                    $label = 'Reserved';
+                                                }
+                                            }
+                                        @endphp
+                                        
+                                        @if($booking)
+                                            <div class="inline-flex items-center gap-1 px-3 py-2 {{ $bgColor }} text-white rounded-lg text-xs font-semibold shadow-md hover:shadow-lg transition transform hover:scale-105">
+                                                <i class="fas {{ $icon }} text-xs"></i>
+                                                <span>{{ $label }}</span>
+                                            </div>
+                                        @else
+                                            <div class="inline-flex items-center gap-1 px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-semibold">
+                                                <i class="fas fa-check-circle"></i>
+                                                <span>Available</span>
+                                            </div>
+                                        @endif
+                                    </td>
+                                @endforeach
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="{{ count($calendarDates) + 1 }}" class="px-6 py-16 text-center">
+                                    <div class="flex flex-col items-center gap-3">
+                                        <i class="fas fa-inbox text-4xl text-gray-300"></i>
+                                        <p class="text-gray-500 font-medium">No vehicles found</p>
+                                        <p class="text-gray-400 text-sm">Try adjusting your search filters</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Legend -->
+            <div class="px-6 md:px-8 py-4 bg-gray-50 border-t border-gray-200 flex flex-wrap gap-6">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    <span class="text-xs font-medium text-gray-600">Available</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <span class="text-xs font-medium text-gray-600">Pending</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span class="text-xs font-medium text-gray-600">Booked</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    <span class="text-xs font-medium text-gray-600">Reserved</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
