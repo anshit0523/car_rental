@@ -220,7 +220,7 @@
 
 
 @section('scripts')
-<script src="{{ asset('js/adminuser.js') }}"></script>
+<script src="{{ asset('js/admin/adminuser.js') }}"></script>
 
 @if(session('success'))
 <script>

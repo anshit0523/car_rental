@@ -1,4 +1,4 @@
-
+// public/js/sidebar.js
 
 document.addEventListener('DOMContentLoaded', function() {
     const toggleBtn = document.getElementById('toggleSidebar');

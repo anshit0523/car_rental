@@ -103,6 +103,7 @@ public function update(Request $request, $id)
 
     return redirect()->route('admin.cars')->with('success', 'Car updated successfully!');
 }
+
 public function destroy($id)
 {
     $car = Car::findOrFail($id);

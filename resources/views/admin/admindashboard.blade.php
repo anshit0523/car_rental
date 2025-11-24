@@ -139,7 +139,7 @@
     };
 </script>
 
-<script src="{{ asset('js/admindashboard.js') }}"></script>
+<script src="{{ asset('js/admin/admindashboard.js') }}"></script>
 
 @endsection
 

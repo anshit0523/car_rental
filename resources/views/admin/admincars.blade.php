@@ -229,5 +229,5 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/admincars.js') }}"></script>
+<script src="{{ asset('js/admin/admincars.js') }}"></script>
 @endsection
