@@ -5,7 +5,7 @@
 
 <nav class="fixed lg:relative z-40 top-0 left-0 right-0 bg-white shadow-md border-b border-gray-200 lg:hidden">
     <div class="flex items-center justify-between p-4">
-        <h1 class="font-bold text-lg">🚗 CarRental </h1>
+        <h1 class="font-bold text-lg">Car Rental</h1>
         <button id="toggleSidebar" 
             class="p-2 hover:bg-gray-100 rounded-lg transition"
             aria-label="Toggle sidebar">
@@ -22,7 +22,7 @@
     
     <!-- Logo Section (Hidden on mobile, shown on desktop) -->
     <div class="hidden lg:flex p-5 items-center justify-between border-b border-gray-800">
-        <h1 class="font-bold text-lg text-white">🚗 CarRental </h1>
+        <h1 class="font-bold text-lg text-white">Car Rental</h1>
     </div>
 
     <!-- Navigation Menu -->

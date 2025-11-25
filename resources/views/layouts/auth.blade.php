@@ -43,7 +43,7 @@
 </head>
 <body class="d-flex align-items-center justify-content-center">
   <div class="auth-card">
-    <div class="auth-logo">🚗 CarRental</div>
+    <div class="auth-logo">Car Rental</div>
     @yield('content')
   </div>
 </body>
