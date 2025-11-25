@@ -102,161 +102,171 @@
             </div>
         </div>
 
-        <!-- Content Area -->
-        <div class="flex-1 p-6">
-            <div class="flex gap-6">
-                <!-- Main Content -->
-                <div class="flex-1">
-                    <!-- Title and Sort -->
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900">Available Cars</h2>
-                            <p class="text-gray-600 text-sm">{{ $totalCount }} cars found</p>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <form action="{{ route('user.browse') }}" method="GET" class="flex gap-2">
-                                <select name="sort_by" onchange="this.form.submit()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold">
+            <!-- Content Area -->
+            <div class="flex-1 p-4 lg:p-6 overflow-y-auto">
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <!-- Main Content -->
+                    <div class="flex-1">
+                        <!-- Title and Sort -->
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900">Available Cars</h2>
+                                <p class="text-gray-600 text-sm">{{ $totalCount }} cars found</p>
+                            </div>
+                            <form action="{{ route('user.browse') }}" method="GET" class="w-full sm:w-auto">
+                                <select name="sort_by" onchange="this.form.submit()"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold">
                                     <option value="price_low" @selected(request('sort_by') == 'price_low')>Sort by: Price (Low to High)</option>
                                     <option value="price_high" @selected(request('sort_by') == 'price_high')>Price (High to Low)</option>
                                     <option value="newest" @selected(request('sort_by') == 'newest')>Newest</option>
                                 </select>
                             </form>
                         </div>
-                    </div>
 
-                    <!-- Cars Grid -->
-                    <div class="grid grid-cols-3 gap-6 mb-8">
-                        @forelse($cars as $car)
-                            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                                <div class="h-48 bg-gray-300 flex items-center justify-center overflow-hidden">
-                                    @if($car->images && count(json_decode($car->images)) > 0)
-                                        @php
-                                            $images = json_decode($car->images);
-                                            $firstImage = $images[0];
-                                        @endphp
-                                        <img src="{{ asset('storage/' . $firstImage) }}" alt="{{ $car->model }}" class="w-full h-full object-cover">
-                                    @else
-                                        <div class="flex flex-col items-center justify-center text-white">
-                                            <i class="fas fa-image text-4xl mb-2"></i>
-                                            <p class="text-sm">No Image</p>
+                        <!-- Cars Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8">
+                            @forelse($cars as $car)
+                                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+                                    <!-- Car Image -->
+                                    <div class="h-48 bg-gray-300 flex items-center justify-center overflow-hidden">
+                                        @if($car->images && count(json_decode($car->images)) > 0)
+                                            @php
+                                                $images = json_decode($car->images);
+                                                $firstImage = $images[0];
+                                            @endphp
+                                            <img src="{{ asset('storage/' . $firstImage) }}" alt="{{ $car->model }}"
+                                                class="w-full h-full object-cover">
+                                        @else
+                                            <div class="flex flex-col items-center justify-center text-white">
+                                                <i class="fas fa-image text-4xl mb-2"></i>
+                                                <p class="text-sm">No Image</p>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <!-- Car Details -->
+                                    <div class="p-4">
+                                        <h3 class="text-lg font-bold text-gray-900 mb-3">
+                                            {{ $car->brand->name ?? 'N/A' }} {{ $car->model }}
+                                        </h3>
+
+                                        <div class="flex flex-wrap gap-2 text-sm text-gray-600 mb-4">
+                                            <span>🧑‍🤝‍🧑 {{ $car->seats }} Seats</span>
+                                            <span>⚙️ {{ $car->transmission?->type ?? 'Manual' }}</span>
+                                            <span>⛽ {{ $car->fuelType?->type ?? 'Petrol' }}</span>
                                         </div>
-                                    @endif
-                                </div>
-                                <div class="p-4">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <h3 class="text-lg font-bold text-gray-900">{{ $car->brand->name ?? 'N/A' }} {{ $car->model }}</h3>
-                                    </div>
-                                    <div class="flex items-center space-x-4 text-sm text-gray-600 mb-4">
-                                        <span>🧑‍🤝‍🧑 {{ $car->seats }} Seats</span>
-                                        <span>⚙️ {{ $car->transmission?->type ?? 'Manual' }}</span>
-                                        <span>⛽ {{ $car->fuelType?->type ?? 'Petrol' }}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <p class="text-2xl font-bold text-gray-900">&#8369;{{ number_format($car->price_per_day, ) }}</p>
-                                            <p class="text-gray-600 text-sm">/day</p>
+
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="text-2xl font-bold text-gray-900">
+                                                    &#8369;{{ number_format($car->price_per_day) }}
+                                                </p>
+                                                <p class="text-gray-600 text-sm">/day</p>
+                                            </div>
+                                            <a href="{{ route('user.car-detail', [
+                                                'id' => $car->id,
+                                                'pickup_date' => request('pickup_date'),
+                                                'return_date' => request('return_date'),
+                                                'time' => request('time')
+                                            ]) }}"
+                                                class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 font-semibold text-sm transition">
+                                                Rent Now
+                                            </a>
                                         </div>
-                                        <a href="{{ route('user.car-detail', 
-                                        ['id' => $car->id, 'pickup_date' => request('pickup_date'), 'return_date' => request('return_date'), 
-                                        'time' => request('time')]) }}" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 font-semibold text-sm">
-                                            Rent Now
-                                        </a>
                                     </div>
                                 </div>
-                            </div>
-                        @empty
-                            <div class="col-span-3 text-center py-12">
-                                <p class="text-gray-600 text-lg">No cars available matching your criteria</p>
-                            </div>
-                        @endforelse
+                            @empty
+                                <div class="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-12">
+                                    <p class="text-gray-600 text-lg">No cars available matching your criteria</p>
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="flex items-center justify-center">
+                            {{ $cars->links() }}
+                        </div>
                     </div>
 
-                    <!-- Pagination -->
-                    <div class="flex items-center justify-center">
-                        {{ $cars->links() }}
+                    <!-- Filters Sidebar (Right) -->
+                    <div class="w-full lg:w-64 bg-white rounded-lg shadow-md p-4 lg:p-6 h-fit">
+                        <h3 class="text-lg font-bold text-gray-900 mb-6">Filters</h3>
+
+                        <form action="{{ route('user.browse') }}" method="GET" id="filterForm" class="space-y-6">
+                            <!-- Price Range -->
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-3">Price Range</h4>
+                                <input type="range" name="max_price" min="0" max="8000"
+                                    value="{{ request('max_price', 8000) }}" class="w-full cursor-pointer"
+                                    onchange="document.getElementById('filterForm').submit()">
+                                <div class="flex items-center justify-between text-sm text-gray-600 mt-2">
+                                    <span>₱0</span>
+                                    <span>₱{{ request('max_price', 8000) }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Brand -->
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-3">Brand</h4>
+                                <div class="space-y-2 max-h-48 overflow-y-auto">
+                                    @foreach($brands as $brand)
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" name="brand_id[]" value="{{ $brand->id }}"
+                                                class="w-4 h-4 rounded cursor-pointer"
+                                                @checked(in_array($brand->id, (array) request('brand_id', [])))
+                                                onchange="document.getElementById('filterForm').submit()">
+                                            <span class="ml-3 text-gray-700">{{ $brand->name }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Fuel Type -->
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-3">Fuel Type</h4>
+                                <div class="space-y-2">
+                                    @foreach($fuelTypes as $fuelType)
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" name="fuel_type_id[]" value="{{ $fuelType->id }}"
+                                                class="w-4 h-4 rounded cursor-pointer"
+                                                @checked(in_array($fuelType->id, (array) request('fuel_type_id', [])))
+                                                onchange="document.getElementById('filterForm').submit()">
+                                            <span class="ml-3 text-gray-700">{{ $fuelType->type }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Transmission -->
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-3">Transmission</h4>
+                                <div class="space-y-2">
+                                    @foreach($transmissions as $transmission)
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" name="transmission_id[]" value="{{ $transmission->id }}"
+                                                class="w-4 h-4 rounded cursor-pointer"
+                                                @checked(in_array($transmission->id, (array) request('transmission_id', [])))
+                                                onchange="document.getElementById('filterForm').submit()">
+                                            <span class="ml-3 text-gray-700">{{ $transmission->type }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Clear Filters -->
+                            <a href="{{ route('user.browse') }}"
+                                class="w-full px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition font-semibold text-center block">
+                                Clear All Filters
+                            </a>
+                        </form>
                     </div>
-                </div>
-
-                <!-- Filters Sidebar (Right) -->
-                <div class="w-64 bg-white rounded-lg shadow-md p-6 h-fit">
-                    <h3 class="text-lg font-bold text-gray-900 mb-6">Filters</h3>
-
-                    <form action="{{ route('user.browse') }}" method="GET" id="filterForm">
-                        <!-- Price Range -->
-                        <div class="mb-6">
-                            <h4 class="font-semibold text-gray-900 mb-3">Price Range</h4>
-                            <input type="range" name="max_price" min="0" max="8000" value="{{ request('max_price', 500) }}" class="w-full" onchange="document.getElementById('filterForm').submit()">
-                            <div class="flex items-center justify-between text-sm text-gray-600 mt-2">
-                               
-                                <span>&#8369;{{ request('max_price', 8000) }}</span>
-                            </div>
-                        </div>
-
-                        <!-- Brand -->
-                        <div class="mb-6">
-                            <h4 class="font-semibold text-gray-900 mb-3">Brand</h4>
-                            <div class="space-y-2">
-                                @foreach($brands as $brand)
-                                    <label class="flex items-center">
-                                        <input type="checkbox" name="brand_id[]" value="{{ $brand->id }}" class="w-4 h-4 rounded" @checked(in_array($brand->id, (array)request('brand_id', []))) onchange="document.getElementById('filterForm').submit()">
-                                        <span class="ml-3 text-gray-700">{{ $brand->name }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- Fuel Type -->
-                        <div class="mb-6">
-                            <h4 class="font-semibold text-gray-900 mb-3">Fuel Type</h4>
-                            <div class="space-y-2">
-                                @foreach($fuelTypes as $fuelType)
-                                    <label class="flex items-center">
-                                        <input type="checkbox" name="fuel_type_id[]" value="{{ $fuelType->id }}" class="w-4 h-4 rounded" @checked(in_array($fuelType->id, (array)request('fuel_type_id', []))) onchange="document.getElementById('filterForm').submit()">
-                                        <span class="ml-3 text-gray-700">{{ $fuelType->type }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- Transmission -->
-                        <div class="mb-6">
-                            <h4 class="font-semibold text-gray-900 mb-3">Transmission</h4>
-                            <div class="space-y-2">
-                                @foreach($transmissions as $transmission)
-                                    <label class="flex items-center">
-                                        <input type="checkbox" name="transmission_id[]" value="{{ $transmission->id }}" class="w-4 h-4 rounded" @checked(in_array($transmission->id, (array)request('transmission_id', []))) onchange="document.getElementById('filterForm').submit()">
-                                        <span class="ml-3 text-gray-700">{{ $transmission->type }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- Clear Filters -->
-                        <a href="{{ route('user.browse') }}" class="w-full px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition font-semibold text-center block">
-                            Clear All Filters
-                        </a>
-                    </form>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+        </div>
+   
+@endsection
 
-<script>
-    document.getElementById('toggleSidebar').addEventListener('click', function() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('w-56');
-        sidebar.classList.toggle('w-0');
-    });
-
-    // Favorite toggle
-    document.querySelectorAll('.toggle-favorite').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const carId = this.dataset.carId;
-            // Add favorite functionality here
-            this.classList.toggle('fill-red-500');
-        });
-    });
-</script>
+@section('scripts')
+    <script src="{{ asset('js/user/userbrowsecar.js') }}"></script>
 @endsection

@@ -175,7 +175,7 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/adminbooking.js') }}"></script>
+<script src="{{ asset('js/admin/adminbooking.js') }}"></script>
 
 @endsection
 

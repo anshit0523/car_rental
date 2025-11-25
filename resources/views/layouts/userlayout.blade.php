@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
-    <title>@yield('title', 'CarRental Pro - User Dashboard')</title>
+    <title>@yield('title', 'CarRental - User Dashboard')</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,7 +33,9 @@
         @yield('custom-styles')
     </style>
 </head>
-<body>
+
+ 
+<body class="bg-gray-100 font-sans flex flex-col lg:flex-row min-h-screen">
     <!-- Flash Messages -->
     @if (session('success'))
         <div class="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-800 px-6 py-4 rounded-lg shadow-lg z-50" role="alert">
@@ -56,12 +58,18 @@
             </div>
         </div>
     @endif
-  @include('components.user_navbar')
    
+   
+    @include('components.user_navbar')
+
     <!-- Main Content -->
+    <main class="flex-1 overflow-auto w-full lg:ml-0"> 
+    
     @yield('content')
+ </main >
 
     <!-- Scripts -->
+    
     <script>
         // Auto-hide flash messages after 5 seconds
         document.addEventListener('DOMContentLoaded', function() {

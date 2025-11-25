@@ -79,10 +79,9 @@ Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         
-
-
        // Booking routes
         Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/create/{car}', [AdminBookingController::class, 'create'])->name('bookings.create');
@@ -104,6 +103,7 @@ Route::middleware(['auth', 'admin'])
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+
         Route::get('/revenue', [AdminDashboardController::class, 'revenue'])->name('revenue');
     });
 
