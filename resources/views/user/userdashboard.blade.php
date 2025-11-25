@@ -6,7 +6,7 @@
     <!-- Sidebar -->
     <aside id="sidebar" class="w-56 bg-white shadow-md transition-all duration-300 flex flex-col border-r border-gray-200">
         <div class="p-5 flex items-center justify-between border-b border-gray-200">
-            <h1 class="font-bold text-lg">🚗 CarRental Pro</h1>
+            <h1 class="font-bold text-lg">Car Rental</h1>
             <button id="toggleSidebar" class="p-2 hover:bg-gray-100 rounded-lg transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
