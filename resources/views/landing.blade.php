@@ -16,7 +16,7 @@
             <a class="navbar-brand fw-bold" href="#">Car Rental</a>
             <div class="d-flex">
                 <a href="{{ route('login') }}" class="btn btn-outline-light me-2">Login</a>
-                <a href="{{ route('register') }}" class="btn btn-warning">Register</a>
+                <a href="{{ route('register') }}" class="btn btn-primary">Register</a>
             </div>
         </div>
     </nav>
