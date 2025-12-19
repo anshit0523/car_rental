@@ -13,10 +13,10 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#">CarRental</a>
+            <a class="navbar-brand fw-bold" href="#">Car Rental</a>
             <div class="d-flex">
                 <a href="{{ route('login') }}" class="btn btn-outline-light me-2">Login</a>
-                <a href="{{ route('register') }}" class="btn btn-warning">Register</a>
+                <a href="{{ route('register') }}" class="btn btn-primary">Register</a>
             </div>
         </div>
     </nav>
@@ -26,7 +26,7 @@
         <div class="container">
             <h1 class="display-4 fw-bold">Rent Your Dream Car Today</h1>
             <p class="lead">Flexible rentals, real-time availability, and hassle-free booking.</p>
-            <a href="#available-cars" class="btn btn-warning btn-lg mt-3">Browse Cars</a>
+            <a href="#available-cars" class="btn btn-primary btn-lg mt-3">Browse Cars</a>
         </div>
     </section>
 
@@ -65,7 +65,7 @@
                                     </small>
                                 </p>
                                 <p class="fw-bold text-dark mb-3">₱{{ number_format($car->price_per_day, 2) }} / day</p>
-                                <a href="{{ route('login') }}" class="btn btn-warning w-100">
+                                <a href="{{ route('login') }}" class="btn btn-primary w-100">
                                     <i class="fas fa-calendar-check"></i> Book Now
                                 </a>
                             </div>

@@ -3,7 +3,58 @@
 
 @section('content')
 <div class="flex h-screen bg-gray-50">
-   
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-56 bg-white shadow-md transition-all duration-300 flex flex-col border-r border-gray-200">
+        <div class="p-5 flex items-center justify-between border-b border-gray-200">
+            <h1 class="font-bold text-lg">Car Rental</h1>
+            <button id="toggleSidebar" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <nav class="flex-1 p-3 space-y-2">
+            <a href="{{ route('user.dashboard') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-black text-white transition">
+                <span class="text-lg">📊</span>
+                <span class="menu-label">Dashboard</span>
+            </a>
+            <a href="{{ route('user.rentals') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                <span class="text-lg">🚗</span>
+                <span class="menu-label">My Rentals</span>
+            </a>
+            <a href="{{ route('user.browse') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                <span class="text-lg">🔍</span>
+                <span class="menu-label">Browse Cars</span>
+            </a>
+            <a href="{{ route('user.history') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                <span class="text-lg">📜</span>
+                <span class="menu-label">Rental History</span>
+            </a>
+            <a href="{{ route('user.payments') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                <span class="text-lg">💳</span>
+                <span class="menu-label">Payments</span>
+            </a>
+            <a href="{{ route('user.profile') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                <span class="text-lg">👤</span>
+                <span class="menu-label">Profile</span>
+            </a>
+            <a href="{{ route('user.settings') }}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                <span class="text-lg">⚙️</span>
+                <span class="menu-label">Settings</span>
+            </a>
+        </nav>
+
+        <div class="p-3 border-t border-gray-200">
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                    <span class="text-lg">🚪</span>
+                    <span class="menu-label">Logout</span>
+                </button>
+            </form>
+        </div>
+    </aside>
 
     <!-- Main Content -->
     <main class="flex-1 overflow-auto">
