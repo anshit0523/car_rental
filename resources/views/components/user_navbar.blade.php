@@ -33,7 +33,7 @@
             <span class="menu-label">Dashboard</span>
         </a>
 
-        <a href="{{ route('user.rentals') }}"
+        <a href="{{ route('user.rentals.index') }}"
             class="{{ $baseLinkClass }} {{ request()->routeIs('user.rentals') ? 'bg-black text-white' : 'text-gray-300 hover:bg-gray-800' }}">
             <span class="text-lg flex-shrink-0">🚗</span>
             <span class="menu-label">My Rentals</span>

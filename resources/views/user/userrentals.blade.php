@@ -27,14 +27,34 @@
         @endif
 
          <!-- Tabs -->
-        <div class="bg-white border-b border-gray-200 px-6">
-            <div class="flex space-x-1">
-                <a href="#" class="px-6 py-4 font-medium text-blue-600 border-b-2 border-blue-600 transition">Active Rentals</a>
-                <a href="#" class="px-6 py-4 font-medium text-gray-500 hover:text-gray-700 transition">Upcoming</a>
-                <a href="#" class="px-6 py-4 font-medium text-gray-500 hover:text-gray-700 transition">Completed</a>
-                <a href="#" class="px-6 py-4 font-medium text-gray-500 hover:text-gray-700 transition">Cancelled</a>
-            </div>
-        </div>
+       <div class="bg-white border-b border-gray-200 px-6">
+    <div class="flex space-x-1">
+        <a href="{{ route('user.rentals.active') }}"
+           class="px-6 py-4 font-medium border-b-2 transition
+           {{ request()->routeIs('user.rentals.active') ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
+            Active Rentals
+        </a>
+
+        <a href="{{ route('user.rentals.upcoming') }}"
+           class="px-6 py-4 font-medium border-b-2 transition
+           {{ request()->routeIs('user.rentals.upcoming') ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
+            Upcoming
+        </a>
+
+        <a href="{{ route('user.rentals.completed') }}"
+           class="px-6 py-4 font-medium border-b-2 transition
+           {{ request()->routeIs('user.rentals.completed') ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
+            Completed
+        </a>
+
+        <a href="{{ route('user.rentals.cancelled') }}"
+           class="px-6 py-4 font-medium border-b-2 transition
+           {{ request()->routeIs('user.rentals.cancelled') ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
+            Cancelled
+        </a>
+    </div>
+</div>
+
         
         <!-- Rentals Content -->
         <div class="flex-1 p-6 space-y-6">
@@ -47,10 +67,14 @@
     $firstImage = $images[0] ?? null;
 @endphp
 
-<img 
-    src="{{ $firstImage ? asset('storage/' . $firstImage) : 'https://images.unsplash.com/photo-1567818735868-e71b99932e29?w=400&h=300&fit=crop' }}" 
-    alt="{{ $booking->car->model }}" 
-    class="w-75 h-60 object-cover">
+<div class="w-[450px] h-[236px] overflow-hidden rounded">
+    <img
+        src="{{ $firstImage ? asset('storage/' . $firstImage) : 'https://images.unsplash.com/photo-1567818735868-e71b99932e29?w=400&h=300&fit=crop' }}"
+        alt="{{ $booking->car->model }}"
+        class="w-full h-full object-cover"
+    >
+</div>
+
 
                         <!-- Content -->
                         <div class="flex-1 p-5 flex flex-col justify-between">
@@ -74,8 +98,9 @@
                                                 {{ $booking->status->name }}
                                             </span>
                                         </div>
-                                       <p class="text-gray-900 text-xs mb-12">
-    {{ $booking->car->fuelType->type }} • {{ $booking->car->transmission->type }} </p>
+                                       <p class="text-gray-900 text-xs mb-12"> 
+                                        {{ $booking->car->fuelType->type }} • {{ $booking->car->transmission->type }} 
+                                       </p>
 
                                     </div>
                                     <div class="text-right " >

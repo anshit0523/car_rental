@@ -173,7 +173,6 @@ public function processPayment(Request $request)
 }
 
 
-
 public function confirmation($id)
 {
     $booking = Booking::with(['car', 'user', 'payments', 'receipts'])->findOrFail($id);
@@ -195,17 +194,39 @@ public function confirmation($id)
     /**
      * Show my bookings list
      */
-    public function myBookings()
+  public function myActiveBooking()
+    {
+        return $this->getBookingsByStatus('Active');
+    }
+
+    public function upcoming()
+    {
+        return $this->getBookingsByStatus('Confirmed');
+    }
+
+    public function completed()
+    {
+        return $this->getBookingsByStatus('Completed');
+    }
+
+    public function cancelled()
+    {
+        return $this->getBookingsByStatus('Cancelled');
+    }
+
+    private function getBookingsByStatus(string $status)
     {
         $bookings = Booking::where('user_id', auth()->id())
-            ->with(['car', 'status'])
+            ->whereHas('status', function ($q) use ($status) {
+                $q->where('name', $status);
+            })
+            ->with(['car.brand', 'car.fuelType', 'car.transmission', 'status'])
             ->orderBy('pickup_at', 'desc')
             ->paginate(10);
 
-        return view('user.userrentals', [
-            'bookings' => $bookings,
-        ]);
+        return view('user.userrentals', compact('bookings', 'status'));
     }
+ 
 
     /**
      * Cancel a booking

@@ -41,9 +41,16 @@ Route::middleware(['auth','user'])
     // Booking routes
     Route::get('/car/{id}/detail', [UserCarBrowseController::class, 'show'])->name('cardetail');
     Route::post('/booking/create', [UserBookingController::class, 'store'])->name('booking.create');
+
+    // Booking routes for different statuses
+     Route::get('/rentals', function () {return redirect()->route('user.rentals.active');})->name('rentals.index');
+    Route::get('/active', [UserBookingController::class, 'myActiveBooking']) ->name('rentals.active');
+    Route::get('/upcoming', [UserBookingController::class, 'upcoming'])->name('rentals.upcoming');
+    Route::get('/completed', [UserBookingController::class, 'completed'])->name('rentals.completed');
+    Route::get('/cancelled', [UserBookingController::class, 'cancelled'])->name('rentals.cancelled');
     
     Route::get('/payments', [UserBookingController::class, 'showPayment'])->name('payments');  
-   Route::post('/payment/process', [UserBookingController::class, 'processPayment'])->name('payment.process'); 
+    Route::post('/payment/process', [UserBookingController::class, 'processPayment'])->name('payment.process'); 
   
  // PayPal routes
     Route::get('/paypal/payment/{booking_id}', [App\Http\Controllers\PayPalPaymentController::class, 'createPayment'])->name('paypal.payment');

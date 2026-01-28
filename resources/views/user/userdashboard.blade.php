@@ -1,4 +1,4 @@
-<!-- resources/views/user/dashboard.blade.php -->
+
 @extends('layouts.userlayout')
 
 @section('content')
