@@ -86,8 +86,26 @@ public function calendar(Request $request)
         }
 
         // Get cars with relationships
-        $query = Car::with(['brand', 'transmission', 'fuelType', 'bookings.status'])
-            ->where('active', true);
+    $query = Car::with([
+    'brand',
+    'transmission',
+    'fuelType',
+    'bookings' => function ($q) use ($startDate, $endDate) {
+        $q->whereHas('status', function ($s) {
+            $s->whereIn('name', ['confirmed', 'reserved']);
+        })
+        ->where(function ($date) use ($startDate, $endDate) {
+            $date->whereBetween('pickup_at', [$startDate, $endDate])
+                 ->orWhereBetween('return_at', [$startDate, $endDate])
+                 ->orWhere(function ($overlap) use ($startDate, $endDate) {
+                     $overlap->where('pickup_at', '<=', $startDate)
+                             ->where('return_at', '>=', $endDate);
+                 });
+        })
+        ->with('status');
+    }
+])->where('active', true);
+
 
         // Apply filters
         if ($request->filled('brand_id')) {
