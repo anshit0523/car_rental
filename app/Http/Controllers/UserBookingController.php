@@ -47,15 +47,12 @@ class UserBookingController extends Controller
 
             // Check for conflicting bookings
             $existingBooking = Booking::where('car_id', $validated['car_id'])
+              
+                ->whereIn('status_id', [1, 2,6]) // reserved,active,Confirmed
                 ->where(function ($query) use ($pickupDateTime, $returnDateTime) {
-                    $query->whereBetween('pickup_at', [$pickupDateTime, $returnDateTime])
-                        ->orWhereBetween('return_at', [$pickupDateTime, $returnDateTime])
-                        ->orWhere(function ($q) use ($pickupDateTime, $returnDateTime) {
-                            $q->where('pickup_at', '<=', $pickupDateTime)
-                              ->where('return_at', '>=', $returnDateTime);
-                        });
-                })
-                ->whereIn('status_id', [1, 2])
+        $query->where('pickup_at', '<', $returnDateTime)
+              ->where('return_at', '>', $pickupDateTime);
+    })
                 ->exists();
 
             if ($existingBooking) {

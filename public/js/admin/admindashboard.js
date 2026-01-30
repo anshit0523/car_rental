@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // 🥧 Status Chart
+        //  Status Chart
         const statusCtx = document.getElementById('statusChart');
         if (statusCtx) {
             new Chart(statusCtx, {
