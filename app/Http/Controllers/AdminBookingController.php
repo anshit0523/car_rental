@@ -8,6 +8,7 @@ use App\Models\Status;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Http\JsonResponse;
 
 class AdminBookingController extends Controller
 {
@@ -28,7 +29,7 @@ class AdminBookingController extends Controller
             });
         }
 
-        // 🧭 Filter by status
+        //  Filter by status
         if ($request->filled('status_id')) {
             $query->where('status_id', $request->status_id);
         }
@@ -139,5 +140,36 @@ public function calendar(Request $request)
             'view' => $view,
         ]);
     }
+
+
+ public function showJson(Booking $booking): JsonResponse
+{
+    try {
+        $booking->load('user:id,name,email', 'car:id,model,brand_id', 'car.brand:id,name', 'status:id,name');
+
+        return response()->json([
+            'success' => true,
+            'id' => $booking->id,
+            'status' => $booking->status->name,
+            'pickup_at' => $booking->pickup_at?->format('M d, Y h:i A') ?? 'N/A',
+            'return_at' => $booking->return_at?->format('M d, Y h:i A') ?? 'N/A',
+            'total_price' => number_format($booking->total_price ?? 0, 2),
+            'user' => [
+                'id' => $booking->user->id,
+                'name' => $booking->user->name,
+                'email' => $booking->user->email,
+            ],
+            'car' => [
+                'name' => ($booking->car->brand->name ?? 'Unknown') . ' ' . $booking->car->model,
+            ],
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
 
 }

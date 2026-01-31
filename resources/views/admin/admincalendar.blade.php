@@ -139,9 +139,9 @@
                                             // Format the current date to Y-m-d for comparison
                                             $currentDate = \Carbon\Carbon::parse($date['full'])->format('Y-m-d');
                                             $cellBooking = null;
-                                            $bgColor = '';
-                                            $icon = '';
-                                            $label = '';
+                                            $bgColor = 'bg-emerald-100';
+                                            $icon = 'fa-check-circle';
+                                            $label = 'Available';
 
                                             foreach ($car->bookings as $b) {
                                                 $status = strtolower($b->status->name);
@@ -151,16 +151,16 @@
                                                 $returnDate = \Carbon\Carbon::parse($b->return_at)->format('Y-m-d');
                                                 
                                                 // Check if the current date falls within the booking period
-                                                if (in_array($status, ['confirmed', 'reserved']) &&
+                                                if (in_array($status, ['confirmed', 'reserved', 'pending', 'approved']) &&
                                                     $pickupDate <= $currentDate &&
                                                     $returnDate >= $currentDate) {
                                                     $cellBooking = $b;
                                                     
-                                                    if ($status === 'confirmed') {
+                                                    if (in_array($status, ['confirmed', 'approved'])) {
                                                         $bgColor = 'bg-red-500';
                                                         $icon = 'fa-lock';
                                                         $label = 'Booked';
-                                                    } elseif ($status === 'reserved') {
+                                                    } elseif (in_array($status, ['reserved', 'pending'])) {
                                                         $bgColor = 'bg-amber-500';
                                                         $icon = 'fa-hourglass-half';
                                                         $label = 'Reserved';
@@ -170,11 +170,11 @@
                                             }
                                         @endphp
 
-                                        @if($cellBooking)
-                                            <div class="inline-flex items-center gap-1 px-3 py-2 {{ $bgColor }} text-white rounded-lg text-xs font-semibold shadow-md hover:shadow-lg transition transform hover:scale-105">
+                                        @if($cellBooking && in_array(strtolower($cellBooking->status->name), ['confirmed', 'reserved', 'pending', 'approved']))
+                                            <button onclick="openBookingModal({{ $cellBooking->id }})" class="inline-flex items-center gap-1 px-3 py-2 {{ $bgColor }} text-white rounded-lg text-xs font-semibold shadow-md hover:shadow-lg transition transform hover:scale-105 cursor-pointer">
                                                 <i class="fas {{ $icon }} text-xs"></i>
                                                 <span>{{ $label }}</span>
-                                            </div>
+                                            </button>
                                         @else
                                             <div class="inline-flex items-center gap-1 px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-semibold">
                                                 <i class="fas fa-check-circle"></i>
@@ -219,6 +219,52 @@
 </div>
 @endsection
 
+<!-- Booking Details Modal -->
+<div id="bookingModal"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 animate-fade-in">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b">
+            <h2 class="text-lg font-bold text-gray-800">
+                Booking Details
+            </h2>
+            <button onclick="closeBookingModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div id="bookingModalContent" class="px-6 py-4 space-y-4">
+            <!-- Dynamic content will be injected here -->
+            <div class="text-center text-gray-400">
+                Loading booking details...
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t flex justify-end gap-3">
+            <button onclick="closeBookingModal()"
+                    class="px-4 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">
+                Close
+            </button>
+
+            <!-- These buttons will be toggled later -->
+            <button id="confirmBtn"
+                    class="hidden px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">
+                Confirm Booking
+            </button>
+
+            <button id="cancelBtn"
+                    class="hidden px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700">
+                Cancel Booking
+            </button>
+        </div>
+    </div>
+</div>
+
+
 <script>
 function refreshCalendar() {
     fetch(window.location.href, {
@@ -239,6 +285,79 @@ function refreshCalendar() {
     .catch(err => console.error('Calendar refresh failed', err));
 }
 
-// 🔁 Auto-refresh every 30 seconds
+// Auto-refresh every 30 seconds
 setInterval(refreshCalendar, 30000);
+
+
+function openBookingModal(bookingId) {
+    const modal = document.getElementById('bookingModal');
+    const content = document.getElementById('bookingModalContent');
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    content.innerHTML = `
+        <div class="text-center text-gray-400">
+            Loading booking details...
+        </div>
+    `;
+
+    fetch(`/admin/bookings/${bookingId}`)
+        .then(res => res.json())
+        .then(data => {
+            const statusBadge =
+                data.status === 'Confirmed'
+                    ? 'bg-red-500'
+                    : 'bg-amber-500';
+
+            content.innerHTML = `
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Status</span>
+                        <span class="px-3 py-1 rounded-full text-white ${statusBadge}">
+                            ${data.status}
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Car</span>
+                        <span class="font-semibold">${data.car.name}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Customer</span>
+                        <span>${data.user.name}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Email</span>
+                        <span>${data.user.email}</span>
+                    </div>
+
+                    <div class="border-t pt-3">
+                        <p><strong>Pickup:</strong> ${data.pickup_at}</p>
+                        <p><strong>Return:</strong> ${data.return_at}</p>
+                    </div>
+
+                    <div class="border-t pt-3 text-right font-bold text-lg">
+                        ₱${data.total_price}
+                    </div>
+                </div>
+            `;
+        })
+        .catch(() => {
+            content.innerHTML = `
+                <div class="text-red-500 text-center">
+                    Failed to load booking details.
+                </div>
+            `;
+        });
+}
+
+function closeBookingModal() {
+    const modal = document.getElementById('bookingModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
 </script>

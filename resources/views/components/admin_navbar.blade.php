@@ -46,6 +46,12 @@
         <span>Revenue</span>
     </a>
 
+    <a href="{{ route('admin.payment-settings.edit') }}"
+       class="{{ $baseLinkClass }} {{ request()->routeIs('admin.payment-settings*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+        <i class="fas fa-credit-card w-5"></i>
+        <span>Payment Settings</span>
+    </a>
+
     <form method="POST" action="{{ route('logout') }}">
         @csrf
         <button type="submit"
@@ -113,6 +119,12 @@
        class="{{ $baseLinkClass }} {{ request()->routeIs('admin.revenue*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
         <i class="fas fa-chart-bar w-5"></i>
         <span>Revenue</span>
+    </a>
+
+    <a href="{{ route('admin.payment-settings.edit') }}"
+       class="{{ $baseLinkClass }} {{ request()->routeIs('admin.payment-settings*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+        <i class="fas fa-credit-card w-5"></i>
+        <span>Payment Settings</span>
     </a>
 
     <form method="POST" action="{{ route('logout') }}">
