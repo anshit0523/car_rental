@@ -9,6 +9,8 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserBookingController;
 use App\Http\Controllers\AdminBookingController;
+
+use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\PayPalPaymentController;
 use App\Http\Controllers\UserCarBrowseController;
 use App\Http\Controllers\UserDashboardController;
@@ -116,13 +118,20 @@ Route::middleware(['auth', 'admin'])
         Route::get('/revenue', [AdminDashboardController::class, 'revenue'])->name('revenue');
 
         // Payment Settings routes
-
-        
         Route::get('/payment-settings', [AdminPaymentSettingsContoller ::class, 'edit'])
             ->name('payment-settings.edit');
 
         Route::put('/payment-settings', [AdminPaymentSettingsContoller ::class, 'update'])
             ->name('payment-settings.update');
+
+            Route::get('/payments', [AdminPaymentController::class, 'index'])
+            ->name('payments.index');
+        
+        Route::get('/payments/{payment}', [AdminPaymentController::class, 'show'])
+            ->name('payments.show');
+        
+        Route::get('/payments/export/csv', [AdminPaymentController::class, 'export'])
+            ->name('payments.export');
     });
 
 

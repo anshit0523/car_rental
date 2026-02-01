@@ -46,9 +46,17 @@
         <span>Revenue</span>
     </a>
 
+    <!-- ✅ NEW: Payments Dashboard -->
+    <a href="{{ route('admin.payments.index') }}"
+       class="{{ $baseLinkClass }} {{ request()->routeIs('admin.payments*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+        <i class="fas fa-credit-card w-5"></i>
+        <span>Payments</span>
+    </a>
+
+    <!-- Payment Settings -->
     <a href="{{ route('admin.payment-settings.edit') }}"
        class="{{ $baseLinkClass }} {{ request()->routeIs('admin.payment-settings*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
-        <i class="fas fa-credit-card w-5"></i>
+        <i class="fas fa-cog w-5"></i>
         <span>Payment Settings</span>
     </a>
 
@@ -121,9 +129,17 @@
         <span>Revenue</span>
     </a>
 
+    <!-- ✅ NEW: Payments Dashboard -->
+    <a href="{{ route('admin.payments.index') }}"
+       class="{{ $baseLinkClass }} {{ request()->routeIs('admin.payments*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+        <i class="fas fa-credit-card w-5"></i>
+        <span>Payments</span>
+    </a>
+
+    <!-- Payment Settings -->
     <a href="{{ route('admin.payment-settings.edit') }}"
        class="{{ $baseLinkClass }} {{ request()->routeIs('admin.payment-settings*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
-        <i class="fas fa-credit-card w-5"></i>
+        <i class="fas fa-cog w-5"></i>
         <span>Payment Settings</span>
     </a>
 

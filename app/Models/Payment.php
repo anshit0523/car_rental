@@ -31,14 +31,13 @@ class Payment extends Model
 
     public function paymentMethod()
     {
-        return $this->belongsTo(PaymentMethod::class);
+        return $this->belongsTo(PaymentMethods::class, 'payment_method_id');
     }
 
     public function paymentStatus()
     {
-        return $this->belongsTo(PaymentStatus::class);
+        return $this->belongsTo(PaymentStatus::class, 'payment_status_id');
     }
-
     public function receipt()
     {
         return $this->hasOne(Receipt::class);
