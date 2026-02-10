@@ -221,7 +221,8 @@
 
 <!-- Booking Details Modal -->
 <div id="bookingModal"
-     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+     class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm"
+     style="display: none;">
 
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 animate-fade-in">
 
@@ -293,8 +294,9 @@ function openBookingModal(bookingId) {
     const modal = document.getElementById('bookingModal');
     const content = document.getElementById('bookingModalContent');
 
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    // Make modal visible
+    modal.style.display = 'flex';
+    modal.classList.add('items-center', 'justify-center');
 
     content.innerHTML = `
         <div class="text-center text-gray-400">
@@ -356,8 +358,14 @@ function openBookingModal(bookingId) {
 
 function closeBookingModal() {
     const modal = document.getElementById('bookingModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
+    modal.style.display = 'none';
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('bookingModal');
+    modal.style.display = 'none';
+
+});
+
 
 </script>
