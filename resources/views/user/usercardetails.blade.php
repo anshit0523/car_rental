@@ -557,6 +557,17 @@
         }
     });
 
+    // Auto-fill return time when pickup time is selected
+    document.querySelector('input[name="pickup_time"]').addEventListener("change", function () {
+        const returnTimeInput = document.querySelector('input[name="return_time"]');
+        
+        // Auto-fill return time with same pickup time
+        if (this.value) {
+            returnTimeInput.value = this.value;
+            console.log("Return time auto-filled with:", this.value);
+        }
+    });
+
     function handleBookingSubmit(e) {
         e.preventDefault();
         
