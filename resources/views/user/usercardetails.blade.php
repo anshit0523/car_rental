@@ -358,16 +358,11 @@
         document.getElementById('total-price-input').value = total.toFixed(2);
     }
 
-    document.querySelector('input[name="pickup_date"]').addEventListener('change', calculatePrice);
-    document.querySelector('input[name="return_date"]').addEventListener('change', calculatePrice);
-
     document.getElementById('toggleSidebar').addEventListener('click', function() {
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('w-56');
         sidebar.classList.toggle('w-0');
     });
-
-    window.addEventListener('load', calculatePrice);
 
     // Auto-check dates and show modal when unavailable dates are selected
     let unavailableDates = [];
@@ -493,17 +488,63 @@
         });
     }
 
-    // Check dates when pickup date changes
+    // Prevent selecting previous dates
+    function setMinDate() {
+        const pickupInput = document.getElementById("pickup_date");
+        const returnInput = document.getElementById("return_date");
+        
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const minDate = `${year}-${month}-${day}`;
+        
+        // Set minimum date to today
+        pickupInput.setAttribute('min', minDate);
+        returnInput.setAttribute('min', minDate);
+        
+        console.log("Min date set to:", minDate);
+    }
+
+    // Call this when page loads
+    window.addEventListener('load', function() {
+        setMinDate();
+        calculatePrice();
+    });
+
+    // Also prevent manual input of previous dates
     document.getElementById("pickup_date").addEventListener("change", function () {
+        const pickupDate = new Date(this.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (pickupDate < today) {
+            alert('You cannot select previous dates. Please select today or a future date.');
+            this.value = '';
+            return;
+        }
+        
         checkDatesAndShowModal();
         calculatePrice();
     });
 
-    // Check dates when return date changes
     document.getElementById("return_date").addEventListener("change", function () {
+        const pickupInput = document.getElementById("pickup_date");
+        const returnDate = new Date(this.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (returnDate < today) {
+            alert('You cannot select previous dates. Please select today or a future date.');
+            this.value = '';
+            return;
+        }
+        
         checkDatesAndShowModal();
         calculatePrice();
         
+        // Auto-fill return time with default time (same as pickup or 10:00 AM)
         const returnTimeInput = document.querySelector('input[name="return_time"]');
         const pickupTimeInput = document.querySelector('input[name="pickup_time"]');
         
