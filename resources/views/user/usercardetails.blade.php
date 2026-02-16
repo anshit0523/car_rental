@@ -1,6 +1,29 @@
 @extends('layouts.userlayout')
 
 @section('content')
+
+<style>
+.red-dot {
+    display: block;
+    width: 6px;
+    height: 6px;
+    background: #ef4444;
+    border-radius: 50%;
+    margin: 0 auto;
+    margin-top: 2px;
+}
+
+.green-dot {
+    display: block;
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+    margin: 0 auto;
+    margin-top: 2px;
+}
+</style>
+
 <div class="flex h-screen bg-white">
     <!-- Sidebar -->
     
@@ -201,13 +224,13 @@
                             </div>
                         @endif
 
-                        <form action="{{ route('user.booking.create') }}" method="POST">
+                        <form action="{{ route('user.booking.create') }}" method="POST" id="bookingForm" onsubmit="handleBookingSubmit(event)">
                             @csrf
                             <input type="hidden" name="car_id" value="{{ $car->id }}">
 
                             <div class="mb-4">
                                 <label class="text-xs font-semibold text-gray-700 mb-1 block">Pickup Date</label>
-                                <input type="date" name="pickup_date" value="{{ request('pickup_date') }}" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" required>
+                                <input type="date" id="pickup_date" name="pickup_date" value="{{ request('pickup_date') }}" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" required>
                             </div>
 
                             <div class="mb-4">
@@ -217,7 +240,7 @@
 
                             <div class="mb-4">
                                 <label class="text-xs font-semibold text-gray-700 mb-1 block">Return Date</label>
-                                <input type="date" name="return_date" value="{{ request('return_date') }}"class="w-full border border-gray-300 rounded px-2 py-2 text-xs" required>
+                               <input type="date" id="return_date" name="return_date" value="{{ request('return_date') }}" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" required>
                             </div>
 
                             <div class="mb-6">
@@ -270,6 +293,34 @@
                         </form>
                     </div>
                 </div>
+
+                <!-- Modal -->
+                <div id="unavailableModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div class="bg-white rounded-lg shadow-xl p-6 w-96">
+                        <h2 class="text-lg font-bold text-red-600 mb-2 text-center">
+                            Selected Dates Not Available
+                        </h2>
+                        <p class="text-sm text-gray-600 mb-4 text-center">
+                            Some of the selected dates are already booked.
+                        </p>
+                        
+                        <!-- Conflicting Dates Display -->
+                        <div id="conflictingDatesContainer" class="mb-4 p-3 bg-red-50 border border-red-200 rounded max-h-40 overflow-y-auto">
+                            <p class="text-xs font-semibold text-red-700 mb-2">Booked dates in your selection:</p>
+                            <div id="conflictingDatesList" class="text-xs text-red-600 space-y-1">
+                                <!-- Conflicting dates will be inserted here -->
+                            </div>
+                        </div>
+                        
+                        <p class="text-xs text-gray-600 text-center mb-4">
+                            Please choose different dates.
+                        </p>
+                        <button onclick="closeUnavailableModal()"
+                                class="w-full bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
+                            Okay
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -317,5 +368,283 @@
     });
 
     window.addEventListener('load', calculatePrice);
+
+    // Auto-check dates and show modal when unavailable dates are selected
+    let unavailableDates = [];
+
+    // Fetch unavailable dates once on page load
+    fetch(`{{ route('user.unavailable-dates', $car->id) }}`)
+        .then(res => res.json())
+        .then(data => {
+            unavailableDates = data;
+            console.log("Unavailable dates loaded:", unavailableDates);
+        })
+        .catch(error => console.error('Error fetching unavailable dates:', error));
+
+    // Function to check if dates have conflicts
+    function hasConflictInRange(pickup, returnDate) {
+        if (!pickup || !returnDate) return false;
+
+        let start = new Date(pickup);
+        const end = new Date(returnDate);
+
+        while (start <= end) {
+            const formatted = start.toISOString().split('T')[0];
+            if (unavailableDates.includes(formatted)) {
+                return true;
+            }
+            start.setDate(start.getDate() + 1);
+        }
+        return false;
+    }
+
+    let lastConflictingRange = null;  // Track last shown conflict
+
+    // Check dates automatically when either date changes
+    function checkDatesAndShowModal() {
+        const pickupInput = document.getElementById("pickup_date");
+        const returnInput = document.getElementById("return_date");
+        const pickup = pickupInput.value;
+        const returnDateVal = returnInput.value;
+
+        if (!pickup || !returnDateVal) {
+            // Don't show modal if either date is empty
+            closeUnavailableModal();
+            lastConflictingRange = null;
+            return;
+        }
+
+        if (hasConflictInRange(pickup, returnDateVal)) {
+            // Create a unique key for this date range
+            const currentRange = pickup + "_" + returnDateVal;
+            
+            // Only show/update modal if the range is different from last time
+            if (currentRange !== lastConflictingRange) {
+                showUnavailableModal();
+                displayConflictingDates();
+                lastConflictingRange = currentRange;
+            }
+        } else {
+            // Close modal if dates become available
+            closeUnavailableModal();
+            lastConflictingRange = null;
+        }
+    }
+
+    // Check dates when pickup date changes
+    document.getElementById("pickup_date").addEventListener("change", function () {
+        checkDatesAndShowModal();
+        calculatePrice();
+    });
+
+    // Check dates when return date changes
+    document.getElementById("return_date").addEventListener("change", function () {
+        checkDatesAndShowModal();
+        calculatePrice();
+        
+        // Auto-fill return time with default time (same as pickup or 10:00 AM)
+        const returnTimeInput = document.querySelector('input[name="return_time"]');
+        const pickupTimeInput = document.querySelector('input[name="pickup_time"]');
+        
+        if (returnTimeInput.value === '') {
+            // If return time is empty, set it to pickup time or 10:00 AM
+            if (pickupTimeInput.value) {
+                returnTimeInput.value = pickupTimeInput.value;
+            } else {
+                returnTimeInput.value = '10:00';
+            }
+        }
+    });
+
+// Handle booking form submission with AJAX
+function handleBookingSubmit(e) {
+    e.preventDefault();
+    
+    const pickupInput = document.getElementById("pickup_date");
+    const returnInput = document.getElementById("return_date");
+    const pickup = pickupInput.value;
+    const returnDateVal = returnInput.value;
+
+    if (!pickup || !returnDateVal) {
+        alert('Please select both pickup and return dates');
+        return;
+    }
+
+    // Fetch unavailable dates to check locally
+    fetch(`{{ route('user.unavailable-dates', $car->id) }}`)
+        .then(res => res.json())
+        .then(unavailableDates => {
+            // Check dates on client side
+            let start = new Date(pickup);
+            const end = new Date(returnDateVal);
+            let hasConflict = false;
+
+            while (start <= end) {
+                const formatted = start.toISOString().split('T')[0];
+                if (unavailableDates.includes(formatted)) {
+                    hasConflict = true;
+                    break;
+                }
+                start.setDate(start.getDate() + 1);
+            }
+
+            if (hasConflict) {
+                showUnavailableModal();
+                return;
+            }
+
+            // No conflict, submit form via AJAX
+            submitBookingForm();
+        })
+        .catch(error => {
+            console.error('Error checking dates:', error);
+            submitBookingForm(); // Fall back to regular submission
+        });
+}
+
+function submitBookingForm() {
+    const form = document.getElementById("bookingForm");
+    const formData = new FormData(form);
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Booking successful, redirect to payment
+            window.location.href = data.redirect;
+        } else if (data.error_type === 'unavailable_dates') {
+            // Show modal for unavailable dates
+            showUnavailableModal();
+        } else {
+            // Show other errors
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Booking error:', error);
+        alert('An error occurred. Please try again.');
+    });
+}
+
+function showUnavailableModal() {
+    const modal = document.getElementById("unavailableModal");
+    
+    // Ensure modal is visible
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    
+    // Force a small delay to ensure DOM is ready
+    setTimeout(function() {
+        displayConflictingDates();
+    }, 10);
+}
+
+function closeUnavailableModal() {
+    const modal = document.getElementById("unavailableModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+function displayConflictingDates() {
+    const pickupInput = document.getElementById("pickup_date");
+    const returnInput = document.getElementById("return_date");
+    const pickup = pickupInput.value;
+    const returnDateVal = returnInput.value;
+
+    if (!pickup || !returnDateVal) return;
+
+    // Get conflicting dates
+    const conflictingDates = [];
+    let start = new Date(pickup);
+    const end = new Date(returnDateVal);
+
+    // Fetch unavailable dates for this check
+    fetch(`{{ route('user.unavailable-dates', $car->id) }}`)
+        .then(res => res.json())
+        .then(unavailableDates => {
+            while (start <= end) {
+                const formatted = start.toISOString().split('T')[0];
+                if (unavailableDates.includes(formatted)) {
+                    conflictingDates.push(new Date(formatted));
+                }
+                start.setDate(start.getDate() + 1);
+            }
+
+            // Group conflicting dates into ranges
+            const dateRanges = [];
+            if (conflictingDates.length > 0) {
+                let rangeStart = new Date(conflictingDates[0]);
+                let rangeEnd = new Date(conflictingDates[0]);
+
+                for (let i = 1; i < conflictingDates.length; i++) {
+                    const currentDate = new Date(conflictingDates[i]);
+                    const prevDate = new Date(conflictingDates[i - 1]);
+                    
+                    // Check if dates are consecutive
+                    const diffTime = currentDate - prevDate;
+                    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+                    if (diffDays === 1) {
+                        // Consecutive, extend the range
+                        rangeEnd = new Date(currentDate);
+                    } else {
+                        // Gap found, save the range and start a new one
+                        dateRanges.push({ start: rangeStart, end: rangeEnd });
+                        rangeStart = new Date(currentDate);
+                        rangeEnd = new Date(currentDate);
+                    }
+                }
+                // Add the last range
+                dateRanges.push({ start: rangeStart, end: rangeEnd });
+            }
+
+            // Display date ranges in modal - CLEAR FIRST
+            const datesList = document.getElementById("conflictingDatesList");
+            datesList.innerHTML = '';
+
+            if (dateRanges.length > 0) {
+                dateRanges.forEach(range => {
+                    const startFormatted = range.start.toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    
+                    const endFormatted = range.end.toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    
+                    const dateItem = document.createElement('div');
+                    dateItem.className = 'flex items-center gap-2 text-xs';
+                    
+                    // If start and end are same day, show single date
+                    if (startFormatted === endFormatted) {
+                        dateItem.innerHTML = `
+                            <span class="text-red-600">●</span>
+                            <span>${startFormatted}</span>
+                        `;
+                    } else {
+                        dateItem.innerHTML = `
+                            <span class="text-red-600">●</span>
+                            <span>${startFormatted} to ${endFormatted}</span>
+                        `;
+                    }
+                    datesList.appendChild(dateItem);
+                });
+            }
+        })
+        .catch(error => console.error('Error fetching dates:', error));
+}
+
 </script>
 @endsection

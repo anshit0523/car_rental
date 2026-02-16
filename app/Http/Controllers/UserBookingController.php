@@ -24,74 +24,82 @@ class UserBookingController extends Controller
     /**
      * Store a new booking
      */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'car_id' => 'required|exists:cars,id',
-            'pickup_date' => 'required|date|after_or_equal:today',
-            'pickup_time' => 'required|date_format:H:i',
-            'return_date' => 'required|date|after:pickup_date',
-            'return_time' => 'required|date_format:H:i',
-            'total_price' => 'required|numeric|min:0',
+    /**
+ * Store a new booking
+ */
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'car_id' => 'required|exists:cars,id',
+        'pickup_date' => 'required|date|after_or_equal:today',
+        'pickup_time' => 'required|date_format:H:i',
+        'return_date' => 'required|date|after:pickup_date',
+        'return_time' => 'required|date_format:H:i',
+        'total_price' => 'required|numeric|min:0',
+    ]);
+
+    try {
+        // Check if car is available for the selected dates
+        $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', 
+            $validated['pickup_date'] . ' ' . $validated['pickup_time']
+        );
+        
+        $returnDateTime = Carbon::createFromFormat('Y-m-d H:i', 
+            $validated['return_date'] . ' ' . $validated['return_time']
+        );
+
+        // Check for conflicting bookings
+        $existingBooking = Booking::where('car_id', $validated['car_id'])
+            ->whereIn('status_id', [1, 2, 6]) // reserved, active, confirmed
+            ->where(function ($query) use ($pickupDateTime, $returnDateTime) {
+                $query->where('pickup_at', '<', $returnDateTime)
+                      ->where('return_at', '>', $pickupDateTime);
+            })
+            ->exists();
+
+        if ($existingBooking) {
+            // Return JSON response so JavaScript can show modal
+            return response()->json([
+                'success' => false,
+                'message' => 'This car is not available for the selected dates.',
+                'error_type' => 'unavailable_dates'
+            ], 422);
+        }
+
+        // Get pending status ID
+        $pendingStatus = Status::where('name', 'Pending')->first();
+        if (!$pendingStatus) {
+            $pendingStatus = Status::create(['name' => 'Pending']);
+        }
+
+        // Create the booking
+        $booking = Booking::create([
+            'car_id' => $validated['car_id'],
+            'user_id' => auth()->id(),
+            'pickup_at' => $pickupDateTime,
+            'return_at' => $returnDateTime,
+            'total_price' => (float)$validated['total_price'],
+            'status_id' => $pendingStatus->id,
         ]);
 
-        try {
-            // Check if car is available for the selected dates
-            $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', 
-                $validated['pickup_date'] . ' ' . $validated['pickup_time']
-            );
-            
-            $returnDateTime = Carbon::createFromFormat('Y-m-d H:i', 
-                $validated['return_date'] . ' ' . $validated['return_time']
-            );
+        \Log::info('Booking created: ' . $booking->id . ' for user: ' . auth()->id());
 
-            // Check for conflicting bookings
-            $existingBooking = Booking::where('car_id', $validated['car_id'])
-              
-                ->whereIn('status_id', [1, 2,6]) // reserved,active,Confirmed
-                ->where(function ($query) use ($pickupDateTime, $returnDateTime) {
-        $query->where('pickup_at', '<', $returnDateTime)
-              ->where('return_at', '>', $pickupDateTime);
-    })
-                ->exists();
+        // Return success response
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking created successfully!',
+            'redirect' => route('user.payments', ['booking_id' => $booking->id])
+        ]);
 
-            if ($existingBooking) {
-                return back()
-                    ->withErrors(['car_id' => 'This car is not available for the selected dates.'])
-                    ->withInput();
-            }
-
-            // Get pending status ID
-            $pendingStatus = Status::where('name', 'Pending')->first();
-            if (!$pendingStatus) {
-                // If no Pending status exists, create one
-                $pendingStatus = Status::create(['name' => 'Pending']);
-            }
-
-            // Create the booking
-            $booking = Booking::create([
-                'car_id' => $validated['car_id'],
-                'user_id' => auth()->id(),
-                'pickup_at' => $pickupDateTime,
-                'return_at' => $returnDateTime,
-                'total_price' => (float)$validated['total_price'],
-                'status_id' => $pendingStatus->id,
-            ]);
-
-         
-            \Log::info('Booking created: ' . $booking->id . ' for user: ' . auth()->id());
-
-            // Redirect with proper query string
-            return redirect(route('user.payments') . '?booking_id=' . $booking->id)
-                ->with('success', 'Booking created successfully! Please proceed to payment.');
-
-        } catch (\Exception $e) {
-            \Log::error('Booking error: ' . $e->getMessage());
-            return back()
-                ->withErrors(['error' => 'Error creating booking: ' . $e->getMessage()])
-                ->withInput();
-        }
+    } catch (\Exception $e) {
+        \Log::error('Booking error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error creating booking: ' . $e->getMessage(),
+            'error_type' => 'general_error'
+        ], 500);
     }
+}
 
     /**
      * Show payment page
@@ -294,4 +302,48 @@ public function confirmation($id)
 
         return response()->json(['available' => $isAvailable]);
     }
+
+
+     /**
+     * getUnavailableDates
+     */
+
+    /**
+ * Get unavailable dates for a car based on existing bookings
+ */
+public function getUnavailableDates($carId)
+    {
+        try {
+            // Verify the car exists
+            $car = Car::findOrFail($carId);
+            
+            // Get bookings with reserved, active, pending, or confirmed status
+            // Status IDs: 1 = reserved, 2 = active, 5 = pending, 6 = confirmed
+            $bookings = Booking::where('car_id', $carId)
+                ->whereIn('status_id', [1, 2, 5, 6])
+                ->get();
+
+            $unavailableDates = [];
+
+            foreach ($bookings as $booking) {
+                // Parse the datetime columns to just dates
+                $start = Carbon::parse($booking->pickup_at)->startOfDay();
+                $end = Carbon::parse($booking->return_at)->startOfDay();
+
+                // Add each date in the range to unavailable dates
+                while ($start <= $end) {
+                    $unavailableDates[] = $start->format('Y-m-d');
+                    $start->addDay();
+                }
+            }
+
+            // Remove duplicates and return as JSON array
+         return response()->json(array_values(array_unique($unavailableDates)));
+            
+        } catch (\Exception $e) {
+            // Return error response for debugging
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 }
