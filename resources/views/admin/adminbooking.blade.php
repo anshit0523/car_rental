@@ -2,6 +2,9 @@
 
 @section('content')
     
+<div class="flex h-screen overflow-hidden">
+
+     <div class="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100">
         <!-- Main Content -->
       <div class="p-6 lg:p-8">
             <!-- Page Header -->
@@ -169,6 +172,8 @@
             </div>
         </form>
     </div>
+</div>
+</div>
 </div>
 
     

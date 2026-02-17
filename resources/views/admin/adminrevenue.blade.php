@@ -3,7 +3,7 @@
 @section('content')
 
 <div class="flex h-screen overflow-hidden">
-    <!-- Content Area Only Scrollable -->
+    
     <div class="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100">
         <div class="p-4 md:p-8">
             <div class="max-w-7xl mx-auto">
