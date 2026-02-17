@@ -40,6 +40,8 @@ class AdminBookingController extends Controller
         return view('admin.adminbooking', compact('bookings', 'statuses'));
     }
 
+
+    
     public function updateStatus(Request $request, Booking $booking)
 {
     $request->validate([
@@ -56,91 +58,98 @@ class AdminBookingController extends Controller
 }
 
 public function calendar(Request $request)
-    {
-        $view = $request->get('view', 'weekly');
-        $dateString = $request->get('date');
-        
-        // Set start date
-        $startDate = $dateString 
-            ? Carbon::parse($dateString) 
-            : now();
-        
-        $startDate->startOfDay();
+{
+    $view = $request->get('view', 'weekly');
+    $dateString = $request->get('date');
+    
+    // Set start date
+    $startDate = $dateString 
+        ? Carbon::parse($dateString) 
+        : now();
+    
+    $startDate->startOfDay();
 
-        // Generate calendar dates
-        if ($view === '30days') {
-            $endDate = $startDate->copy()->addDays(29);
-        } else {
-            $endDate = $startDate->copy()->addDays(6);
-        }
+    // Generate calendar dates
+    if ($view === '30days') {
+        $endDate = $startDate->copy()->addDays(29);
+    } else {
+        $endDate = $startDate->copy()->addDays(6);
+    }
 
-        $calendarDates = [];
-        $current = $startDate->copy();
+    $calendarDates = [];
+    $current = $startDate->copy();
 
-        while ($current <= $endDate) {
-            $calendarDates[] = [
-                'full' => $current->copy(),
-                'date' => $current->format('d'),
-                'day' => $current->format('D'),
-            ];
-            $current->addDay();
-        }
+    while ($current <= $endDate) {
+        $calendarDates[] = [
+            'full' => $current->copy(),
+            'date' => $current->format('d'),
+            'day' => $current->format('D'),
+        ];
+        $current->addDay();
+    }
 
-        // Get cars with relationships
+    // Get cars with relationships
     $query = Car::with([
-    'brand',
-    'transmission',
-    'fuelType',
-    'bookings' => function ($q) use ($startDate, $endDate) {
-        $q->whereHas('status', function ($s) {
-            $s->whereIn('name', ['confirmed', 'reserved']);
-        })
-        ->where(function ($date) use ($startDate, $endDate) {
-            $date->whereBetween('pickup_at', [$startDate, $endDate])
-                 ->orWhereBetween('return_at', [$startDate, $endDate])
-                 ->orWhere(function ($overlap) use ($startDate, $endDate) {
-                     $overlap->where('pickup_at', '<=', $startDate)
-                             ->where('return_at', '>=', $endDate);
-                 });
-        })
-        ->with('status');
-    }
-])->where('active', true);
-
-
-        // Apply filters
-        if ($request->filled('brand_id')) {
-            $query->where('brand_id', $request->get('brand_id'));
+     'brand:id,name',          
+    'transmission:id,type', 
+        'fuelType',
+        'bookings' => function ($q) use ($startDate, $endDate) {
+            $q->whereHas('status', function ($s) {
+                $s->whereIn('name', ['confirmed', 'reserved']);
+            })
+            ->where(function ($date) use ($startDate, $endDate) {
+                $date->whereBetween('pickup_at', [$startDate, $endDate])
+                     ->orWhereBetween('return_at', [$startDate, $endDate])
+                     ->orWhere(function ($overlap) use ($startDate, $endDate) {
+                         $overlap->where('pickup_at', '<=', $startDate)
+                                 ->where('return_at', '>=', $endDate);
+                     });
+            })
+            ->with('status');
         }
+    ])->where('active', true);
 
-        if ($request->filled('search')) {
-            $search = $request->get('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('model', 'like', "%{$search}%")
-                  ->orWhere('plate', 'like', "%{$search}%");
-            });
-        }
-
-        $cars = $query->get();
-
-        // Calculate navigation dates
-        $previousWeek = $startDate->copy()->subDays($view === '30days' ? 30 : 7)->format('Y-m-d');
-        $nextWeek = $startDate->copy()->addDays($view === '30days' ? 30 : 7)->format('Y-m-d');
-
-        $brands = Brand::all();
-
-        return view('admin.admincalendar', [
-            'cars' => $cars,
-            'calendarDates' => $calendarDates,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
-            'previousWeek' => $previousWeek,
-            'nextWeek' => $nextWeek,
-            'brands' => $brands,
-            'view' => $view,
-        ]);
+    // Apply brand filter
+    if ($request->filled('brand_id')) {
+        $query->where('brand_id', $request->get('brand_id'));
     }
 
+    // Apply search filter (search model and plate)
+    if ($request->filled('search')) {
+        $search = $request->get('search');
+        $query->where(function ($q) use ($search) {
+            $q->where('model', 'like', "%{$search}%")
+             
+            ;
+        });
+    }
+
+    $cars = $query->paginate(5);
+
+    // Calculate navigation dates
+    $previousWeek = $startDate->copy()->subDays($view === '30days' ? 30 : 7)->format('Y-m-d');
+    $nextWeek = $startDate->copy()->addDays($view === '30days' ? 30 : 7)->format('Y-m-d');
+
+    $brands = Brand::all();
+
+    $data = [
+        'cars' => $cars,
+        'calendarDates' => $calendarDates,
+        'startDate' => $startDate,
+        'endDate' => $endDate,
+        'previousWeek' => $previousWeek,
+        'nextWeek' => $nextWeek,
+        'brands' => $brands,
+        'view' => $view,
+    ];
+
+    // If AJAX → return full view (JavaScript will extract the table)
+    if ($request->ajax()) {
+        return view('admin.admincalendar', $data)->render();
+    }
+
+    return view('admin.admincalendar', $data);
+}
 
  public function showJson(Booking $booking): JsonResponse
 {
