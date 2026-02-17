@@ -59,9 +59,19 @@
                                 <i class="fas fa-clock text-blue-600 mr-2"></i>Navigation
                             </label>
                             <div class="flex items-center gap-2">
-                                <a href="{{ route('admin.calendar', ['date' => $previousWeek]) }}" class="p-2.5 hover:bg-gray-100 rounded-lg transition text-gray-600 hover:text-blue-600">
-                                    <i class="fas fa-chevron-left"></i>
-                                </a>
+                                @php
+                                    $isPastOrToday = \Carbon\Carbon::parse($previousWeek)->startOfDay() < \Carbon\Carbon::today();
+                                @endphp
+
+                                @if($isPastOrToday)
+                                    <span class="p-2.5 rounded-lg text-gray-300 cursor-not-allowed select-none" title="Cannot navigate to past dates">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </span>
+                                @else
+                                    <a href="{{ route('admin.calendar', ['date' => $previousWeek]) }}" class="p-2.5 hover:bg-gray-100 rounded-lg transition text-gray-600 hover:text-blue-600">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                @endif
                                 <span class="text-sm font-medium text-gray-700 px-3 py-2 bg-gray-50 rounded-lg min-w-fit">
                                     {{ $startDate->format('M d') }} - {{ $endDate->format('M d, Y') }}
                                 </span>
