@@ -43,6 +43,8 @@ Route::middleware(['auth','user'])
     
     // Booking routes
     Route::get('/car/{id}/detail', [UserCarBrowseController::class, 'show'])->name('cardetail');
+  Route::get('/cars/{car}/unavailable-dates', [UserBookingController::class, 'getUnavailableDates'])->name('unavailable-dates');
+
     Route::post('/booking/create', [UserBookingController::class, 'store'])->name('booking.create');
 
     // Booking routes for different statuses

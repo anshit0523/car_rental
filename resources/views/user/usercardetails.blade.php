@@ -1,6 +1,29 @@
 @extends('layouts.userlayout')
 
 @section('content')
+
+<style>
+.red-dot {
+    display: block;
+    width: 6px;
+    height: 6px;
+    background: #ef4444;
+    border-radius: 50%;
+    margin: 0 auto;
+    margin-top: 2px;
+}
+
+.green-dot {
+    display: block;
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+    margin: 0 auto;
+    margin-top: 2px;
+}
+</style>
+
 <div class="flex h-screen bg-white">
     <!-- Sidebar -->
     
@@ -201,13 +224,13 @@
                             </div>
                         @endif
 
-                        <form action="{{ route('user.booking.create') }}" method="POST">
+                        <form action="{{ route('user.booking.create') }}" method="POST" id="bookingForm" onsubmit="handleBookingSubmit(event)">
                             @csrf
                             <input type="hidden" name="car_id" value="{{ $car->id }}">
 
                             <div class="mb-4">
                                 <label class="text-xs font-semibold text-gray-700 mb-1 block">Pickup Date</label>
-                                <input type="date" name="pickup_date" value="{{ request('pickup_date') }}" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" required>
+                                <input type="date" id="pickup_date" name="pickup_date" value="{{ request('pickup_date') }}" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" required>
                             </div>
 
                             <div class="mb-4">
@@ -217,7 +240,7 @@
 
                             <div class="mb-4">
                                 <label class="text-xs font-semibold text-gray-700 mb-1 block">Return Date</label>
-                                <input type="date" name="return_date" value="{{ request('return_date') }}"class="w-full border border-gray-300 rounded px-2 py-2 text-xs" required>
+                               <input type="date" id="return_date" name="return_date" value="{{ request('return_date') }}" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" required>
                             </div>
 
                             <div class="mb-6">
@@ -270,6 +293,34 @@
                         </form>
                     </div>
                 </div>
+
+                <!-- Modal -->
+                <div id="unavailableModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div class="bg-white rounded-lg shadow-xl p-6 w-96">
+                        <h2 class="text-lg font-bold text-red-600 mb-2 text-center">
+                            Selected Dates Not Available
+                        </h2>
+                        <p class="text-sm text-gray-600 mb-4 text-center">
+                            Some of the selected dates are already booked.
+                        </p>
+                        
+                        <!-- Conflicting Dates Display -->
+                        <div id="conflictingDatesContainer" class="mb-4 p-3 bg-red-50 border border-red-200 rounded max-h-40 overflow-y-auto">
+                            <p class="text-xs font-semibold text-red-700 mb-2">Booked dates in your selection:</p>
+                            <div id="conflictingDatesList" class="text-xs text-red-600 space-y-1">
+                                <!-- Conflicting dates will be inserted here -->
+                            </div>
+                        </div>
+                        
+                        <p class="text-xs text-gray-600 text-center mb-4">
+                            Please choose different dates.
+                        </p>
+                        <button onclick="closeUnavailableModal()"
+                                class="w-full bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
+                            Okay
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -307,15 +358,339 @@
         document.getElementById('total-price-input').value = total.toFixed(2);
     }
 
-    document.querySelector('input[name="pickup_date"]').addEventListener('change', calculatePrice);
-    document.querySelector('input[name="return_date"]').addEventListener('change', calculatePrice);
-
     document.getElementById('toggleSidebar').addEventListener('click', function() {
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('w-56');
         sidebar.classList.toggle('w-0');
     });
 
-    window.addEventListener('load', calculatePrice);
+    // Auto-check dates and show modal when unavailable dates are selected
+    let unavailableDates = [];
+
+    // Fetch unavailable dates once on page load
+    fetch(`{{ route('user.unavailable-dates', $car->id) }}`)
+        .then(res => res.json())
+        .then(data => {
+            unavailableDates = data;
+            console.log("Unavailable dates loaded:", unavailableDates);
+        })
+        .catch(error => console.error('Error fetching unavailable dates:', error));
+
+    // Function to check if dates have conflicts
+    function hasConflictInRange(pickup, returnDate) {
+        if (!pickup || !returnDate) return false;
+
+        let start = new Date(pickup);
+        const end = new Date(returnDate);
+
+        while (start <= end) {
+            const formatted = start.toISOString().split('T')[0];
+            if (unavailableDates.includes(formatted)) {
+                return true;
+            }
+            start.setDate(start.getDate() + 1);
+        }
+        return false;
+    }
+
+    let lastConflictingRange = null;
+    let cachedConflictingDates = null;
+    let cachedFullBookedRanges = null;
+
+    // Check dates automatically when either date changes
+    function checkDatesAndShowModal() {
+        const pickupInput = document.getElementById("pickup_date");
+        const returnInput = document.getElementById("return_date");
+        const pickup = pickupInput.value;
+        const returnDateVal = returnInput.value;
+
+        if (!pickup || !returnDateVal) {
+            closeUnavailableModal();
+            lastConflictingRange = null;
+            cachedConflictingDates = null;
+            cachedFullBookedRanges = null;
+            return;
+        }
+
+        if (hasConflictInRange(pickup, returnDateVal)) {
+            const currentRange = pickup + "_" + returnDateVal;
+            
+            if (currentRange !== lastConflictingRange) {
+                lastConflictingRange = currentRange;
+                
+                // Fetch and find complete booked ranges
+                fetch(`{{ route('user.unavailable-dates', $car->id) }}`)
+                    .then(res => res.json())
+                    .then(unavailableDatesList => {
+                        const conflictingDates = [];
+                        let checkDate = new Date(pickup);
+                        const endDate = new Date(returnDateVal);
+
+                        while (checkDate <= endDate) {
+                            const formatted = checkDate.toISOString().split('T')[0];
+                            if (unavailableDatesList.includes(formatted)) {
+                                conflictingDates.push(formatted);
+                            }
+                            checkDate.setDate(checkDate.getDate() + 1);
+                        }
+
+                        const fullBookedRanges = findCompleteBookedRanges(unavailableDatesList, conflictingDates);
+                        
+                        cachedConflictingDates = conflictingDates;
+                        cachedFullBookedRanges = fullBookedRanges;
+                        
+                        showUnavailableModal();
+                        displayCompleteBookedRanges();
+                    });
+            }
+        } else {
+            closeUnavailableModal();
+            lastConflictingRange = null;
+            cachedConflictingDates = null;
+            cachedFullBookedRanges = null;
+        }
+    }
+
+    // Find complete booked period that contains the conflicting dates
+    function findCompleteBookedRanges(allUnavailableDates, conflictingDates) {
+        if (conflictingDates.length === 0) return [];
+
+        const sortedDates = allUnavailableDates
+            .map(dateStr => new Date(dateStr + 'T00:00:00'))
+            .sort((a, b) => a - b);
+
+        const ranges = [];
+        let rangeStart = new Date(sortedDates[0]);
+        let rangeEnd = new Date(sortedDates[0]);
+
+        for (let i = 1; i < sortedDates.length; i++) {
+            const currentDate = new Date(sortedDates[i]);
+            const prevDate = new Date(sortedDates[i - 1]);
+            
+            const diffTime = currentDate - prevDate;
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1) {
+                rangeEnd = new Date(currentDate);
+            } else {
+                ranges.push({ start: rangeStart, end: rangeEnd });
+                rangeStart = new Date(currentDate);
+                rangeEnd = new Date(currentDate);
+            }
+        }
+        ranges.push({ start: rangeStart, end: rangeEnd });
+
+        const conflictingDateObjects = conflictingDates.map(d => new Date(d + 'T00:00:00'));
+        return ranges.filter(range => {
+            return conflictingDateObjects.some(conflictDate => 
+                conflictDate >= range.start && conflictDate <= range.end
+            );
+        });
+    }
+
+    // Prevent selecting previous dates
+    function setMinDate() {
+        const pickupInput = document.getElementById("pickup_date");
+        const returnInput = document.getElementById("return_date");
+        
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const minDate = `${year}-${month}-${day}`;
+        
+        // Set minimum date to today
+        pickupInput.setAttribute('min', minDate);
+        returnInput.setAttribute('min', minDate);
+        
+        console.log("Min date set to:", minDate);
+    }
+
+    // Call this when page loads
+    window.addEventListener('load', function() {
+        setMinDate();
+        calculatePrice();
+    });
+
+    // Also prevent manual input of previous dates
+    document.getElementById("pickup_date").addEventListener("change", function () {
+        const pickupDate = new Date(this.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (pickupDate < today) {
+            alert('You cannot select previous dates. Please select today or a future date.');
+            this.value = '';
+            return;
+        }
+        
+        checkDatesAndShowModal();
+        calculatePrice();
+    });
+
+    document.getElementById("return_date").addEventListener("change", function () {
+        const pickupInput = document.getElementById("pickup_date");
+        const returnDate = new Date(this.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (returnDate < today) {
+            alert('You cannot select previous dates. Please select today or a future date.');
+            this.value = '';
+            return;
+        }
+        
+        checkDatesAndShowModal();
+        calculatePrice();
+        
+        // Auto-fill return time with default time (same as pickup or 10:00 AM)
+        const returnTimeInput = document.querySelector('input[name="return_time"]');
+        const pickupTimeInput = document.querySelector('input[name="pickup_time"]');
+        
+        if (returnTimeInput.value === '') {
+            if (pickupTimeInput.value) {
+                returnTimeInput.value = pickupTimeInput.value;
+            } else {
+                returnTimeInput.value = '10:00';
+            }
+        }
+    });
+
+    // Auto-fill return time when pickup time is selected
+    document.querySelector('input[name="pickup_time"]').addEventListener("change", function () {
+        const returnTimeInput = document.querySelector('input[name="return_time"]');
+        
+        // Auto-fill return time with same pickup time
+        if (this.value) {
+            returnTimeInput.value = this.value;
+            console.log("Return time auto-filled with:", this.value);
+        }
+    });
+
+    function handleBookingSubmit(e) {
+        e.preventDefault();
+        
+        const pickupInput = document.getElementById("pickup_date");
+        const returnInput = document.getElementById("return_date");
+        const pickup = pickupInput.value;
+        const returnDateVal = returnInput.value;
+
+        if (!pickup || !returnDateVal) {
+            alert('Please select both pickup and return dates');
+            return;
+        }
+
+        fetch(`{{ route('user.unavailable-dates', $car->id) }}`)
+            .then(res => res.json())
+            .then(unavailableDatesList => {
+                let start = new Date(pickup);
+                const end = new Date(returnDateVal);
+                let hasConflict = false;
+
+                while (start <= end) {
+                    const formatted = start.toISOString().split('T')[0];
+                    if (unavailableDatesList.includes(formatted)) {
+                        hasConflict = true;
+                        break;
+                    }
+                    start.setDate(start.getDate() + 1);
+                }
+
+                if (hasConflict) {
+                    showUnavailableModal();
+                    return;
+                }
+
+                submitBookingForm();
+            })
+            .catch(error => {
+                console.error('Error checking dates:', error);
+                submitBookingForm();
+            });
+    }
+
+    function submitBookingForm() {
+        const form = document.getElementById("bookingForm");
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect;
+            } else if (data.error_type === 'unavailable_dates') {
+                showUnavailableModal();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Booking error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    }
+
+    function showUnavailableModal() {
+        const modal = document.getElementById("unavailableModal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+
+    function closeUnavailableModal() {
+        const modal = document.getElementById("unavailableModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+
+    function displayCompleteBookedRanges() {
+        if (!cachedFullBookedRanges || cachedFullBookedRanges.length === 0) {
+            console.log("No complete booked ranges to display");
+            return;
+        }
+
+        const datesList = document.getElementById("conflictingDatesList");
+        datesList.innerHTML = '';
+
+        cachedFullBookedRanges.forEach(range => {
+            const startFormatted = range.start.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+            const endFormatted = range.end.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+            const dateItem = document.createElement('div');
+            dateItem.className = 'flex items-center gap-2 text-xs';
+            
+            if (startFormatted === endFormatted) {
+                dateItem.innerHTML = `
+                    <span class="text-red-600">●</span>
+                    <span>${startFormatted}</span>
+                `;
+            } else {
+                dateItem.innerHTML = `
+                    <span class="text-red-600">●</span>
+                    <span>${startFormatted} to ${endFormatted}</span>
+                `;
+            }
+            
+            datesList.appendChild(dateItem);
+        });
+    }
+
 </script>
 @endsection
