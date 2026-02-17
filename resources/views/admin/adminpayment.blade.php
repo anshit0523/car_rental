@@ -196,18 +196,9 @@
                         </div>
 
                         <!-- Pagination -->
-                        <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-                            <p class="text-sm text-slate-600">
-                                Showing
-                                <span class="font-semibold">{{ $payments->firstItem() }}</span>
-                                to
-                                <span class="font-semibold">{{ $payments->lastItem() }}</span>
-                                of
-                                <span class="font-semibold">{{ $payments->total() }}</span>
-                                transactions
-                            </p>
+                        
 
-                            <div>
+                            <div class="p-2 border-t border-gray-200"></div>
                                 {{ $payments->links() }}
                             </div>
                         </div>
