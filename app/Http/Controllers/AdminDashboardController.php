@@ -20,11 +20,15 @@ class AdminDashboardController extends Controller
     public function index()
 {
     // Dashboard statistics
-    $totalBookings = Booking::count();
+    $startOfMonth = Carbon::now()->startOfMonth();
+    $endOfMonth = Carbon::now()->endOfMonth();
+  
+    $totalBookings = Booking::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
     $totalCars = Car::count();
     $activeCars = Booking::where('status_id', 2)->count();
     $totalUsers = User::count();
-    $totalRevenue = Booking::sum('total_price');
+   $totalRevenue = Booking::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+    ->sum('total_price');
 
     // Get last 4 months of data using database grouping (solves timezone issues)
     $monthlyData = DB::table('bookings')
@@ -33,6 +37,7 @@ class AdminDashboardController extends Controller
         ->orderBy('month', 'asc')
         ->limit(8)
         ->get();
+
 
     // Extract month labels and data
     $months = $monthlyData->pluck('month')->map(function($month) {
@@ -70,6 +75,11 @@ class AdminDashboardController extends Controller
 
     $revenueTrend = $revenueLastMonth > 0 ? round((($revenueThisMonth - $revenueLastMonth) / $revenueLastMonth) * 100, 1) : 0;
 
+    $revenueTrendIcon = $revenueTrend > 0 ? '↑' : ($revenueTrend < 0 ? '↓' : '');
+$revenueTrendColor = $revenueTrend > 0 
+    ? 'text-green-600' 
+    : ($revenueTrend < 0 ? 'text-red-600' : 'text-gray-600');
+
     $usersThisMonth = User::whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonthStr])->count();
     $usersLastMonth = User::whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$lastMonthStr])->count();
     $usersTrend = $usersLastMonth > 0 ? round((($usersThisMonth - $usersLastMonth) / $usersLastMonth) * 100, 1) : 0;
@@ -90,6 +100,10 @@ class AdminDashboardController extends Controller
         ->limit(5)
         ->get();
 
+        $bookingsTrendIcon = $bookingsTrend > 0 ? '↑' : ($bookingsTrend < 0 ? '↓' : '');
+     $bookingsTrendColor = $bookingsTrend > 0 ? 'text-green-600' : ($bookingsTrend < 0 ? 'text-red-600' : 'text-gray-600');
+
+
     return view('admin.admindashboard', [
         'totalBookings' => $totalBookings,
         'totalCars' => $totalCars,
@@ -105,6 +119,11 @@ class AdminDashboardController extends Controller
         'statusLabels' => $statusLabels,
         'statusData' => $statusData,
         'recentBookings' => $recentBookings,
+        'bookingsTrendIcon' => $bookingsTrendIcon,
+'bookingsTrendColor' => $bookingsTrendColor,
+'revenueTrendIcon' => $revenueTrendIcon,
+'revenueTrendColor' => $revenueTrendColor,
+
     ]);
 }
    
@@ -121,6 +140,8 @@ class AdminDashboardController extends Controller
     
     return view('admin.admincars', compact('cars', 'brands', 'transmissions', 'fuelTypes'));
     }
+
+
 
     public function users()
     {

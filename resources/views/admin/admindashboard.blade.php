@@ -11,7 +11,10 @@
                             <div>
                                 <p class="text-gray-600 text-sm font-medium">Total Bookings</p>
                                 <p class="text-3xl font-bold text-gray-900 mt-2">{{ $totalBookings }}</p>
-                                <p class="text-green-600 text-sm mt-2">↑ {{ $bookingsTrend }}&#8369; this month</p>
+                               <p class="{{ $bookingsTrendColor }} text-sm mt-2">
+    {{ $bookingsTrendIcon }} {{ abs($bookingsTrend) }}% vs last month
+</p>
+
                             </div>
                             <div class="p-3 rounded-full bg-blue-100">
                                 <i class="fas fa-calendar-check text-blue-500 text-2xl"></i>
@@ -21,17 +24,22 @@
 
                     <!-- Total Revenue Card -->
                     <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-600 text-sm font-medium">Total Revenue</p>
-                                <p class="text-3xl font-bold text-gray-900 mt-2">&#8369;{{ number_format($totalRevenue, 1) }}</p>
-                                <p class="text-green-600 text-sm mt-2">↑ {{ $revenueTrend }}% this month</p>
-                            </div>
-                            <div class="p-3 rounded-full bg-green-100">
-                                <i class="fas fa-peso-sign text-green-500 text-2xl"></i>
-                            </div>
-                        </div>
-                    </div>
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-gray-600 text-sm font-medium">Total Revenue</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2">
+                &#8369;{{ number_format($totalRevenue, 1) }}
+            </p>
+            <p class="{{ $revenueTrendColor }} text-sm mt-2">
+                {{ $revenueTrendIcon }} {{ abs($revenueTrend) }}% vs last month
+            </p>
+        </div>
+        <div class="p-3 rounded-full bg-green-100">
+            <i class="fas fa-peso-sign text-green-500 text-2xl"></i>
+        </div>
+    </div>
+</div>
+
 
                     <!-- Active Fleet Card -->
                     <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
