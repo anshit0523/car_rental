@@ -97,7 +97,7 @@
 
             <!-- Actions -->
             <div class="flex gap-4">
-                <a href="{{ route('user.rentals') }}"
+                <a href="{{ route('user.rentals.index') }}"
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg text-center">
                     View My Rentals
                 </a>

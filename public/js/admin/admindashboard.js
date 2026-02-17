@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             yAxisID: 'y'
                         },
                         {
-                            label: 'Revenue ($)',
+                            label: 'Revenue (₱)',
                             data: revenueData,
                             borderColor: '#10b981',
                             backgroundColor: 'rgba(16,185,129,0.1)',
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // 🥧 Status Chart
+        //  Status Chart
         const statusCtx = document.getElementById('statusChart');
         if (statusCtx) {
             new Chart(statusCtx, {
@@ -63,7 +63,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     labels: statusLabels,
                     datasets: [{
                         data: statusData,
-                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#3b82f6']
+                        backgroundColor: ['#3B82F6', // active
+                                          '#EF4444', // canceled 
+    '#10B981', // completed
+   '#22C55E', // confirmed
+     '#FACC15', // pending
+  '#6366F1',]
                     }]
                 },
                 options: {

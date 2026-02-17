@@ -1,9 +1,12 @@
-<!-- resources/views/user/dashboard.blade.php -->
+
 @extends('layouts.userlayout')
 
 @section('content')
 <div class="flex h-screen bg-gray-50">
+    <!-- Sidebar -->
    
+
+
 
     <!-- Main Content -->
     <main class="flex-1 overflow-auto">

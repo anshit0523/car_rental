@@ -1,64 +1,56 @@
 @extends('layouts.userlayout')
 
 @section('content')
+<div class="flex h-screen bg-gray-100">
+    <!-- Sidebar -->
    
-    <div class="flex h-screen bg-gray-50">
-        <!-- Main Content -->
-        <div class="flex-1 overflow-auto flex flex-col">
-            <!-- Header with Search -->
-            <div class="bg-white shadow-sm border-b border-gray-200 p-3 lg:p-6">
-                <div class="bg-gray-50 p-3 lg:p-4 rounded-lg">
-                    <form action="{{ route('user.search') }}" method="POST" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                        @csrf
 
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Pick-up Date</label>
-                            <input type="date" name="pickup_date"
-                                class="w-full border border-gray-300 rounded px-2 py-2 text-xs"
-                                value="{{ request('pickup_date') }}">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Return Date</label>
-                            <input type="date" name="return_date"
-                                class="w-full border border-gray-300 rounded px-2 py-2 text-xs"
-                                value="{{ request('return_date') }}">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Time</label>
-                            <select name="time" class="w-full border border-gray-300 rounded px-2 py-2 text-xs">
-                                <option value="">Select Time</option>
-                                <option value="10:00" @selected(request('time') == '10:00')>10:00 AM</option>
-                                <option value="11:00" @selected(request('time') == '11:00')>11:00 AM</option>
-                                <option value="12:00" @selected(request('time') == '12:00')>12:00 PM</option>
-                            </select>
-                        </div>
-
-                        <div class="flex items-end">
-                            <button type="submit"
-                                class="w-full bg-black text-white rounded py-2 font-semibold hover:bg-gray-800 text-xs flex items-center justify-center space-x-1 transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                <span>Search</span>
-                            </button>
-                        </div>
-
-                        <!-- User Profile -->
-                        <div class="flex items-center space-x-3 sm:col-span-2 lg:col-span-1 lg:border-l lg:border-gray-300 lg:pl-4">
-                            <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold flex-shrink-0">
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                            </div>
-                            <div class="hidden sm:block min-w-0">
-                                <p class="text-sm font-medium text-gray-900 truncate">{{ auth()->user()->name }}</p>
-                                <p class="text-xs text-gray-500">Customer</p>
-                            </div>
-                        </div>
-                    </form>
+    <!-- Main Content -->
+    <div class="flex-1 overflow-auto flex flex-col">
+        <!-- Header -->
+        <div class="bg-white shadow-sm border-b border-gray-200 p-1">
+            <!-- Search Section -->
+            <div class="bg-gray-50 p-3 rounded-lg">
+                <form action="{{ route('user.search') }}" method="POST" class="grid grid-cols-5 gap-3">
+                    @csrf
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Pick-up Date</label>
+                        <input type="date" name="pickup_date" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" value="{{ request('pickup_date') }}">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Return Date</label>
+                        <input type="date" name="return_date" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" value="{{ request('return_date') }}">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Time</label>
+                        <select name="time" class="w-full border border-gray-300 rounded px-2 py-2 text-xs">
+                            <option value="">Select Time</option>
+                            <option value="10:00" @selected(request('time') == '10:00')>10:00 AM</option>
+                            <option value="11:00" @selected(request('time') == '11:00')>11:00 AM</option>
+                            <option value="12:00" @selected(request('time') == '12:00')>12:00 PM</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full bg-black text-white rounded py-2 font-semibold hover:bg-gray-800 text-xs flex items-center justify-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            <span>Search</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-4 pl-8 border-l border-gray-300">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                    <div class="hidden sm:block ">
+                        <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
+                        <p class="text-xs text-gray-500">Customer</p>
+                    </div>
                 </div>
+                </form>
             </div>
+        </div>
 
             <!-- Content Area -->
             <div class="flex-1 p-4 lg:p-6 overflow-y-auto">

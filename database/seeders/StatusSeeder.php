@@ -1,7 +1,7 @@
 <?php
 
 namespace Database\Seeders;
-
+use App\Models\Status;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -13,14 +13,18 @@ class StatusSeeder extends Seeder
      */
     public function run(): void
     {
+ $statuses = [
+            ['name' => 'Reserved'],
+            ['name' => 'Active'],
+            ['name' => 'Completed'],
+            ['name' => 'Cancelled'],
+        ];
 
-  
-
-       DB::table('statuses')->insert([
-            ['name' => 'reserved', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'active', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'completed', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'cancelled', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        foreach ($statuses as $status) {
+            Status::firstOrCreate(
+                ['name' => $status['name']],
+                $status
+            );
+        }
     }
 }

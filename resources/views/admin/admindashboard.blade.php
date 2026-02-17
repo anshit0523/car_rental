@@ -103,17 +103,18 @@
                                         <td class="px-6 py-4 text-sm text-gray-600">{{ $booking->return_at->format('M d, Y') ?? 'N/A' }}</td>
                                         <td class="px-6 py-4 text-sm font-semibold text-gray-900">&#8369;{{ number_format($booking->total_price, 2) }}</td>
                                         <td class="px-6 py-4 text-sm">
-                                            <span class="px-3 py-1 rounded-full text-xs font-medium
-                                                @if($booking->status->id == 1) bg-green-100 text-green-800
-                                                @elseif($booking->status->id == 2) bg-gray-100 text-gray-800
-                                                @elseif($booking->status->id == 3) bg-emerald-100 text-emerald-800
-                                                @elseif($booking->status->id == 4) bg-blue-100 text-blue-800
-                                                @elseif($booking->status->id == 5) bg-yellow-100 text-yellow-800
-                                                @elseif($booking->status->id == 6) bg-blue-100 text-blue-800
-                                                @else bg-red-100 text-red-800
-                                                @endif">
-                                                {{ $booking->status->name ?? 'Unknown' }}
-                                            </span>
+                                          <span class="px-3 py-1 rounded-full text-xs font-medium
+    @if($booking->status->id == 1) bg-blue-100 text-blue-800
+    @elseif($booking->status->id == 2) bg-green-100 text-green-800
+    @elseif($booking->status->id == 3) bg-emerald-100 text-emerald-800
+    @elseif($booking->status->id == 4) bg-red-100 text-red-800
+    @elseif($booking->status->id == 5) bg-yellow-100 text-yellow-800
+    @elseif($booking->status->id == 6) bg-indigo-100 text-indigo-800
+    @else bg-gray-100 text-gray-800
+    @endif">
+    {{ $booking->status->name ?? 'Unknown' }}
+</span>
+
                                         </td>
                                     </tr>
                                 @empty

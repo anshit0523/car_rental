@@ -33,7 +33,7 @@
             <span class="menu-label">Dashboard</span>
         </a>
 
-        <a href="{{ route('user.rentals') }}"
+        <a href="{{ route('user.rentals.index') }}"
             class="{{ $baseLinkClass }} {{ request()->routeIs('user.rentals') ? 'bg-black text-white' : 'text-gray-300 hover:bg-gray-800' }}">
             <span class="text-lg flex-shrink-0">🚗</span>
             <span class="menu-label">My Rentals</span>
@@ -71,7 +71,10 @@
             @csrf
             <button type="submit"
                 class="{{ $baseLinkClass }} text-gray-300 hover:bg-gray-800">
-                <span class="text-lg flex-shrink-0">🚪</span>
+             <svg class="w-[22px] h-[22px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"/>
+</svg>
+
                 <span class="menu-label">Logout</span>
             </button>
         </form>

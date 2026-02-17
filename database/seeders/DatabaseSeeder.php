@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
         RoleSeeder::class,
         PaymentMethodsSeeder::class,
         PaymentStatusesSeeder::class,
+         PaymentSettingsSeeder::class,
     ]);
 
     $this->call(RoleSeeder::class);
