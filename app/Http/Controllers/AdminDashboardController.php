@@ -125,6 +125,7 @@ class AdminDashboardController extends Controller
             'revenueTrendIcon' => $revenueTrendIcon,
             'revenueTrendColor' => $revenueTrendColor,
 
+
         ]);
     }
 
@@ -152,16 +153,32 @@ class AdminDashboardController extends Controller
 
     public function revenue()
     {
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
-        
         $monthlyRevenue = DB::table('bookings')
-            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(total_price) as total')
+            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month_key, SUM(total_price) as total')
             ->groupByRaw('DATE_FORMAT(created_at, "%Y-%m")')
-            ->orderBy('month', 'desc')
-            ->limit(5)
+            ->orderBy('month_key', 'desc')
+            ->limit(6)
             ->get();
 
-        return view('admin.adminrevenue', ['monthlyRevenue' => $monthlyRevenue]);
+        // Calculate real month-over-month growth for each row
+        $revenueWithGrowth = $monthlyRevenue->map(function ($row, $index) use ($monthlyRevenue) {
+            // Previous month is the next item (since ordered desc)
+            $prevTotal = $monthlyRevenue->get($index + 1)?->total ?? null;
+
+            $growth = null;
+            if ($prevTotal && $prevTotal > 0) {
+                $growth = round((($row->total - $prevTotal) / $prevTotal) * 100, 1);
+            }
+
+            // Format month label e.g. "Jan 2025"
+            $row->month_label = \Carbon\Carbon::createFromFormat('Y-m', $row->month_key)->format('M Y');
+            $row->growth      = $growth;
+
+            return $row;
+        });
+
+        return view('admin.adminrevenue', [
+            'monthlyRevenue' => $revenueWithGrowth,
+        ]);
     }
 }
