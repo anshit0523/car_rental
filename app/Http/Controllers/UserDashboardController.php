@@ -30,13 +30,13 @@ class UserDashboardController extends Controller
                 ->whereIn('status_id', [2, 3])
                 ->with(['car.brand', 'status'])
                 ->orderBy('pickup_at', 'desc')
-                ->get();
+                ->paginate(3);
 
             // Get recent activity
             $recentActivity = $user->bookings()
                 ->with(['car.brand', 'status'])
                 ->latest()
-                ->limit(5)
+                ->limit(3)
                 ->get()
                 ->map(function($booking) {
                     return (object)[
@@ -50,7 +50,7 @@ class UserDashboardController extends Controller
                 ->with(['car.brand', 'status'])
                 ->where('pickup_at', '>=', now())
                 ->orderBy('pickup_at')
-                ->limit(5)
+                ->limit(3)
                 ->get()
                 ->map(function($booking) {
                     return (object)[

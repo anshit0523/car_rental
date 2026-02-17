@@ -272,6 +272,8 @@
 </div>
 
 <script>
+ 
+
 document.addEventListener('DOMContentLoaded', () => {
     const form             = document.getElementById('filterForm');
     const loadingIndicator = document.getElementById('loadingIndicator');
@@ -404,40 +406,47 @@ function openBookingModal(bookingId) {
         const statusBadge = isConfirmed ? 'bg-red-500' : 'bg-amber-500';
 
         content.innerHTML = `
-            <div class="space-y-3 text-sm">
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-500">Status</span>
-                    <span class="px-3 py-1 rounded-full text-white text-xs font-semibold ${statusBadge}">
-                        ${data.status}
-                    </span>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Status</span>
+                        <span class="px-3 py-1 rounded-full text-white ${statusBadge}">
+                            ${data.status}
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Car</span>
+                        <span class="font-semibold">${data.car.name}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Customer</span>
+                        <span>${data.user.name}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Email</span>
+                        <span>${data.user.email}</span>
+                    </div>
+
+                    <div class="border-t pt-3">
+                        <p><strong>Pickup:</strong> ${data.pickup_at}</p>
+                        <p><strong>Return:</strong> ${data.return_at}</p>
+                    </div>
+
+                    <div class="border-t pt-3 text-right font-bold text-lg">
+                        ₱${data.total_price}
+                    </div>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-500">Car</span>
-                    <span class="font-semibold">${data.car?.name ?? '—'}</span>
+            `;
+        })
+        .catch(() => {
+            content.innerHTML = `
+                <div class="text-red-500 text-center">
+                    Failed to load booking details.
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-500">Customer</span>
-                    <span>${data.user?.name ?? '—'}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-500">Email</span>
-                    <span class="text-right">${data.user?.email ?? '—'}</span>
-                </div>
-                <div class="border-t pt-3 space-y-1">
-                    <p><strong>Pickup:</strong> ${data.pickup_at}</p>
-                    <p><strong>Return:</strong> ${data.return_at}</p>
-                </div>
-                <div class="border-t pt-3 text-right font-bold text-lg">
-                    ₱${Number(data.total_price ?? 0).toLocaleString()}
-                </div>
-            </div>`;
-    })
-    .catch(() => {
-        content.innerHTML = `
-            <div class="text-red-500 text-center py-4">
-                <i class="fas fa-exclamation-circle mr-2"></i>Failed to load booking details.
-            </div>`;
-    });
+            `;
+        });
 }
 
 function closeBookingModal() {
