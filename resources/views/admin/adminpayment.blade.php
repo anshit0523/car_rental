@@ -44,10 +44,16 @@
                                 <p class="text-3xl font-bold text-slate-900 mt-2">
                                     ₱{{ number_format($thisMonth, 2) }}
                                 </p>
-                                <p class="text-xs text-green-600 mt-2">
-                                    @if($monthlyGrowth > 0) ↑ @elseif($monthlyGrowth < 0) ↓ @endif
-                                    {{ abs($monthlyGrowth) }}% vs last month
-                                </p>
+ <p class="text-xs mt-2">
+    @if($monthlyGrowth !== null)
+        <span class="{{ $monthlyGrowth > 0 ? 'text-green-600' : ($monthlyGrowth < 0 ? 'text-red-600' : 'text-slate-500') }}">
+            @if($monthlyGrowth > 0) ↑ @elseif($monthlyGrowth < 0) ↓ @else — @endif
+            {{ abs($monthlyGrowth) }}% vs last month
+        </span>
+    @else
+        <span class="text-slate-500">Filtered view</span>
+    @endif
+</p>
                             </div>
                             <div class="bg-green-100 rounded-full p-4">
                                 <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

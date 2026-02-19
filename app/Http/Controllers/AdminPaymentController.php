@@ -58,7 +58,10 @@ class AdminPaymentController extends Controller
         $thisMonth = $thisMonthQuery->sum('amount') ?? 0;
 
         // ── Monthly growth (only calculate if no filters) ─────────────────────
-        if (!$status && !$dateFrom && !$dateTo) {
+        $hasFilters = !empty($status) || !empty($dateFrom) || !empty($dateTo);
+
+        if (!$hasFilters) {
+            // Calculate monthly growth
             $lastMonth = Payment::whereMonth('payment_date', now()->subMonth()->month)
                 ->whereYear('payment_date', now()->subMonth()->year)
                 ->where('payment_status_id', $completedStatusId)
@@ -68,9 +71,8 @@ class AdminPaymentController extends Controller
                 ? round((($thisMonth - $lastMonth) / $lastMonth) * 100, 1)
                 : 0;
         } else {
-            $monthlyGrowth = 0; // Hide growth when filtering
+            $monthlyGrowth = null;
         }
-
         // ── Get transactions (uses same filters) ──────────────────────────────
         $paymentsQuery = Payment::with([
             'booking.user',

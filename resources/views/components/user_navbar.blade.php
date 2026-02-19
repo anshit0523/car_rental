@@ -82,8 +82,8 @@
 </aside>
 
 <!-- Overlay for mobile -->
-<div id="sidebarOverlay" 
-    class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"
-    onclick="document.getElementById('toggleSidebar').click()"></div>
+<div id="sidebarOverlay"
+  class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
 
 <script src="{{ asset('js/sidebar.js') }}"></script>
