@@ -1,24 +1,55 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const menuToggle = document.getElementById('menuToggle');
-    const menuClose = document.getElementById('menuClose');
-    const mobileMenu = document.getElementById('mobileMenu');
+  // ========= Version A (your OTHER page) =========
+  const menuToggle = document.getElementById("menuToggle");
+  const menuClose  = document.getElementById("menuClose");
+  const mobileMenu = document.getElementById("mobileMenu");
 
-    // ✅ Mobile menu toggle
-    if (menuToggle && menuClose && mobileMenu) {
-        menuToggle.addEventListener('click', () => {
-            mobileMenu.classList.remove('hidden');
-        });
+  if (menuToggle && mobileMenu) {
+    menuToggle.addEventListener("click", () => {
+      mobileMenu.classList.remove("hidden");
+    });
 
-        menuClose.addEventListener('click', () => {
-            mobileMenu.classList.add('hidden');
-        });
-
-        mobileMenu.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                mobileMenu.classList.add('hidden');
-            });
-        });
+    if (menuClose) {
+      menuClose.addEventListener("click", () => {
+        mobileMenu.classList.add("hidden");
+      });
     }
 
-   
+    mobileMenu.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => mobileMenu.classList.add("hidden"));
+    });
+  }
+
+  // ========= Version B (THIS page) =========
+  const toggleSidebar = document.getElementById("toggleSidebar");
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("sidebarOverlay");
+
+  if (toggleSidebar && sidebar) {
+    const open = () => {
+      sidebar.classList.remove("-translate-x-full");
+      sidebar.classList.add("translate-x-0");
+      if (overlay) overlay.classList.remove("hidden");
+    };
+
+    const close = () => {
+      sidebar.classList.add("-translate-x-full");
+      sidebar.classList.remove("translate-x-0");
+      if (overlay) overlay.classList.add("hidden");
+    };
+
+    const isOpen = () => !sidebar.classList.contains("-translate-x-full");
+
+    toggleSidebar.addEventListener("click", () => {
+      isOpen() ? close() : open();
+    });
+
+    if (overlay) overlay.addEventListener("click", close);
+
+    sidebar.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => {
+        if (window.innerWidth < 1024) close(); // only mobile
+      });
+    });
+  }
 });

@@ -2,6 +2,9 @@
 
 @section('content')
     
+<div class="flex h-screen overflow-hidden">
+
+     <div class="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100">
         <!-- Main Content -->
       <div class="p-6 lg:p-8">
             <!-- Page Header -->
@@ -18,7 +21,7 @@
                 type="text" 
                 name="search" 
                 value="{{ request('search') }}"
-                placeholder="Search by user or car..." 
+                placeholder="Search by user" 
                 class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
 
@@ -169,6 +172,8 @@
             </div>
         </form>
     </div>
+</div>
+</div>
 </div>
 
     
