@@ -22,7 +22,8 @@
         <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
             <!-- Filters Section -->
             <div class="p-4 md:p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-                <form method="GET" class="space-y-6">
+                <form id="filterForm" class="space-y-6">
+
                     <!-- Top Filters -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- Brand Filter -->
@@ -46,10 +47,9 @@
                                 <i class="fas fa-search text-blue-600 mr-2"></i>Search
                             </label>
                             <div class="relative">
-                                <input type="text" name="search" placeholder="License plate, model..." value="{{ request('search') }}" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
-                                <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition">
-                                    <i class="fas fa-search"></i>
-                                </button>
+                                <input type="text" name="search" placeholder="License plate, model..."
+                                    value="{{ request('search') }}"
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
                             </div>
                         </div>
 
@@ -59,9 +59,19 @@
                                 <i class="fas fa-clock text-blue-600 mr-2"></i>Navigation
                             </label>
                             <div class="flex items-center gap-2">
-                                <a href="{{ route('admin.calendar', ['date' => $previousWeek]) }}" class="p-2.5 hover:bg-gray-100 rounded-lg transition text-gray-600 hover:text-blue-600">
-                                    <i class="fas fa-chevron-left"></i>
-                                </a>
+                                @php
+                                    $isPastOrToday = \Carbon\Carbon::parse($previousWeek)->startOfDay() < \Carbon\Carbon::today();
+                                @endphp
+
+                                @if($isPastOrToday)
+                                    <span class="p-2.5 rounded-lg text-gray-300 cursor-not-allowed select-none" title="Cannot navigate to past dates">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </span>
+                                @else
+                                    <a href="{{ route('admin.calendar', ['date' => $previousWeek]) }}" class="p-2.5 hover:bg-gray-100 rounded-lg transition text-gray-600 hover:text-blue-600">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                @endif
                                 <span class="text-sm font-medium text-gray-700 px-3 py-2 bg-gray-50 rounded-lg min-w-fit">
                                     {{ $startDate->format('M d') }} - {{ $endDate->format('M d, Y') }}
                                 </span>
@@ -80,16 +90,24 @@
                         <span class="text-sm font-semibold text-gray-700">View:</span>
                         <div class="flex gap-4">
                             <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="radio" name="view" value="weekly" {{ request('view', 'weekly') == 'weekly' ? 'checked' : '' }} onchange="this.form.submit()" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                <input type="radio" name="view" value="weekly" {{ request('view', 'weekly') == 'weekly' ? 'checked' : '' }} class="w-4 h-4 text-blue-600 cursor-pointer">
                                 <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition">7 Days</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="radio" name="view" value="30days" {{ request('view') == '30days' ? 'checked' : '' }} onchange="this.form.submit()" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                <input type="radio" name="view" value="30days" {{ request('view') == '30days' ? 'checked' : '' }} class="w-4 h-4 text-blue-600 cursor-pointer">
                                 <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition">30 Days</span>
                             </label>
                         </div>
                     </div>
                 </form>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="hidden bg-blue-50 border-b border-blue-200 px-6 py-3 flex items-center gap-2">
+                <div class="animate-spin">
+                    <i class="fas fa-spinner text-blue-600"></i>
+                </div>
+                <span class="text-sm font-medium text-blue-600">Updating table...</span>
             </div>
 
             <!-- Calendar Table -->
@@ -136,7 +154,6 @@
                                 @foreach($calendarDates as $date)
                                     <td class="px-3 py-2 text-center">
                                         @php
-                                            // Format the current date to Y-m-d for comparison
                                             $currentDate = \Carbon\Carbon::parse($date['full'])->format('Y-m-d');
                                             $cellBooking = null;
                                             $bgColor = 'bg-emerald-100';
@@ -145,17 +162,14 @@
 
                                             foreach ($car->bookings as $b) {
                                                 $status = strtolower($b->status->name);
-                                                
-                                                // Format pickup and return dates to Y-m-d for consistent comparison
                                                 $pickupDate = \Carbon\Carbon::parse($b->pickup_at)->format('Y-m-d');
                                                 $returnDate = \Carbon\Carbon::parse($b->return_at)->format('Y-m-d');
-                                                
-                                                // Check if the current date falls within the booking period
+
                                                 if (in_array($status, ['confirmed', 'reserved', 'pending', 'approved']) &&
                                                     $pickupDate <= $currentDate &&
                                                     $returnDate >= $currentDate) {
                                                     $cellBooking = $b;
-                                                    
+
                                                     if (in_array($status, ['confirmed', 'approved'])) {
                                                         $bgColor = 'bg-red-500';
                                                         $icon = 'fa-lock';
@@ -221,16 +235,14 @@
 
 <!-- Booking Details Modal -->
 <div id="bookingModal"
-     class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm"
+     class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
      style="display: none;">
 
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 animate-fade-in">
 
         <!-- Header -->
         <div class="flex items-center justify-between px-6 py-4 border-b">
-            <h2 class="text-lg font-bold text-gray-800">
-                Booking Details
-            </h2>
+            <h2 class="text-lg font-bold text-gray-800">Booking Details</h2>
             <button onclick="closeBookingModal()" class="text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times text-lg"></i>
             </button>
@@ -238,10 +250,7 @@
 
         <!-- Body -->
         <div id="bookingModalContent" class="px-6 py-4 space-y-4">
-            <!-- Dynamic content will be injected here -->
-            <div class="text-center text-gray-400">
-                Loading booking details...
-            </div>
+            <div class="text-center text-gray-400">Loading booking details...</div>
         </div>
 
         <!-- Footer -->
@@ -250,13 +259,10 @@
                     class="px-4 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">
                 Close
             </button>
-
-            <!-- These buttons will be toggled later -->
             <button id="confirmBtn"
                     class="hidden px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">
                 Confirm Booking
             </button>
-
             <button id="cancelBtn"
                     class="hidden px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700">
                 Cancel Booking
@@ -265,107 +271,176 @@
     </div>
 </div>
 
-
 <script>
-function refreshCalendar() {
-    fetch(window.location.href, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(response => response.text())
-    .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
+document.addEventListener('DOMContentLoaded', () => {
+    const form             = document.getElementById('filterForm');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const modal            = document.getElementById('bookingModal');
 
-        const newCalendar = doc.querySelector('table');
-        const currentCalendar = document.querySelector('table');
+    // Hide modal on init
+    if (modal) modal.style.display = 'none';
 
-        if (newCalendar && currentCalendar) {
-            currentCalendar.innerHTML = newCalendar.innerHTML;
-        }
-    })
-    .catch(err => console.error('Calendar refresh failed', err));
-}
+    // ── Loading helpers ──────────────────────────────────────────────────────
+    function showLoading() {
+        loadingIndicator?.classList.remove('hidden');
+    }
+    function hideLoading() {
+        loadingIndicator?.classList.add('hidden');
+    }
 
-// Auto-refresh every 30 seconds
-setInterval(refreshCalendar, 30000);
+    // ── Build URL, preserving existing query params (e.g. ?date=...) ─────────
+    function buildFilterUrl() {
+        const formData  = new FormData(form);
+        const newParams = new URLSearchParams(formData);
+
+        // Carry over any URL params not already in the form (e.g. date)
+        const current = new URLSearchParams(window.location.search);
+        current.forEach((value, key) => {
+            if (!newParams.has(key)) {
+                newParams.set(key, value);
+            }
+        });
+
+        return `{{ route('admin.calendar') }}?${newParams.toString()}`;
+    }
+
+    // ── Core fetch + DOM swap ────────────────────────────────────────────────
+    function fetchFilteredData() {
+        showLoading();
+
+        const url = buildFilterUrl();
+
+        // Update the browser URL so prev/next week links keep current filters
+        history.replaceState(null, '', url);
+
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html',
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.text();
+        })
+        .then(html => {
+            const parser = new DOMParser();
+            const doc    = parser.parseFromString(html, 'text/html');
+
+            // Swap the entire scrollable table wrapper
+            const newWrapper = doc.querySelector('.overflow-x-auto');
+            const curWrapper = document.querySelector('.overflow-x-auto');
+            if (newWrapper && curWrapper) {
+                curWrapper.innerHTML = newWrapper.innerHTML;
+            }
+
+            // Also refresh the date-range label in the navigation
+            const newNav = doc.querySelector('.min-w-fit');
+            const curNav = document.querySelector('.min-w-fit');
+            if (newNav && curNav) {
+                curNav.textContent = newNav.textContent;
+            }
+
+            hideLoading();
+        })
+        .catch(err => {
+            console.error('Filter fetch failed:', err);
+            hideLoading();
+        });
+    }
+
+    // ── Wire up filter controls ──────────────────────────────────────────────
+    if (form) {
+        // Brand select — fires immediately on change
+        const brandSelect = form.querySelector('select[name="brand_id"]');
+        brandSelect?.addEventListener('change', fetchFilteredData);
+
+        // View toggle (7 Days / 30 Days) — fires immediately on change
+        form.querySelectorAll('input[type="radio"][name="view"]').forEach(radio => {
+            radio.addEventListener('change', fetchFilteredData);
+        });
+
+        // Search — debounced 400 ms, uses 'input' to catch paste & autofill
+        const searchInput = form.querySelector('input[name="search"]');
+        let debounceTimer;
+        searchInput?.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(fetchFilteredData, 400);
+        });
+    }
+
+    // ── Auto-refresh every 30 s (respects current filters) ──────────────────
+    setInterval(fetchFilteredData, 30_000);
+
+    // ── Close modal on backdrop click ────────────────────────────────────────
+    modal?.addEventListener('click', function (e) {
+        if (e.target === this) closeBookingModal();
+    });
+});
 
 
+// ── Booking Modal ────────────────────────────────────────────────────────────
 function openBookingModal(bookingId) {
-    const modal = document.getElementById('bookingModal');
+    const modal   = document.getElementById('bookingModal');
     const content = document.getElementById('bookingModalContent');
 
-    // Make modal visible
     modal.style.display = 'flex';
     modal.classList.add('items-center', 'justify-center');
 
     content.innerHTML = `
-        <div class="text-center text-gray-400">
-            Loading booking details...
-        </div>
-    `;
+        <div class="text-center text-gray-400 py-4">
+            <i class="fas fa-spinner fa-spin mr-2"></i>Loading booking details...
+        </div>`;
 
-    fetch(`/admin/bookings/${bookingId}`)
-        .then(res => res.json())
-        .then(data => {
-            const statusBadge =
-                data.status === 'Confirmed'
-                    ? 'bg-red-500'
-                    : 'bg-amber-500';
+    fetch(`/admin/bookings/${bookingId}`, {
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+    })
+    .then(data => {
+        const isConfirmed = ['confirmed', 'approved'].includes(data.status?.toLowerCase());
+        const statusBadge = isConfirmed ? 'bg-red-500' : 'bg-amber-500';
 
-            content.innerHTML = `
-                <div class="space-y-3 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Status</span>
-                        <span class="px-3 py-1 rounded-full text-white ${statusBadge}">
-                            ${data.status}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Car</span>
-                        <span class="font-semibold">${data.car.name}</span>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Customer</span>
-                        <span>${data.user.name}</span>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Email</span>
-                        <span>${data.user.email}</span>
-                    </div>
-
-                    <div class="border-t pt-3">
-                        <p><strong>Pickup:</strong> ${data.pickup_at}</p>
-                        <p><strong>Return:</strong> ${data.return_at}</p>
-                    </div>
-
-                    <div class="border-t pt-3 text-right font-bold text-lg">
-                        ₱${data.total_price}
-                    </div>
+        content.innerHTML = `
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500">Status</span>
+                    <span class="px-3 py-1 rounded-full text-white text-xs font-semibold ${statusBadge}">
+                        ${data.status}
+                    </span>
                 </div>
-            `;
-        })
-        .catch(() => {
-            content.innerHTML = `
-                <div class="text-red-500 text-center">
-                    Failed to load booking details.
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Car</span>
+                    <span class="font-semibold">${data.car?.name ?? '—'}</span>
                 </div>
-            `;
-        });
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Customer</span>
+                    <span>${data.user?.name ?? '—'}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Email</span>
+                    <span class="text-right">${data.user?.email ?? '—'}</span>
+                </div>
+                <div class="border-t pt-3 space-y-1">
+                    <p><strong>Pickup:</strong> ${data.pickup_at}</p>
+                    <p><strong>Return:</strong> ${data.return_at}</p>
+                </div>
+                <div class="border-t pt-3 text-right font-bold text-lg">
+                    ₱${Number(data.total_price ?? 0).toLocaleString()}
+                </div>
+            </div>`;
+    })
+    .catch(() => {
+        content.innerHTML = `
+            <div class="text-red-500 text-center py-4">
+                <i class="fas fa-exclamation-circle mr-2"></i>Failed to load booking details.
+            </div>`;
+    });
 }
 
 function closeBookingModal() {
-    const modal = document.getElementById('bookingModal');
-    modal.style.display = 'none';
+    document.getElementById('bookingModal').style.display = 'none';
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('bookingModal');
-    modal.style.display = 'none';
-
-});
-
-
 </script>
