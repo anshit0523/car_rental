@@ -17,10 +17,10 @@ class UserDashboardController extends Controller
             $activeRentals = $user->bookings()->where('status_id', 2)->count();
 
             // Get total spent
-            $totalSpent = $user->bookings()->where('status_id', 1)->sum('total_price');
+            $totalSpent = $user->bookings()->whereIn('status_id', [3, 6])->sum('total_price');
 
             // Get completed trips
-            $completedTrips = $user->bookings()->where('status_id', 1)->count();
+            $completedTrips = $user->bookings()->where('status_id', 3)->count();
 
             // Get loyalty points
             $loyaltyPoints = $completedTrips * 50;
