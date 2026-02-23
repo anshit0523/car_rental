@@ -30,7 +30,7 @@
     border-bottom:1px solid #e5e7eb;
     font-size:12px;
   }
-  .fp-legend .item{ display:flex; align-items:center; gap:8px; color:#111827; }
+  .fp-legend .item{ display:flex; align-items:center; gap:8px; color:#010102; }
   .fp-legend .dot{ width:10px; height:10px; border-radius:999px; }
   .fp-legend .dot.red{ background:#ef4444; }
   .fp-legend .dot.green{ background:#22c55e; }
