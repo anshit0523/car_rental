@@ -85,11 +85,16 @@ public function store(Request $request)
         \Log::info('Booking created: ' . $booking->id . ' for user: ' . auth()->id());
 
         // Return success response
-        return response()->json([
-            'success' => true,
-            'message' => 'Booking created successfully!',
-            'redirect' => route('user.payments', ['booking_id' => $booking->id])
-        ]);
+        if ($request->wantsJson()) {
+    return response()->json([
+        'success' => true,
+        'message' => 'Booking created successfully!',
+        'redirect' => route('user.payments', ['booking_id' => $booking->id]),
+    ]);
+}
+
+return redirect()->route('user.payments', ['booking_id' => $booking->id])
+    ->with('success', 'Booking created successfully!');
 
     } catch (\Exception $e) {
         \Log::error('Booking error: ' . $e->getMessage());
