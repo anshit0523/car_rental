@@ -62,7 +62,7 @@
         .hero {
             padding: 180px 0 120px;
             background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-                url("{{ asset('storage/cars/toyota bg.png') }}");
+                url("{{ asset('storage/cars/bgcar.png') }}");
             background-size: cover;
             background-position: center;
 
@@ -132,7 +132,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand fw-bold" href="#">
-                <img src="{{ asset('storage/logo/header pic.png') }}" alt="Logo">
+                <img src="{{ asset('storage/cars/ezelogo.png') }}" alt="Logo">
             </a>
             <div class="d-flex">
                 <a href="{{ route('login') }}" class="btn btn-outline-light me-2">Login</a>
