@@ -133,18 +133,25 @@
 
         <div class="mb-3">
           <label class="form-label">Email Address</label>
-          <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+          <input type="email" name="email" class="form-control" placeholder="Enter your email" value="{{ old('email') }}"
+            required>
         </div>
 
         <div class="mb-3">
+          <label class="form-label">Phone Number</label>
+          <input type="text" name="phone" class="form-control" placeholder="Enter your phone number"
+            value="{{ old('phone') }}">
+        </div>
+        <div class="mb-3">
           <label class="form-label">Password</label>
-          <input type="password" name="password" class="form-control" placeholder="Create a password" required>
+          <input type="password" name="password" class="form-control" placeholder="Create a password"
+            value="{{ old('password') }}" required>
         </div>
 
         <div class="mb-4">
           <label class="form-label">Confirm Password</label>
           <input type="password" name="password_confirmation" class="form-control" placeholder="Confirm your password"
-            required>
+            value="{{ old('password_confirmation') }}" required>
         </div>
 
         <button class="btn btn-auth w-100">Register</button>
