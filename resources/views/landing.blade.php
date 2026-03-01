@@ -75,7 +75,7 @@
             padding: 20px;
         }
 
-        /* ✅ DARK CAR CARD WITH WHITE TEXT */
+      
         .card-custom {
             background-color: #1c1c1c;
             color: #ffffff;

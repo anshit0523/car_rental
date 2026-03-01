@@ -34,7 +34,7 @@ class AdminBookingController extends Controller
             $query->where('status_id', $request->status_id);
         }
 
-        $bookings = $query->paginate(10);
+        $bookings = $query->latest()->paginate(10);
         $statuses = Status::all();
 
         return view('admin.adminbooking', compact('bookings', 'statuses'));
