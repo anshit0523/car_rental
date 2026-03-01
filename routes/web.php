@@ -16,6 +16,7 @@ use App\Http\Controllers\UserCarBrowseController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminPaymentSettingsContoller;
+use App\Http\Controllers\UserProfileController;
 
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
@@ -41,6 +42,10 @@ Route::middleware(['auth', 'user'])
         Route::get('/browse', [UserCarBrowseController::class, 'index'])->name('browse');
         Route::post('/search', [UserCarBrowseController::class, 'search'])->name('search');
 
+        //profile routes
+        Route::get('/profile', [UserProfileController::class, 'edit'])->name('profile');
+        Route::post('/profile/update', [UserProfileController::class, 'updateInfo'])->name('profile.update');
+        Route::post('/profile/password', [UserProfileController::class, 'updatePassword'])->name('profile.password');
         // Booking routes
         Route::get('/car/{id}/detail', [UserCarBrowseController::class, 'show'])->name('cardetail');
         Route::get('/cars/{car}/unavailable-dates', [UserBookingController::class, 'getUnavailableDates'])->name('unavailable-dates');
