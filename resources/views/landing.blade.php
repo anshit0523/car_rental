@@ -60,7 +60,7 @@
         }
 
         .hero {
-            padding: 180px 0 120px;
+            padding: 190px 0 135px;
             background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
                 url("{{ asset('storage/cars/bgcar.png') }}");
             background-size: cover;
@@ -75,7 +75,7 @@
             padding: 20px;
         }
 
-        /* ✅ DARK CAR CARD WITH WHITE TEXT */
+      
         .card-custom {
             background-color: #1c1c1c;
             color: #ffffff;
@@ -147,19 +147,7 @@
             <h1 class="display-4 fw-bold mb-3">DUMAGUETE EZE CAR RENTAL</h1>
             <p class="lead mb-4">Drive with Comfort & Confidence</p>
 
-            <div class="search-box mt-4">
-                <form class="row g-3">
-                    <div class="col-md-4">
-                        <input type="date" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <input type="date" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <button class="btn btn-orange w-100">Search</button>
-                    </div>
-                </form>
-            </div>
+            
         </div>
     </section>
 
