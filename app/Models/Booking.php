@@ -17,6 +17,8 @@ use HasFactory;
         'total_price',
         'status_id',
         'payment_id',
+        'service_type_id',
+    'service_location',
     ];
 
      protected $casts = [

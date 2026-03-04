@@ -139,13 +139,8 @@
 
                             <!-- Actions -->
                             <div class="flex space-x-2 mt-3">
-                                <button class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-semibold flex items-center justify-center space-x-1">
-                                    <span>✓</span>
-                                    <span>View Details</span>
-                                </button>
-                                <button class="flex-1 px-3 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-semibold">
-                                    Contact Support
-                                </button>
+                               
+                               
                                 @if ($booking->status->name !== 'Cancelled' && $booking->pickup_at && $booking->pickup_at > now()->addHours(24))
                                     <form action="{{ route('user.booking.cancel', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
                                         @csrf

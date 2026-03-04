@@ -2,109 +2,134 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Status;
 use App\Models\Booking;
 use App\Models\Car;
+use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class UserBookingController extends Controller
 {
-    
+
     /*** Show car details page for booking */
     public function show($carId)
     {
         $car = Car::with(['brand', 'fuelType', 'transmission'])->findOrFail($carId);
+        $serviceTypes = DB::table('service_types')->orderBy('id')->get();
 
         return view('user.usercardetails', [
             'car' => $car,
+            'serviceTypes' => $serviceTypes
+
         ]);
     }
+
 
     /**
      * Store a new booking
      */
-    /**
- * Store a new booking
- */
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        'car_id' => 'required|exists:cars,id',
-        'pickup_date' => 'required|date|after_or_equal:today',
-        'pickup_time' => 'required|date_format:H:i',
-        'return_date' => 'required|date|after:pickup_date',
-        'return_time' => 'required|date_format:H:i',
-        'total_price' => 'required|numeric|min:0',
-    ]);
-
-    try {
-        // Check if car is available for the selected dates
-        $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', 
-            $validated['pickup_date'] . ' ' . $validated['pickup_time']
-        );
-        
-        $returnDateTime = Carbon::createFromFormat('Y-m-d H:i', 
-            $validated['return_date'] . ' ' . $validated['return_time']
-        );
-
-        // Check for conflicting bookings
-        $existingBooking = Booking::where('car_id', $validated['car_id'])
-            ->whereIn('status_id', [1, 2, 6]) // reserved, active, confirmed
-            ->where(function ($query) use ($pickupDateTime, $returnDateTime) {
-                $query->where('pickup_at', '<', $returnDateTime)
-                      ->where('return_at', '>', $pickupDateTime);
-            })
-            ->exists();
-
-        if ($existingBooking) {
-            // Return JSON response so JavaScript can show modal
-            return response()->json([
-                'success' => false,
-                'message' => 'This car is not available for the selected dates.',
-                'error_type' => 'unavailable_dates'
-            ], 422);
-        }
-
-        // Get pending status ID
-        $pendingStatus = Status::where('name', 'Pending')->first();
-        if (!$pendingStatus) {
-            $pendingStatus = Status::create(['name' => 'Pending']);
-        }
-
-        // Create the booking
-        $booking = Booking::create([
-            'car_id' => $validated['car_id'],
-            'user_id' => auth()->id(),
-            'pickup_at' => $pickupDateTime,
-            'return_at' => $returnDateTime,
-            'total_price' => (float)$validated['total_price'],
-            'status_id' => $pendingStatus->id,
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'car_id' => 'required|exists:cars,id',
+            'pickup_date' => 'required|date|after_or_equal:today',
+            'pickup_time' => 'required|date_format:H:i',
+            'return_date' => 'required|date|after:pickup_date',
+            'return_time' => 'required|date_format:H:i',
+            'total_price' => 'required|numeric|min:0',
+            'service_type_id' => 'required|exists:service_types,id',
+            'service_location' => 'nullable|string|max:255',
         ]);
 
-        \Log::info('Booking created: ' . $booking->id . ' for user: ' . auth()->id());
+        $user = auth()->user();
+        $serviceTypeName = DB::table('service_types')->where('id', $validated['service_type_id'])->value('name');
 
-        // Return success response
-        if ($request->wantsJson()) {
-    return response()->json([
-        'success' => true,
-        'message' => 'Booking created successfully!',
-        'redirect' => route('user.payments', ['booking_id' => $booking->id]),
-    ]);
-}
+        if (stripos($serviceTypeName, 'deliver') !== false && empty($validated['service_location'])) {
+            return back()->withErrors(['service_location' => 'Location is required for Delivery.'])->withInput();
+        }
 
-return redirect()->route('user.payments', ['booking_id' => $booking->id])
-    ->with('success', 'Booking created successfully!');
+        // always require phone (since input is always editable)
+        $request->validate([
+            'phone' => 'required|string|max:30',
+        ]);
 
-    } catch (\Exception $e) {
-        \Log::error('Booking error: ' . $e->getMessage());
-        return response()->json([
-            'success' => false,
-            'message' => 'Error creating booking: ' . $e->getMessage(),
-            'error_type' => 'general_error'
-        ], 500);
+        // update profile phone if empty or changed 
+        if (!$user->phone || $user->phone !== $request->input('phone')) {
+            $user->update([
+                'phone' => $request->input('phone'),
+            ]);
+        }
+        try {
+            // Check if car is available for the selected dates
+            $pickupDateTime = Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $validated['pickup_date'] . ' ' . $validated['pickup_time']
+            );
+
+            $returnDateTime = Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $validated['return_date'] . ' ' . $validated['return_time']
+            );
+
+            // Check for conflicting bookings
+            $existingBooking = Booking::where('car_id', $validated['car_id'])
+                ->whereIn('status_id', [1, 2, 6]) // reserved, active, confirmed
+                ->where(function ($query) use ($pickupDateTime, $returnDateTime) {
+                    $query->where('pickup_at', '<', $returnDateTime)
+                        ->where('return_at', '>', $pickupDateTime);
+                })
+                ->exists();
+
+            if ($existingBooking) {
+                // Return JSON response so JavaScript can show modal
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This car is not available for the selected dates.',
+                    'error_type' => 'unavailable_dates'
+                ], 422);
+            }
+
+            // Get pending status ID
+            $pendingStatus = Status::where('name', 'Pending')->first();
+            if (!$pendingStatus) {
+                $pendingStatus = Status::create(['name' => 'Pending']);
+            }
+
+            // Create the booking
+            $booking = Booking::create([
+                'car_id' => $validated['car_id'],
+                'user_id' => auth()->id(),
+                'pickup_at' => $pickupDateTime,
+                'return_at' => $returnDateTime,
+                'total_price' => (float)$validated['total_price'],
+                'status_id' => $pendingStatus->id,
+                'service_type_id' => $validated['service_type_id'],
+                'service_location' => $validated['service_location'],
+            ]);
+
+            \Log::info('Booking created: ' . $booking->id . ' for user: ' . auth()->id());
+
+            // Return success response
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Booking created successfully!',
+                    'redirect' => route('user.payments', ['booking_id' => $booking->id]),
+                ]);
+            }
+
+            return redirect()->route('user.payments', ['booking_id' => $booking->id])
+                ->with('success', 'Booking created successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Booking error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating booking: ' . $e->getMessage(),
+                'error_type' => 'general_error'
+            ], 500);
+        }
     }
-}
 
     /**
      * Show payment page
@@ -139,72 +164,71 @@ return redirect()->route('user.payments', ['booking_id' => $booking->id])
 
 
     /**
- * Process payment
- */
-public function processPayment(Request $request)
-{
-    $validated = $request->validate([
-        'booking_id' => 'required|exists:bookings,id',
-        'payment_method' => 'required|in:card,paypal,apple_pay',
-        'card_number' => 'required_if:payment_method,card',
-        'expiry_date' => 'required_if:payment_method,card',
-        'cvv' => 'required_if:payment_method,card',
-        'cardholder_name' => 'required_if:payment_method,card',
-    ]);
+     * Process payment
+     */
+    public function processPayment(Request $request)
+    {
+        $validated = $request->validate([
+            'booking_id' => 'required|exists:bookings,id',
+            'payment_method' => 'required|in:card,paypal,apple_pay',
+            'card_number' => 'required_if:payment_method,card',
+            'expiry_date' => 'required_if:payment_method,card',
+            'cvv' => 'required_if:payment_method,card',
+            'cardholder_name' => 'required_if:payment_method,card',
+        ]);
 
-    try {
-        $booking = Booking::findOrFail($validated['booking_id']);
+        try {
+            $booking = Booking::findOrFail($validated['booking_id']);
 
-        // ✅ Ensure booking belongs to the logged-in user
+            // ✅ Ensure booking belongs to the logged-in user
+            if ($booking->user_id !== auth()->id()) {
+                abort(403, 'Unauthorized');
+            }
+
+            // ✅ Check payment method
+            if ($validated['payment_method'] === 'paypal') {
+                // Redirect user to PayPal payment route
+                return redirect()->route('paypal.payment', ['booking_id' => $booking->id]);
+            }
+
+            // ✅ For card or Apple Pay, process immediately
+            $confirmedStatus = Status::firstOrCreate(['name' => 'Confirmed']);
+
+            // Update booking status
+            $booking->update(['status_id' => $confirmedStatus->id]);
+
+            return redirect()->route('user.booking.confirmation', ['id' => $booking->id])
+                ->with('success', 'Payment successful! Your booking is confirmed.');
+        } catch (\Exception $e) {
+            return back()
+                ->withErrors(['error' => 'Payment failed: ' . $e->getMessage()])
+                ->withInput();
+        }
+    }
+
+
+    public function confirmation($id)
+    {
+        $booking = Booking::with(['car', 'user', 'payments', 'receipts'])->findOrFail($id);
+
+        // Authorization check
         if ($booking->user_id !== auth()->id()) {
             abort(403, 'Unauthorized');
         }
 
-        // ✅ Check payment method
-        if ($validated['payment_method'] === 'paypal') {
-            // Redirect user to PayPal payment route
-            return redirect()->route('paypal.payment', ['booking_id' => $booking->id]);
-        }
+        $payment = $booking->payments()->latest()->first();
+        $receipt = $booking->receipts()->latest()->first();
 
-        // ✅ For card or Apple Pay, process immediately
-        $confirmedStatus = Status::firstOrCreate(['name' => 'Confirmed']);
-
-        // Update booking status
-        $booking->update(['status_id' => $confirmedStatus->id]);
-
-        return redirect()->route('user.booking.confirmation', ['id' => $booking->id])
-            ->with('success', 'Payment successful! Your booking is confirmed.');
-
-    } catch (\Exception $e) {
-        return back()
-            ->withErrors(['error' => 'Payment failed: ' . $e->getMessage()])
-            ->withInput();
+        return view('user.booking-confirmation', [
+            'booking' => $booking,
+            'payment' => $payment,
+            'receipt' => $receipt,
+        ]);
     }
-}
-
-
-public function confirmation($id)
-{
-    $booking = Booking::with(['car', 'user', 'payments', 'receipts'])->findOrFail($id);
-
-    // Authorization check
-    if ($booking->user_id !== auth()->id()) {
-        abort(403, 'Unauthorized');
-    }
-
-    $payment = $booking->payments()->latest()->first();
-    $receipt = $booking->receipts()->latest()->first();
-
-    return view('user.booking-confirmation', [
-        'booking' => $booking,
-        'payment' => $payment,
-        'receipt' => $receipt,
-    ]);
-}
     /**
      * Show my bookings list
      */
-  public function myActiveBooking()
+    public function myActiveBooking()
     {
         return $this->getBookingsByStatus('Active');
     }
@@ -236,7 +260,7 @@ public function confirmation($id)
 
         return view('user.userrentals', compact('bookings', 'status'));
     }
- 
+
 
     /**
      * Cancel a booking
@@ -252,7 +276,7 @@ public function confirmation($id)
 
         // Check if booking can be cancelled
         $cancelledStatus = Status::where('name', 'Cancelled')->first();
-        
+
         if ($booking->pickup_at <= Carbon::now()->addHours(24)) {
             return back()->withErrors(['booking' => 'Cannot cancel within 24 hours of pickup.']);
         }
@@ -267,6 +291,7 @@ public function confirmation($id)
      */
     public function getCarDetails($carId)
     {
+
         $car = Car::with(['brand', 'fuelType', 'transmission'])->findOrFail($carId);
 
         return response()->json([
@@ -299,7 +324,7 @@ public function confirmation($id)
                     ->orWhereBetween('return_at', [$pickupDate, $returnDate])
                     ->orWhere(function ($q) use ($pickupDate, $returnDate) {
                         $q->where('pickup_at', '<=', $pickupDate)
-                          ->where('return_at', '>=', $returnDate);
+                            ->where('return_at', '>=', $returnDate);
                     });
             })
             ->whereIn('status_id', [1, 2]) // Pending and Confirmed
@@ -309,19 +334,19 @@ public function confirmation($id)
     }
 
 
-     /**
+    /**
      * getUnavailableDates
      */
 
     /**
- * Get unavailable dates for a car based on existing bookings
- */
-public function getUnavailableDates($carId)
+     * Get unavailable dates for a car based on existing bookings
+     */
+    public function getUnavailableDates($carId)
     {
         try {
             // Verify the car exists
             $car = Car::findOrFail($carId);
-            
+
             // Get bookings with reserved, active, pending, or confirmed status
             // Status IDs: 1 = reserved, 2 = active, 5 = pending, 6 = confirmed
             $bookings = Booking::where('car_id', $carId)
@@ -343,12 +368,10 @@ public function getUnavailableDates($carId)
             }
 
             // Remove duplicates and return as JSON array
-         return response()->json(array_values(array_unique($unavailableDates)));
-            
+            return response()->json(array_values(array_unique($unavailableDates)));
         } catch (\Exception $e) {
             // Return error response for debugging
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
 }
