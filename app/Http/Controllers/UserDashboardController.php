@@ -23,7 +23,7 @@ class UserDashboardController extends Controller
             $completedTrips = $user->bookings()->where('status_id', 3)->count();
 
             // Get loyalty points
-            $loyaltyPoints = $completedTrips * 50;
+            $points_balance = $completedTrips * 50;
 
             // Get current active rentals with car and status details
             $currentRentals = Booking::where('user_id', $user->id)
@@ -63,7 +63,7 @@ class UserDashboardController extends Controller
                 'activeRentals' => $activeRentals,
                 'totalSpent' => $totalSpent,
                 'completedTrips' => $completedTrips,
-                'loyaltyPoints' => $loyaltyPoints,
+                'points_balance' => $points_balance,
                 'currentRentals' => $currentRentals,
                 'recentActivity' => $recentActivity,
                 'upcomingEvents' => $upcomingEvents

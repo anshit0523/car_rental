@@ -29,6 +29,7 @@ class UserBookingController extends Controller
     /**
      * Store a new booking
      */
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -40,41 +41,31 @@ class UserBookingController extends Controller
             'total_price' => 'required|numeric|min:0',
             'service_type_id' => 'required|exists:service_types,id',
             'service_location' => 'nullable|string|max:255',
+            'phone' => 'required|string|max:30',
+
+            // ✅ points input
+            'points_to_use' => 'nullable|integer|min:0',
         ]);
 
         $user = auth()->user();
-        $serviceTypeName = DB::table('service_types')->where('id', $validated['service_type_id'])->value('name');
 
+        // update profile phone if empty or changed
+        if (!$user->phone || $user->phone !== $request->input('phone')) {
+            $user->update(['phone' => $request->input('phone')]);
+        }
+
+        $serviceTypeName = DB::table('service_types')->where('id', $validated['service_type_id'])->value('name');
         if (stripos($serviceTypeName, 'deliver') !== false && empty($validated['service_location'])) {
             return back()->withErrors(['service_location' => 'Location is required for Delivery.'])->withInput();
         }
 
-        // always require phone (since input is always editable)
-        $request->validate([
-            'phone' => 'required|string|max:30',
-        ]);
-
-        // update profile phone if empty or changed 
-        if (!$user->phone || $user->phone !== $request->input('phone')) {
-            $user->update([
-                'phone' => $request->input('phone'),
-            ]);
-        }
         try {
-            // Check if car is available for the selected dates
-            $pickupDateTime = Carbon::createFromFormat(
-                'Y-m-d H:i',
-                $validated['pickup_date'] . ' ' . $validated['pickup_time']
-            );
+            $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $validated['pickup_date'] . ' ' . $validated['pickup_time']);
+            $returnDateTime = Carbon::createFromFormat('Y-m-d H:i', $validated['return_date'] . ' ' . $validated['return_time']);
 
-            $returnDateTime = Carbon::createFromFormat(
-                'Y-m-d H:i',
-                $validated['return_date'] . ' ' . $validated['return_time']
-            );
-
-            // Check for conflicting bookings
+            // conflict check (keep yours)
             $existingBooking = Booking::where('car_id', $validated['car_id'])
-                ->whereIn('status_id', [1, 2, 6]) // reserved, active, confirmed
+                ->whereIn('status_id', [1, 2, 6])
                 ->where(function ($query) use ($pickupDateTime, $returnDateTime) {
                     $query->where('pickup_at', '<', $returnDateTime)
                         ->where('return_at', '>', $pickupDateTime);
@@ -82,7 +73,6 @@ class UserBookingController extends Controller
                 ->exists();
 
             if ($existingBooking) {
-                // Return JSON response so JavaScript can show modal
                 return response()->json([
                     'success' => false,
                     'message' => 'This car is not available for the selected dates.',
@@ -90,27 +80,58 @@ class UserBookingController extends Controller
                 ], 422);
             }
 
-            // Get pending status ID
-            $pendingStatus = Status::where('name', 'Pending')->first();
-            if (!$pendingStatus) {
-                $pendingStatus = Status::create(['name' => 'Pending']);
-            }
+            $pendingStatus = Status::firstOrCreate(['name' => 'Pending']);
 
-            // Create the booking
-            $booking = Booking::create([
-                'car_id' => $validated['car_id'],
-                'user_id' => auth()->id(),
-                'pickup_at' => $pickupDateTime,
-                'return_at' => $returnDateTime,
-                'total_price' => (float)$validated['total_price'],
-                'status_id' => $pendingStatus->id,
-                'service_type_id' => $validated['service_type_id'],
-                'service_location' => $validated['service_location'],
-            ]);
+            // ✅ points rule: 10 points = ₱1
+            $POINTS_PER_PESO = 10;
+            $pointsRequested = (int) ($validated['points_to_use'] ?? 0);
 
-            \Log::info('Booking created: ' . $booking->id . ' for user: ' . auth()->id());
+            $booking = null;
 
-            // Return success response
+            DB::transaction(function () use (
+    $user,
+    $validated,
+    $pendingStatus,
+    $pickupDateTime,
+    $returnDateTime,
+    $POINTS_PER_PESO,
+    $pointsRequested,
+    &$booking
+) {
+    $userRow = DB::table('users')->where('id', $user->id)->lockForUpdate()->first();
+    $balanceBefore = (int) $userRow->points_balance;
+
+    $pointsUsed = min($pointsRequested, $balanceBefore);
+
+    $discountAmount = $pointsUsed / $POINTS_PER_PESO;
+    $totalPrice = (float) $validated['total_price']; // MUST BE BASE TOTAL
+    $finalTotal = max(0, $totalPrice - $discountAmount);
+
+    $balanceAfter = $balanceBefore - $pointsUsed;
+
+    // ✅ update balance ONCE
+    DB::table('users')->where('id', $user->id)->update([
+        'points_balance' => $balanceAfter,
+        'updated_at' => now(),
+    ]);
+
+    // ✅ create booking
+    $booking = Booking::create([
+        'car_id' => $validated['car_id'],
+        'user_id' => $user->id,
+        'pickup_at' => $pickupDateTime,
+        'return_at' => $returnDateTime,
+        'total_price' => $totalPrice,
+        'final_total' => $finalTotal,
+        'points_used' => $pointsUsed,
+        'discount_amount' => $discountAmount,
+        'status_id' => $pendingStatus->id,
+        'service_type_id' => $validated['service_type_id'],
+        'service_location' => $validated['service_location'] ?? null,
+    ]);
+});
+
+            // redirect/payment
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => true,
@@ -225,66 +246,8 @@ class UserBookingController extends Controller
             'receipt' => $receipt,
         ]);
     }
-    /**
-     * Show my bookings list
-     */
-    public function myActiveBooking()
-    {
-        return $this->getBookingsByStatus('Active');
-    }
-
-    public function upcoming()
-    {
-        return $this->getBookingsByStatus('Confirmed');
-    }
-
-    public function completed()
-    {
-        return $this->getBookingsByStatus('Completed');
-    }
-
-    public function cancelled()
-    {
-        return $this->getBookingsByStatus('Cancelled');
-    }
-
-    private function getBookingsByStatus(string $status)
-    {
-        $bookings = Booking::where('user_id', auth()->id())
-            ->whereHas('status', function ($q) use ($status) {
-                $q->where('name', $status);
-            })
-            ->with(['car.brand', 'car.fuelType', 'car.transmission', 'status'])
-            ->orderBy('pickup_at', 'desc')
-            ->paginate(10);
-
-        return view('user.userrentals', compact('bookings', 'status'));
-    }
 
 
-    /**
-     * Cancel a booking
-     */
-    public function cancel($bookingId)
-    {
-        $booking = Booking::findOrFail($bookingId);
-
-        // Check authorization
-        if ($booking->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
-        // Check if booking can be cancelled
-        $cancelledStatus = Status::where('name', 'Cancelled')->first();
-
-        if ($booking->pickup_at <= Carbon::now()->addHours(24)) {
-            return back()->withErrors(['booking' => 'Cannot cancel within 24 hours of pickup.']);
-        }
-
-        $booking->update(['status_id' => $cancelledStatus->id]);
-
-        return back()->with('success', 'Booking cancelled successfully.');
-    }
 
     /**
      * Get car details for booking modal/AJAX
@@ -302,76 +265,5 @@ class UserBookingController extends Controller
             'fuel_type' => $car->fuelType->type,
             'transmission' => $car->transmission->type,
         ]);
-    }
-
-    /**
-     * Check car availability for dates
-     */
-    public function checkAvailability(Request $request)
-    {
-        $validated = $request->validate([
-            'car_id' => 'required|exists:cars,id',
-            'pickup_date' => 'required|date',
-            'return_date' => 'required|date|after:pickup_date',
-        ]);
-
-        $pickupDate = Carbon::parse($validated['pickup_date'])->startOfDay();
-        $returnDate = Carbon::parse($validated['return_date'])->endOfDay();
-
-        $isAvailable = !Booking::where('car_id', $validated['car_id'])
-            ->where(function ($query) use ($pickupDate, $returnDate) {
-                $query->whereBetween('pickup_at', [$pickupDate, $returnDate])
-                    ->orWhereBetween('return_at', [$pickupDate, $returnDate])
-                    ->orWhere(function ($q) use ($pickupDate, $returnDate) {
-                        $q->where('pickup_at', '<=', $pickupDate)
-                            ->where('return_at', '>=', $returnDate);
-                    });
-            })
-            ->whereIn('status_id', [1, 2]) // Pending and Confirmed
-            ->exists();
-
-        return response()->json(['available' => $isAvailable]);
-    }
-
-
-    /**
-     * getUnavailableDates
-     */
-
-    /**
-     * Get unavailable dates for a car based on existing bookings
-     */
-    public function getUnavailableDates($carId)
-    {
-        try {
-            // Verify the car exists
-            $car = Car::findOrFail($carId);
-
-            // Get bookings with reserved, active, pending, or confirmed status
-            // Status IDs: 1 = reserved, 2 = active, 5 = pending, 6 = confirmed
-            $bookings = Booking::where('car_id', $carId)
-                ->whereIn('status_id', [1, 2, 5, 6])
-                ->get();
-
-            $unavailableDates = [];
-
-            foreach ($bookings as $booking) {
-                // Parse the datetime columns to just dates
-                $start = Carbon::parse($booking->pickup_at)->startOfDay();
-                $end = Carbon::parse($booking->return_at)->startOfDay();
-
-                // Add each date in the range to unavailable dates
-                while ($start <= $end) {
-                    $unavailableDates[] = $start->format('Y-m-d');
-                    $start->addDay();
-                }
-            }
-
-            // Remove duplicates and return as JSON array
-            return response()->json(array_values(array_unique($unavailableDates)));
-        } catch (\Exception $e) {
-            // Return error response for debugging
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
     }
 }

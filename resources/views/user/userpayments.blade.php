@@ -36,7 +36,8 @@
                         <div class="flex items-start justify-between mb-4">
                             <div>
                                 <h3 class="text-lg font-bold text-gray-900">{{ $booking->car->brand->name ?? 'N/A' }}
-                                    {{ $booking->car->model }}</h3>
+                                    {{ $booking->car->model }}
+                                </h3>
 
                             </div>
                             <div class="text-right">
@@ -82,31 +83,38 @@
                 <h2 class="text-lg font-bold text-gray-900 mb-4">Price Breakdown</h2>
 
                 @php
-                    $rentalDays = \Carbon\Carbon::parse($booking->pickup_at)->diffInDays(\Carbon\Carbon::parse($booking->return_at));
+                    $rentalDays = max(
+                        1,
+                        \Carbon\Carbon::parse($booking->pickup_at)->diffInDays(\Carbon\Carbon::parse($booking->return_at))
+                    );
+
                     $rentalCost = $booking->car->price_per_day * $rentalDays;
-                    $insurance = 500;
-                    $serviceFee = 200;
-                    $subtotal = $rentalCost + $insurance + $serviceFee;
-                    $tax = $subtotal * 0.12;
-                    $total = $subtotal + $tax;
+
+                    // removed extras
+                    $subtotal = $rentalCost;
+
+                    // points discount stored on booking
+                    $pointsDiscount = (float) ($booking->discount_amount ?? 0);
+
+                    // final total (use stored final_total if available, otherwise compute)
+                    $total = $booking->final_total !== null
+                        ? (float) $booking->final_total
+                        : max(0, $subtotal - $pointsDiscount);
                 @endphp
 
                 <div class="space-y-3 mb-4">
                     <div class="flex items-center justify-between">
                         <span class="text-gray-700">Rental ({{ (int) $rentalDays }} days)</span>
-                        <span class="text-gray-900 font-semibold">₱{{ number_format($rentalCost, ) }}</span>
+                        <span class="text-gray-900 font-semibold">₱{{ number_format($rentalCost, 0) }}</span>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-gray-700">Insurance</span>
-                        <span class="text-gray-900 font-semibold">₱{{ number_format($insurance, 2) }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-gray-700">Service Fee</span>
-                        <span class="text-gray-900 font-semibold">₱{{ number_format($serviceFee, 2) }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-gray-700">Taxes</span>
-                        <span class="text-gray-900 font-semibold">₱{{ number_format($tax, 2) }}</span>
+
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Points</span>
+                        <span class="text-gray-900 font-semibold">
+                            {{ (int) ($booking->points_used ?? 0) }} points =
+                            ₱{{ number_format((float) ($booking->discount_amount ?? 0), 2) }}
+                        </span>
                     </div>
                 </div>
 
