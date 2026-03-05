@@ -46,23 +46,5 @@ class UserRentalController extends Controller
         ]);
     }
 
-    public function cancel($bookingId)
-    {
-        $booking = Booking::findOrFail($bookingId);
-
-        // Authorization check
-        if ($booking->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
-        // Cannot cancel within 24 hours
-        if ($booking->pickup_at <= Carbon::now()->addHours(24)) {
-            return back()->withErrors(['booking' => 'Cannot cancel within 24 hours of pickup.']);
-        }
-
-        $cancelledStatus = Status::firstOrCreate(['name' => 'Cancelled']);
-        $booking->update(['status_id' => $cancelledStatus->id]);
-
-        return back()->with('success', 'Booking cancelled successfully.');
-    }
+   
 }

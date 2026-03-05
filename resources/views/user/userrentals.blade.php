@@ -144,7 +144,7 @@
                                 @if ($booking->status->name !== 'Cancelled' && $booking->pickup_at && $booking->pickup_at > now()->addHours(24))
                                     <form action="{{ route('user.booking.cancel', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
                                         @csrf
-                                        @method('DELETE')
+                                       
                                         <button type="submit" class="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition text-sm font-semibold">
                                             Cancel Booking
                                         </button>

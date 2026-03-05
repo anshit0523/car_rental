@@ -270,50 +270,7 @@ public function success($booking_id, Request $request)
 }
 
 
-    /**
-     * Handle cancelled PayPal payment
-     * 
-     * @param int $booking_id
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function cancel($booking_id, Request $request)
-    {
-        try {
-            $booking = Booking::findOrFail($booking_id);
 
-            if ($booking->user_id !== auth()->id()) {
-                abort(403, 'Unauthorized');
-            }
-
-            Log::info('Payment cancelled by user', [
-                'booking_id' => $booking_id,
-                'user_id' => auth()->id(),
-            ]);
-
-            $paymentMethod = PaymentMethods::firstOrCreate(['name' => 'PayPal']);
-           $cancelledStatus = PaymentStatus::where('code', 'pending')->firstOrFail();
-
-            Payment::create([
-                'booking_id' => $booking_id,
-                'payment_date' => now(),
-                'amount' => $this->calculateTotal($booking),
-                'payment_method_id' => $paymentMethod->id,
-                'payment_status_id' => $cancelledStatus->id,
-                'transaction_id' => null,
-                'notes' => 'Payment cancelled by user',
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error saving cancelled payment', [
-                'booking_id' => $booking_id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        return redirect()->route('user.payments')
-            ->with('error', 'Payment cancelled. Please try again.');
-    }
 
     /**
      * Calculate total payment amount in Philippine Peso
