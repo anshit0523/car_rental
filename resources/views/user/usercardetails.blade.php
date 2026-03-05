@@ -7,116 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/rangePlugin.js"></script>
 
-  <style>
-    /* Dots */
-    .flatpickr-day {
-      position: relative;
-    }
-
-    .red-dot,
-    .green-dot {
-      position: absolute;
-      bottom: 3px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-    }
-
-    .red-dot {
-      background: #ef4444;
-    }
-
-    .green-dot {
-      background: #22c55e;
-    }
-
-    /* Legend */
-    .fp-legend {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-      padding: 10px 12px;
-      border-bottom: 1px solid #e5e7eb;
-      font-size: 12px;
-    }
-
-    .fp-legend .item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #010102;
-    }
-
-    .fp-legend .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-    }
-
-    .fp-legend .dot.red {
-      background: #ef4444;
-    }
-
-    .fp-legend .dot.green {
-      background: #22c55e;
-    }
-
-    /* ===== WEB centered calendar + overlay ===== */
-    .flatpickr-calendar.fp-center {
-      position: fixed !important;
-      top: 50% !important;
-      left: 50% !important;
-      right: auto !important;
-      transform: translate(-50%, -50%) !important;
-      z-index: 99999 !important;
-      border-radius: 14px;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
-    }
-
-    .fp-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .35);
-      z-index: 99998;
-    }
-
-    /* Optional: mobile sizing (still centered) */
-    @media (max-width: 640px) {
-      .flatpickr-calendar.fp-center {
-        width: calc(100% - 24px) !important;
-        max-width: 360px !important;
-      }
-
-      .flatpickr-rContainer,
-      .flatpickr-days,
-      .dayContainer {
-        width: 100% !important;
-        min-width: 100% !important;
-        max-width: 100% !important;
-      }
-
-      .flatpickr-day {
-        height: 44px !important;
-        line-height: 44px !important;
-        max-width: 44px !important;
-      }
-
-      .red-dot,
-      .green-dot {
-        width: 8px;
-        height: 8px;
-        bottom: 5px;
-      }
-
-      .fp-legend {
-        justify-content: center;
-        gap: 16px;
-        padding: 12px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="{{ asset('css/usercardetails.css') }}">
 
   <div class="flex h-screen bg-white">
     <!-- Main Content -->
@@ -146,20 +37,19 @@
 
       <!-- Page Content -->
       <div class="p-8">
-        <div class="grid grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 gap-6">
+          <div class="col-span-1">
 
-          <!-- Left Section - Car Details -->
-          <div class="col-span-3">
             <!-- Image Section -->
             <div class="bg-white rounded-lg mb-6 overflow-hidden">
               <div class="relative h-80 bg-gray-300">
                 @if($car->images && count(json_decode($car->images)) > 0)
                   @php $images = json_decode($car->images); @endphp
                   <img src="{{ asset('storage/' . $images[0]) }}" alt="{{ $car->model }}"
-                    class="w-full h-full object-cover">
+                       class="w-full h-full object-cover">
                 @else
                   <img src="https://images.unsplash.com/photo-1567818735868-e71b99932e29?w=600&h=400&fit=crop" alt="Car"
-                    class="w-full h-full object-cover">
+                       class="w-full h-full object-cover">
                 @endif
               </div>
 
@@ -168,8 +58,7 @@
                 @if($car->images && count(json_decode($car->images)) > 0)
                   @php $images = json_decode($car->images); @endphp
                   @foreach($images as $index => $image)
-                    <div
-                      class="w-24 h-24 rounded-lg overflow-hidden cursor-pointer {{ $index === 0 ? 'border-2 border-blue-500' : 'hover:opacity-80' }}">
+                    <div class="w-24 h-24 rounded-lg overflow-hidden cursor-pointer {{ $index === 0 ? 'border-2 border-blue-500' : 'hover:opacity-80' }}">
                       <img src="{{ asset('storage/' . $image) }}" alt="Thumb" class="w-full h-full object-cover">
                     </div>
                   @endforeach
@@ -182,11 +71,11 @@
             <!-- Car Title & Price -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6 flex items-start justify-between">
               <div>
-                <h1 class="text-2xl font-bold text-gray-900 mb-1">{{ $car->brand->name ?? 'N/A' }} {{ $car->model }}</h1>
+                <h1 class="text-2xl font-bold text-gray-900 mb-1">
+                  {{ $car->brand->name ?? 'N/A' }} {{ $car->model }}
+                </h1>
                 <div class="flex items-center gap-3">
                   <div class="flex items-center gap-1 text-sm">
-                    <span class="text-yellow-400">★★★★☆</span>
-                    <span class="text-gray-700 font-semibold">4.8 (124 reviews)</span>
                     <span class="text-gray-500">Downtown Location</span>
                   </div>
                 </div>
@@ -199,7 +88,7 @@
 
             <!-- Key Features -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-              <div class="grid grid-cols-4 gap-4">
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div class="text-center">
                   <div class="text-3xl mb-2">🧑‍🤝‍🧑</div>
                   <p class="text-xs text-gray-600 font-semibold">Passengers</p>
@@ -226,7 +115,7 @@
             <!-- Features & Amenities -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
               <h3 class="font-bold text-gray-900 mb-4 text-sm">Features & Amenities</h3>
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 @php
                   $amenities = ['Air Conditioning', 'GPS Navigation', 'USB Charging', 'Leather Seats', 'Bluetooth', 'Sunroof'];
                 @endphp
@@ -242,110 +131,49 @@
             </div>
 
             <!-- Rental Terms -->
-            <!-- Rental Terms -->
             <div class="bg-white rounded-lg shadow-md p-6">
               <h3 class="font-bold text-gray-900 mb-4 text-sm">Rental Terms & Conditions</h3>
 
               <div class="space-y-3">
+                @php
+                  $terms = [
+                    'Renter agrees to pay the basic rental fee plus additional charges for excess hours (if any).',
+                    'Vehicle must be returned on the agreed return date/time in the same condition (minus normal wear and tear).',
+                    'Vehicle must be returned with the agreed fuel expectation (as stated by the owner).',
+                    'Vehicle is allowed only within the approved area/location; taking it elsewhere without owner consent has a ₱5,000 penalty.',
+                    'Renter must have a valid (legal) driver’s license and declares no outstanding issues against the license.',
+                    'Only the renter (and any approved/authorized driver listed) may drive the vehicle.',
+                    'Vehicle may be used only for routine, legal purposes (personal or business) and must follow all Philippine laws and rules.',
+                    'Renter is responsible for any damages (dents/scratches) and any cleaning fees incurred during the rental period.',
+                    'Renter agrees to hold the owner harmless and confirms the vehicle was inspected and accepted in good operating condition.',
+                  ];
+                @endphp
 
-                <div class="flex items-start gap-3">
-                  <div class="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                    </svg>
+                @foreach($terms as $t)
+                  <div class="flex items-start gap-3">
+                    <div class="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                      </svg>
+                    </div>
+                    <span class="text-gray-700 text-xs">{{ $t }}</span>
                   </div>
-                  <span class="text-gray-700 text-xs">Renter agrees to pay the basic rental fee plus additional charges
-                    for excess hours (if any).</span>
-                </div>
-
-                <div class="flex items-start gap-3">
-                  <div class="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                    </svg>
-                  </div>
-                  <span class="text-gray-700 text-xs">Vehicle must be returned on the agreed return date/time in the same
-                    condition (minus normal wear and tear).</span>
-                </div>
-
-                <div class="flex items-start gap-3">
-                  <div class="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                    </svg>
-                  </div>
-                  <span class="text-gray-700 text-xs">Vehicle must be returned with the agreed fuel expectation (as stated
-                    by the owner).</span>
-                </div>
-
-                <div class="flex items-start gap-3">
-                  <div class="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                    </svg>
-                  </div>
-                  <span class="text-gray-700 text-xs">Vehicle is allowed only within the approved area/location; taking it
-                    elsewhere without owner consent has a ₱5,000 penalty.</span>
-                </div>
-
-                <div class="flex items-start gap-3">
-                  <div class="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                    </svg>
-                  </div>
-                  <span class="text-gray-700 text-xs">Renter must have a valid (legal) driver’s license and declares no
-                    outstanding issues against the license.</span>
-                </div>
-
-                <div class="flex items-start gap-3">
-                  <div class="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                    </svg>
-                  </div>
-                  <span class="text-gray-700 text-xs">Only the renter (and any approved/authorized driver listed) may
-                    drive the vehicle.</span>
-                </div>
-
-                <div class="flex items-start gap-3">
-                  <div class="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                    </svg>
-                  </div>
-                  <span class="text-gray-700 text-xs">Vehicle may be used only for routine, legal purposes (personal or
-                    business) and must follow all Philippine laws and rules.</span>
-                </div>
-
-                <div class="flex items-start gap-3">
-                  <div class="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                    </svg>
-                  </div>
-                  <span class="text-gray-700 text-xs">Renter is responsible for any damages (dents/scratches) and any
-                    cleaning fees incurred during the rental period.</span>
-                </div>
-
-                <div class="flex items-start gap-3">
-                  <div class="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                    </svg>
-                  </div>
-                  <span class="text-gray-700 text-xs">Renter agrees to hold the owner harmless and confirms the vehicle
-                    was inspected and accepted in good operating condition.</span>
-                </div>
-
+                @endforeach
               </div>
             </div>
-          </div>
 
-          <!-- Right Section - Booking Form -->
-          <div class="col-span-1">
-            <div class="bg-white rounded-lg shadow-md p-6 sticky top-24 h-fit">
-              <h3 class="text-lg font-bold text-gray-900 mb-4">Book This Car</h3>
+            {{-- ✅ BOOKING FORM (STATIC UNDER TERMS) --}}
+            <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+              <div class="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <h3 class="text-lg font-bold text-gray-900">Book This Car</h3>
+                  <p class="text-xs text-gray-500 mt-1">Fill in the details to continue your booking.</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-gray-500">Daily rate</p>
+                  <p class="text-lg font-bold text-gray-900">₱{{ number_format($car->price_per_day, 0) }}</p>
+                </div>
+              </div>
 
               @if ($errors->any())
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -355,61 +183,93 @@
                 </div>
               @endif
 
-              <form action="{{ route('user.booking.create') }}" method="POST" id="bookingForm"
-                onsubmit="handleBookingSubmit(event)">
+              <form action="{{ route('user.booking.create') }}" method="POST" id="bookingForm">
                 @csrf
                 <input type="hidden" name="car_id" value="{{ $car->id }}">
 
-                <div class="mb-4">
-                  <label class="text-xs font-semibold text-gray-700 mb-1 block">Pickup Date</label>
-                  <input type="text" id="pickup_date" name="pickup_date" value="{{ request('pickup_date') }}"
-                    class="w-full border border-gray-300 rounded px-2 py-2 text-xs" required autocomplete="off">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-xs font-semibold text-gray-700 mb-1 block">Pickup Date</label>
+                    <input type="text" id="pickup_date" name="pickup_date" value="{{ request('pickup_date') }}"
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-xs" required autocomplete="off">
+                  </div>
+
+                  <div>
+                    <label class="text-xs font-semibold text-gray-700 mb-1 block">Return Date</label>
+                    <input type="text" id="return_date" name="return_date" value="{{ request('return_date') }}"
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-xs" required autocomplete="off">
+                  </div>
+
+                  <div>
+                    <label class="text-xs font-semibold text-gray-700 mb-1 block">Pickup Time</label>
+                    <input type="time" name="pickup_time" value="{{ request('pickup_time') }}"
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-xs" required>
+                  </div>
+
+                  <div>
+                    <label class="text-xs font-semibold text-gray-700 mb-1 block">Return Time</label>
+                    <input type="time" name="return_time" value="{{ request('return_time') }}"
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-xs" required>
+                  </div>
+
+                  <div>
+                    <label class="text-xs font-semibold text-gray-700 mb-1 block">Service Type</label>
+                    <select id="service_type_id" name="service_type_id"
+                            class="w-full border border-gray-300 rounded px-3 py-2 text-xs" required>
+                      <option value="" disabled {{ old('service_type_id') ? '' : 'selected' }}>Select service</option>
+                      @foreach($serviceTypes as $st)
+                        <option value="{{ $st->id }}" {{ old('service_type_id') == $st->id ? 'selected' : '' }}>
+                          {{ $st->name }}
+                        </option>
+                      @endforeach
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="text-xs font-semibold text-gray-700 mb-1 block">Contact Number</label>
+                    <input type="tel" name="phone" value="{{ old('phone', auth()->user()->phone ?? '') }}"
+                           placeholder="09XXXXXXXXX"
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-xs" required>
+                    <p class="text-[11px] text-gray-500 mt-1">This will be saved to your profile.</p>
+                  </div>
+
+                  {{-- Location (toggle) --}}
+                  <div id="locationWrap" class="md:col-span-2">
+                    <label class="text-xs font-semibold text-gray-700 mb-1 block">Pickup / Delivery Location</label>
+                    <input id="service_location" type="text" name="service_location"
+                           value="{{ old('service_location') }}"
+                           placeholder="Enter address / landmark"
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-xs">
+                    <p class="text-[11px] text-gray-500 mt-1">Required for delivery.</p>
+                  </div>
                 </div>
 
-                <div class="mb-4">
-                  <label class="text-xs font-semibold text-gray-700 mb-1 block">Pickup Time</label>
-                  <input type="time" name="pickup_time" value="{{ request('pickup_time') }}"
-                    class="w-full border border-gray-300 rounded px-2 py-2 text-xs" required>
-                </div>
+                <div class="border-t border-gray-200 my-4"></div>
 
-                <div class="mb-4">
-                  <label class="text-xs font-semibold text-gray-700 mb-1 block">Return Date</label>
-                  <input type="text" id="return_date" name="return_date" value="{{ request('return_date') }}"
-                    class="w-full border border-gray-300 rounded px-2 py-2 text-xs" required autocomplete="off">
-                </div>
-
-                <div class="mb-6">
-                  <label class="text-xs font-semibold text-gray-700 mb-1 block">Return Time</label>
-                  <input type="time" name="return_time" value="{{ request('return_time') }}"
-                    class="w-full border border-gray-300 rounded px-2 py-2 text-xs" required>
-                </div>
-
-                <div class="border-t border-gray-200 mb-4"></div>
-
+                
                 <div class="space-y-2 mb-4 text-xs">
+
+                 
+    
+
                   <div class="flex justify-between">
                     <span class="text-gray-600">Daily rate</span>
                     <span class="text-gray-900 font-semibold">₱{{ number_format($car->price_per_day, 0) }}</span>
                   </div>
+
                   <div class="flex justify-between">
                     <span class="text-gray-600">Days</span>
                     <span class="text-gray-900 font-semibold" id="rental-days">0</span>
                   </div>
+
                   <div class="flex justify-between">
                     <span class="text-gray-600">Subtotal</span>
                     <span class="text-gray-900 font-semibold" id="subtotal">₱0.00</span>
                   </div>
-                  <div class="flex justify-between">
-                    <span class="text-gray-600">Insurance</span>
-                    <span class="text-gray-900 font-semibold">₱500</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-gray-600">Taxes & fees</span>
-                    <span class="text-gray-900 font-semibold">₱200</span>
-                  </div>
+
                   <div class="flex justify-between pt-2 border-t border-gray-200">
-                    <span class="text-green-600 font-semibold">Discount (10%)</span>
-                    <span class="text-green-600 font-semibold" id="discount">-₱0.00</span>
+                    <span class="text-green-600 font-semibold">Points Discount</span>
+                    <span class="text-green-600 font-semibold" id="pointsValueText">-₱0.00</span>
                   </div>
                 </div>
 
@@ -418,11 +278,55 @@
                   <input type="hidden" name="total_price" id="total-price-input" value="0">
                   <p class="text-xl font-bold text-gray-900" id="total-price">₱0.00</p>
                 </div>
+
+                {{-- Discount Points Card --}}
+                @php
+                  $availablePoints = (int) (auth()->user()->points_balance ?? 0);
+                @endphp
+
+                <div class="border border-gray-200 rounded-lg p-4 mt-4">
+                  <h4 class="text-sm font-bold text-gray-900">Discount Points</h4>
+                  <p class="text-xs text-gray-600 mt-1">
+                    You have <span class="font-semibold">{{ $availablePoints }}</span> points available.
+                  </p>
+
+                  <div class="h-px bg-gray-200 my-3"></div>
+
+                  <div class="flex items-center gap-2">
+                    <label class="text-xs text-gray-700 whitespace-nowrap">Redeem Points:</label>
+
+                    <input
+                      type="number"
+                      id="points_to_use"
+                      name="points_to_use"
+                      min="0"
+                      max="{{ $availablePoints }}"
+                      value="{{ old('points_to_use', 0) }}"
+                      class="flex-1 border border-gray-300 rounded px-3 py-2 text-xs"
+                      placeholder="0"
+                    >
+
+                    <button type="button" id="applyPointsBtn"
+                      class="bg-blue-600 text-white font-semibold px-4 py-2 rounded text-xs hover:bg-blue-700">
+                      Apply
+                    </button>
+                  </div>
+
+                  <p id="pointsError" class="hidden text-xs text-red-600 mt-2"></p>
+
+                  <div class="mt-3 space-y-1 text-xs">
+                    <p id="pointsValueText" class="text-green-700 font-semibold hidden"></p>
+                    <p id="remainingPointsText" class="text-gray-700 hidden"></p>
+                  </div>
+
+                  <input type="hidden" id="points_discount_amount" name="points_discount_amount" value="0">
+                </div>
+
                 {{-- Agree to Terms --}}
-                <div class="mb-3">
+                <div class="mb-3 mt-4">
                   <label class="flex items-start gap-2 cursor-pointer select-none">
                     <input type="checkbox" id="agree_terms"
-                      class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                           class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                     <span class="text-xs text-gray-600">
                       I agree to the <span class="font-semibold text-gray-900">Rental Terms & Conditions</span>.
                     </span>
@@ -432,233 +336,34 @@
                     Please agree to the Rental Terms & Conditions to continue.
                   </p>
                 </div>
-                <button type="submit" id="confirmBtn" disabled class="w-full bg-blue-600 text-white font-bold py-2 rounded text-sm transition mb-2
-             disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700">
+
+                <button type="submit" id="confirmBtn" disabled
+                        class="w-full bg-blue-600 text-white font-bold py-2 rounded text-sm transition mb-2
+                               disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700">
                   Confirm Booking
                 </button>
 
                 <p class="text-xs text-center text-gray-500">Free cancellation • No hidden fees</p>
               </form>
             </div>
-          </div>
 
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    const dailyRate = {{ $car->price_per_day }};
-    const insuranceRate = 500;
-    const taxRate = 0.15;
-    const discountRate = 0.10;
-
-    let unavailableSet = new Set(); // ✅ REQUIRED
-
-    function ymd(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, "0");
-      const d = String(date.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
-
-    function calculatePrice() {
-      const pickupVal = document.querySelector('input[name="pickup_date"]').value;
-      const returnVal = document.querySelector('input[name="return_date"]').value;
-      if (!pickupVal || !returnVal) return;
-
-      const pickupDate = new Date(pickupVal + "T00:00:00");
-      const returnDate = new Date(returnVal + "T00:00:00");
-      if (returnDate <= pickupDate) return;
-
-      const days = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
-      const subtotal = dailyRate * days;
-      const subtotalWithInsurance = subtotal + insuranceRate;
-      const taxes = subtotalWithInsurance * taxRate;
-      const subtotalBeforeDiscount = subtotalWithInsurance + taxes;
-      const discount = subtotalBeforeDiscount * discountRate;
-      const total = subtotalBeforeDiscount - discount;
-
-      document.getElementById('rental-days').textContent = days;
-      document.getElementById('subtotal').textContent = '₱' + subtotal.toFixed(2);
-      document.getElementById('discount').textContent = '-₱' + discount.toFixed(2);
-      document.getElementById('total-price').textContent = '₱' + total.toFixed(2);
-      document.getElementById('total-price-input').value = total.toFixed(2);
-    }
-
-    // ✅ Init Flatpickr (with dots + legend + rangePlugin)
-    function initDatePicker() {
-      const input = document.getElementById("pickup_date");
-      if (!input) return;
-
-      // prevent double init
-      if (input._flatpickr) input._flatpickr.destroy();
-
-      flatpickr("#pickup_date", {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        disableMobile: true,
-        showMonths: 1,
-        appendTo: document.body,
-        plugins: [new rangePlugin({ input: "#return_date" })],
-
-        disable: [
-          (date) => unavailableSet.has(ymd(date))
-        ],
-
-        onReady: (selectedDates, dateStr, fp) => {
-          // legend
-          const legend = document.createElement("div");
-          legend.className = "fp-legend";
-          legend.innerHTML = `
-              <div class="item"><span class="dot red"></span> Unavailable</div>
-              <div class="item"><span class="dot green"></span> Available</div>
-            `;
-          fp.calendarContainer.prepend(legend);
-
-          // center + overlay (optional)
-          fp.calendarContainer.classList.add("fp-center");
-        },
-
-        onOpen: (selectedDates, dateStr, fp) => {
-          fp.calendarContainer.classList.add("fp-center");
-
-          if (!document.querySelector(".fp-overlay")) {
-            const overlay = document.createElement("div");
-            overlay.className = "fp-overlay";
-            overlay.addEventListener("click", () => fp.close());
-            document.body.appendChild(overlay);
-          }
-        },
-
-        onClose: () => {
-          const overlay = document.querySelector(".fp-overlay");
-          if (overlay) overlay.remove();
-        },
-
-        onDayCreate: (dObj, dStr, fp, dayElem) => {
-          const key = ymd(dayElem.dateObj);
-          const dot = document.createElement("span");
-          dot.className = unavailableSet.has(key) ? "red-dot" : "green-dot";
-          dayElem.appendChild(dot);
-        },
-
-        onChange: () => {
-          calculatePrice();
-        }
-      });
-    }
-
-    // ✅ Sidebar toggle (correct for your -translate-x-full sidebar)
-    function initSidebarToggle() {
-      const toggleBtn = document.getElementById("toggleSidebar");
-      const sidebar = document.getElementById("sidebar");
-      const overlay = document.getElementById("sidebarOverlay");
-
-      if (!toggleBtn || !sidebar) return;
-
-      const open = () => {
-        sidebar.classList.remove("-translate-x-full");
-        sidebar.classList.add("translate-x-0");
-        if (overlay) overlay.classList.remove("hidden");
-      };
-
-      const close = () => {
-        sidebar.classList.add("-translate-x-full");
-        sidebar.classList.remove("translate-x-0");
-        if (overlay) overlay.classList.add("hidden");
-      };
-
-      const isOpen = () => !sidebar.classList.contains("-translate-x-full");
-
-      toggleBtn.addEventListener("click", () => {
-        isOpen() ? close() : open();
-      });
-
-      if (overlay) overlay.addEventListener("click", close);
-    }
-
-    // ✅ Load unavailable dates then init picker
-    function loadUnavailableDates() {
-      fetch(`{{ route('user.unavailable-dates', $car->id) }}`)
-        .then(res => res.json())
-        .then(data => {
-          unavailableSet = new Set(data || []);
-        })
-        .catch(err => {
-          console.error("Failed to load unavailable dates:", err);
-          unavailableSet = new Set();
-        })
-        .finally(() => {
-          initDatePicker();
-        });
-    }
-
-    // ✅ Submit validation (no modal, just block)
-    function handleBookingSubmit(e) {
-      e.preventDefault();
-
-      const agree = document.getElementById("agree_terms");
-      const err = document.getElementById("agreeError");
-
-      // ✅ Terms check first
-      if (agree && !agree.checked) {
-        if (err) err.classList.remove("hidden");
-        alert("Please agree to the Rental Terms & Conditions to continue.");
-        return;
-      } else {
-        if (err) err.classList.add("hidden"); // ✅ hide if already checked
-      }
-
-      const pickup = document.getElementById("pickup_date").value;
-      const ret = document.getElementById("return_date").value;
-
-      if (!pickup || !ret) {
-        alert("Please select both pickup and return dates.");
-        return;
-      }
-
-      let start = new Date(pickup + "T00:00:00");
-      const end = new Date(ret + "T00:00:00");
-
-      while (start <= end) {
-        if (unavailableSet.has(ymd(start))) {
-          alert("Selected dates include unavailable days. Please choose different dates.");
-          return;
-        }
-        start.setDate(start.getDate() + 1);
-      }
-
-      document.getElementById("bookingForm").submit();
-    }
-
-    // Make handleBookingSubmit available globally (for onsubmit)
-    window.handleBookingSubmit = handleBookingSubmit;
-
-    function initAgreeTerms() {
-      const checkbox = document.getElementById("agree_terms");
-      const btn = document.getElementById("confirmBtn");
-      const err = document.getElementById("agreeError");
-
-      if (!checkbox || !btn) return;
-
-      const sync = () => {
-        const ok = checkbox.checked;
-        btn.disabled = !ok;
-        if (err) err.classList.toggle("hidden", ok);
-      };
-
-      checkbox.addEventListener("change", sync);
-      sync();
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      initSidebarToggle();
-      loadUnavailableDates();
-      calculatePrice();
-      initAgreeTerms();
-    });
+    window.BOOKING_CFG = {
+      dailyRate: {{ $car->price_per_day }},
+      insuranceRate: 0,
+      taxRate: 0,
+      discountRate: 0,
+      unavailableUrl: "{{ route('user.unavailable-dates', $car->id) }}",
+      availablePoints: {{ (int) (auth()->user()->points_balance ?? 0) }},
+    };
   </script>
 
+  <script src="{{ asset('js/user/usercardetails.js') }}"></script>
 
 @endsection

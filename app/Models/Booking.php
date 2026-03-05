@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Booking extends Model
 {
-use HasFactory;
+    use HasFactory;
 
     protected $fillable = [
         'car_id',
@@ -17,9 +17,22 @@ use HasFactory;
         'total_price',
         'status_id',
         'payment_id',
+        'service_type_id',
+        'service_location',
+        'car_id',
+        'user_id',
+        'pickup_at',
+        'return_at',
+        'total_price',
+        'status_id',
+        'service_type_id',
+        'service_location',
+        'points_used',
+        'discount_amount',
+        'final_total'
     ];
 
-     protected $casts = [
+    protected $casts = [
         'pickup_at' => 'datetime',
         'return_at' => 'datetime',
     ];
@@ -40,12 +53,11 @@ use HasFactory;
     }
 
     public function payments()
-{
-    return $this->hasMany(Payment::class);
-}
-public function receipts()
-{
-    return $this->hasMany(Receipt::class);
-}
-
+    {
+        return $this->hasMany(Payment::class);
+    }
+    public function receipts()
+    {
+        return $this->hasMany(Receipt::class);
+    }
 }

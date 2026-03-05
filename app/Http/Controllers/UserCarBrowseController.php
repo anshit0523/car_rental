@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Car;
 use App\Models\Brand;
+use App\Models\Car;
 use App\Models\FuelType;
 use App\Models\Transmission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UserCarBrowseController extends Controller
 {
@@ -94,10 +95,12 @@ class UserCarBrowseController extends Controller
             ->where('active', true)
             ->limit(5)
             ->get();
-
+ $serviceTypes = DB::table('service_types')->orderBy('id')->get();
+ 
         return view('user.usercardetails', [
             'car' => $car,
             'relatedCars' => $relatedCars,
+            'serviceTypes' => $serviceTypes
         ]);
     }
 

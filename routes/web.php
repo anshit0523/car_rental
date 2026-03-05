@@ -1,22 +1,23 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CarsController;
-use App\Http\Controllers\LandingController;
-use App\Http\Controllers\ReceiptController;
-use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\UserBookingController;
 use App\Http\Controllers\AdminBookingController;
-
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminPaymentController;
+use App\Http\Controllers\AdminPaymentSettingsContoller;
+use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\CarsController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PayPalPaymentController;
+use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\UserBookingController;
 use App\Http\Controllers\UserCarBrowseController;
 use App\Http\Controllers\UserDashboardController;
-use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\AdminPaymentSettingsContoller;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\UserRentalController;
+use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
@@ -48,18 +49,22 @@ Route::middleware(['auth', 'user'])
         Route::post('/profile/password', [UserProfileController::class, 'updatePassword'])->name('profile.password');
         // Booking routes
         Route::get('/car/{id}/detail', [UserCarBrowseController::class, 'show'])->name('cardetail');
-        Route::get('/cars/{car}/unavailable-dates', [UserBookingController::class, 'getUnavailableDates'])->name('unavailable-dates');
 
         Route::post('/booking/create', [UserBookingController::class, 'store'])->name('booking.create');
+
 
         // Booking routes for different statuses
         Route::get('/rentals', function () {
             return redirect()->route('user.rentals.active');
         })->name('rentals.index');
-        Route::get('/active', [UserBookingController::class, 'myActiveBooking'])->name('rentals.active');
-        Route::get('/upcoming', [UserBookingController::class, 'upcoming'])->name('rentals.upcoming');
-        Route::get('/completed', [UserBookingController::class, 'completed'])->name('rentals.completed');
-        Route::get('/cancelled', [UserBookingController::class, 'cancelled'])->name('rentals.cancelled');
+
+        Route::get('/active', [UserRentalController::class, 'active'])->name('rentals.active');
+        Route::get('/upcoming', [UserRentalController::class, 'upcoming'])->name('rentals.upcoming');
+        Route::get('/completed', [UserRentalController::class, 'completed'])->name('rentals.completed');
+        Route::get('/cancelled', [UserRentalController::class, 'cancelled'])->name('rentals.cancelled');
+
+        // (optional) cancel route
+        Route::post('/rentals/{bookingId}/cancel', [UserRentalController::class, 'cancel'])->name('rentals.cancel');
 
         Route::get('/payments', [UserBookingController::class, 'showPayment'])->name('payments');
         Route::post('/payment/process', [UserBookingController::class, 'processPayment'])->name('payment.process');
@@ -81,7 +86,8 @@ Route::middleware(['auth', 'user'])
 
         // AJAX routes
         Route::get('/api/car/{id}/details', [UserBookingController::class, 'getCarDetails'])->name('api.car-details');
-        Route::post('/api/booking/check-availability', [UserBookingController::class, 'checkAvailability'])->name('api.check-availability');
+        Route::post('/api/booking/check-availability', [AvailabilityController::class, 'check'])->name('api.check-availability');
+        Route::get('/api/cars/{carId}/unavailable-dates', [AvailabilityController::class, 'unavailableDates'])->name('unavailable-dates');
 
         Route::get('/car/{id}', [UserCarBrowseController::class, 'show'])->name('car-detail');
         Route::get('/filter-cars', [UserCarBrowseController::class, 'filterCars'])->name('filter-cars');
