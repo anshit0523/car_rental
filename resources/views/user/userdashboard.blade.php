@@ -3,10 +3,8 @@
 
 @section('content')
 <div class="flex h-screen bg-gray-50">
-    <!-- Sidebar -->
+    
    
-
-
 
     <!-- Main Content -->
     <main class="flex-1 overflow-auto">
@@ -86,7 +84,7 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-gray-600 text-sm font-medium">Loyalty Points</p>
-                            <p class="text-3xl font-bold text-gray-900 mt-2">{{$points_balance ?? 0 }}</p>
+                            <p class="text-3xl font-bold text-gray-900 mt-2"> {{ number_format(auth()->user()->points_balance ?? 0) }}</p>
                         </div>
                         <div class="p-3 rounded-full bg-yellow-100">
                             <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

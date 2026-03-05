@@ -43,7 +43,7 @@ class UserBookingController extends Controller
             'service_location' => 'nullable|string|max:255',
             'phone' => 'required|string|max:30',
 
-            // ✅ points input
+
             'points_to_use' => 'nullable|integer|min:0',
         ]);
 
@@ -89,47 +89,66 @@ class UserBookingController extends Controller
             $booking = null;
 
             DB::transaction(function () use (
-    $user,
-    $validated,
-    $pendingStatus,
-    $pickupDateTime,
-    $returnDateTime,
-    $POINTS_PER_PESO,
-    $pointsRequested,
-    &$booking
-) {
-    $userRow = DB::table('users')->where('id', $user->id)->lockForUpdate()->first();
-    $balanceBefore = (int) $userRow->points_balance;
+                $user,
+                $validated,
+                $pendingStatus,
+                $pickupDateTime,
+                $returnDateTime,
+                $POINTS_PER_PESO,
+                $pointsRequested,
+                &$booking
+            ) {
+                $userRow = DB::table('users')->where('id', $user->id)->lockForUpdate()->first();
+                $balanceBefore = (int) $userRow->points_balance;
 
-    $pointsUsed = min($pointsRequested, $balanceBefore);
+                $pointsUsed = min($pointsRequested, $balanceBefore);
 
-    $discountAmount = $pointsUsed / $POINTS_PER_PESO;
-    $totalPrice = (float) $validated['total_price']; // MUST BE BASE TOTAL
-    $finalTotal = max(0, $totalPrice - $discountAmount);
+                $discountAmount = $pointsUsed / $POINTS_PER_PESO;
+                $totalPrice = (float) $validated['total_price']; // MUST BE BASE TOTAL
+                $finalTotal = max(0, $totalPrice - $discountAmount);
 
-    $balanceAfter = $balanceBefore - $pointsUsed;
+                $balanceAfter = $balanceBefore - $pointsUsed;
 
-    // ✅ update balance ONCE
-    DB::table('users')->where('id', $user->id)->update([
-        'points_balance' => $balanceAfter,
-        'updated_at' => now(),
-    ]);
+                // ✅ update user balance
+                DB::table('users')->where('id', $user->id)->update([
+                    'points_balance' => $balanceAfter,
+                    'updated_at' => now(),
+                ]);
 
-    // ✅ create booking
-    $booking = Booking::create([
-        'car_id' => $validated['car_id'],
-        'user_id' => $user->id,
-        'pickup_at' => $pickupDateTime,
-        'return_at' => $returnDateTime,
-        'total_price' => $totalPrice,
-        'final_total' => $finalTotal,
-        'points_used' => $pointsUsed,
-        'discount_amount' => $discountAmount,
-        'status_id' => $pendingStatus->id,
-        'service_type_id' => $validated['service_type_id'],
-        'service_location' => $validated['service_location'] ?? null,
-    ]);
-});
+                // ✅ create booking
+                $booking = Booking::create([
+                    'car_id' => $validated['car_id'],
+                    'user_id' => $user->id,
+                    'pickup_at' => $pickupDateTime,
+                    'return_at' => $returnDateTime,
+                    'total_price' => $totalPrice,
+                    'final_total' => $finalTotal,
+                    'points_used' => $pointsUsed,
+                    'discount_amount' => $discountAmount,
+                    'status_id' => $pendingStatus->id,
+                    'service_type_id' => $validated['service_type_id'],
+                    'service_location' => $validated['service_location'] ?? null,
+                ]);
+
+                // ✅ ledger insert (Option 2 normalized)
+                if ($pointsUsed > 0) {
+                    $redeemTypeId = (int) DB::table('points_transaction_types')
+                        ->where('name', 'redeem')
+                        ->value('id');
+
+                    DB::table('points_transactions')->insert([
+                        'user_id' => $user->id,
+                        'booking_id' => $booking->id,
+                        'points_id' => $redeemTypeId,       // ✅ FK to points_transaction_types
+                        'points_change' => -$pointsUsed,
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balanceAfter,
+                        'note' => 'Redeemed points for booking',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            });
 
             // redirect/payment
             if ($request->wantsJson()) {
