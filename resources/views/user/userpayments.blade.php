@@ -110,7 +110,7 @@
 
 
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Points</span>
+                        <span class="text-gray-600">Discount Points</span>
                         <span class="text-gray-900 font-semibold">
                             {{ (int) ($booking->points_used ?? 0) }} points =
                             ₱{{ number_format((float) ($booking->discount_amount ?? 0), 2) }}
