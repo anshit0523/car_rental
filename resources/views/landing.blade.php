@@ -108,16 +108,24 @@
             color: #ff4d00;
             margin-bottom: 15px;
         }
+        .brandscontainer{
+            display: flex;
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+            gap: 20px;
+        }
         .brand-container {
             height: 120px;
+            width: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
-            text-align: center;
             background-color: #ffffff;
             border: none;
             border-radius: 12px;
             padding: 20px;
+            margin: 0 auto;
         }
         .brand-logo {
             width: 100%;
@@ -251,28 +259,33 @@
     <section class="py-5 text-center">
         <div class="container">
             <h2 class="section-title" style="color: #000000;">Drive with Premium Car Brands</h2>
-            <div class="row g-4">
+
+            <div class="row justify-content-center text-center">
 
                 <div class="col-md-3">
-                    <div class="brand-container"><img class="brand-logo" src="{{ asset('storage/cars/Toyota.jpg') }}" alt="Toyota">
+                    <div class="brand-container">
+                        <img class="brand-logo" src="{{ asset('storage/cars/Toyota.jpg') }}" alt="Toyota">
                     </div>
                     <h5 style="color: #000000;">Toyota</h5>
                 </div>
 
                 <div class="col-md-3">
-                    <div class="brand-container"><img class="brand-logo" src="{{ asset('storage/cars/Honda.jpg') }}" alt="Honda">
+                    <div class="brand-container">
+                        <img class="brand-logo" src="{{ asset('storage/cars/Honda.jpg') }}" alt="Honda">
                     </div>
                     <h5 style="color: #000000;">Honda</h5>
                 </div>
 
                 <div class="col-md-3">
-                    <div class="brand-container"><img class="brand-logo" src="{{ asset('storage/cars/Mazda.png') }}" alt="Mazda">
+                    <div class="brand-container">
+                        <img class="brand-logo" src="{{ asset('storage/cars/Mazda.png') }}" alt="Mazda">
                     </div>
                     <h5 style="color: #000000;">Mazda</h5>
                 </div>
 
                 <div class="col-md-3">
-                    <div class="brand-container"><img class="brand-logo" src="{{ asset('storage/cars/Nissan.png') }}" alt="Nissan">
+                    <div class="brand-container">
+                        <img class="brand-logo" src="{{ asset('storage/cars/Nissan.png') }}" alt="Nissan">
                     </div>
                     <h5 style="color: #000000;">Nissan</h5>
                 </div>
@@ -280,7 +293,6 @@
             </div>
         </div>
     </section>
-
     <!-- ✅ CTA SECTION -->
     <section class="cta">
         <div class="container">
