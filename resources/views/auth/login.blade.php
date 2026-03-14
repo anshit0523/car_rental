@@ -14,10 +14,10 @@
         .auth-card {
             width: 100%;
             max-width: 450px;
-            background: rgba(28, 28, 28, 0.98);
+            background: #ff6a00;
             border-radius: 20px;
             padding: 50px 40px;
-            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 40px 100px rgba(58, 58, 58, 0.6);
             color: #fff;
         }
 
@@ -41,54 +41,55 @@
         .auth-subtitle {
             text-align: center;
             font-size: 14px;
-            color: #aaa;
+            color: #ffffff;
             margin-bottom: 30px;
         }
 
         .form-label {
-            color: #ddd;
+            color: #ffffff;
             font-size: 14px;
         }
 
         .form-control {
-            background-color: #111;
-            border: 1px solid #333;
+            background-color: #ffffff;
+            border: 1px solid #ffffff;
             color: #fff;
             border-radius: 10px;
             padding: 12px 15px;
         }
 
         .form-control:focus {
-            background-color: #111;
-            border-color: #ff4d00;
+            background-color: #ffffff;
+            border-color: #ff6a00;
             box-shadow: none;
-            color: #fff;
+            color: #000000;
         }
 
         .btn-login {
-            background: linear-gradient(90deg, #ff4d00, #ff6a00);
+            background: linear-gradient(90deg, #ffffff, #ffffff);
             border: none;
             border-radius: 12px;
             padding: 12px;
             font-weight: 600;
             letter-spacing: 0.5px;
             transition: 0.3s;
-            color: #fff;
+            color: #ff6a00;
         }
 
         .btn-login:hover {
-            opacity: 0.9;
+            background: linear-gradient(90deg, #ff8c2a, #ff8c2a);
+            color: #ffffff;
         }
 
         .auth-footer {
             text-align: center;
             margin-top: 20px;
             font-size: 14px;
-            color: #aaa;
+            color: #000000;
         }
 
         .auth-footer a {
-            color: #ff4d00;
+            color: #ffffff;
             text-decoration: none;
             font-weight: 500;
         }
@@ -102,12 +103,12 @@
         <div class="auth-card">
 
             <div class="auth-logo">
-
+                
                 <img src="{{ asset('storage/cars/ezelogo.png') }}" alt="Logo" style="height: 100px;">
 
             </div>
 
-            <h4 class="auth-title">Welcome Back</h4>
+            <!-- <h4 class="auth-title">Welcome Back</h4> -->
             <p class="auth-subtitle">
                 Sign in to your Dumaguete EZE Car Rental account
             </p>

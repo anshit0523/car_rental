@@ -16,7 +16,7 @@
     .auth-card {
       width: 100%;
       max-width: 450px;
-      background: #1b1b1b;
+      background: #ff6a00;
       border-radius: 26px;
       padding: 90px 45px 40px;
       position: relative;
@@ -47,38 +47,38 @@
     .auth-subtitle {
       text-align: center;
       font-size: 14px;
-      color: #bdbdbd;
+      color: #ffffff;
       margin-bottom: 28px;
     }
 
     .form-label {
-      color: #e6e6e6;
+      color: #ffffff;
       font-size: 14px;
       margin-bottom: 6px;
     }
 
     .form-control {
-      background: #111;
-      border: 1px solid #333;
+      background: #ffffff;
+      border: 1px solid #ffffff;
       padding: 13px 15px;
       border-radius: 14px;
-      color: #fff;
+      color: #000000;
       box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
     }
 
     .form-control::placeholder {
-      color: rgba(255, 255, 255, 0.35);
+      color: rgba(0, 0, 0, 0.35);
     }
 
     .form-control:focus {
-      background: #111;
+      background: #ffffff;
       border-color: #ff4d00;
       box-shadow: 0 0 0 .2rem rgba(255, 77, 0, .2);
       color: #fff;
     }
 
     .btn-auth {
-      background: linear-gradient(90deg, #ff4d00, #ff6a00);
+      background: linear-gradient(90deg, #fc8734, #fc8734);
       border: none;
       border-radius: 12px;
       padding: 12px;
@@ -91,18 +91,19 @@
 
     .btn-auth:hover {
       transform: translateY(-1px);
-      opacity: .97;
+      background: linear-gradient(90deg, #ff8c2a, #ff8c2a);
+      color: #ffffff;
     }
 
     .auth-footer {
       text-align: center;
       margin-top: 18px;
-      color: #a8a8a8;
+      color: #000000;
       font-size: 14px;
     }
 
     .auth-footer a {
-      color: #ff6a00;
+      color: #ffffff;
       font-weight: 500;
       text-decoration: none;
     }
