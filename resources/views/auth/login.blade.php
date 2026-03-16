@@ -104,7 +104,7 @@
 
             <div class="auth-logo">
                 
-                <img src="{{ asset('storage/cars/ezelogo.png') }}" alt="Logo" style="height: 100px;">
+                <img src="{{ asset('storage/logo/header pic.png') }}" alt="Logo" style="height: 100px;">
 
             </div>
 

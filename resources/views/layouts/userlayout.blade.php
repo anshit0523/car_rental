@@ -14,12 +14,11 @@
 
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/rangePlugin.js"></script>
 
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/rangePlugin.js"></script>
 
     <style>
         * {
@@ -40,8 +39,8 @@
     </style>
 </head>
 
- 
 <body class="bg-gray-100 font-sans flex flex-col lg:flex-row min-h-screen">
+
     <!-- Flash Messages -->
     @if (session('success'))
         <div class="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-800 px-6 py-4 rounded-lg shadow-lg z-50" role="alert">
@@ -64,42 +63,51 @@
             </div>
         </div>
     @endif
-   
-   
+
+    <!-- Sidebar / Navbar -->
     @include('components.user_navbar')
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-auto w-full lg:ml-0"> 
-    
-    @yield('content')
- </main >
+    <main class="flex-1 overflow-auto w-full lg:ml-0">
+        @yield('content')
+    </main>
 
     <!-- Scripts -->
-    
     <script>
+
         // Auto-hide flash messages after 5 seconds
         document.addEventListener('DOMContentLoaded', function() {
+
             const alerts = document.querySelectorAll('[role="alert"]');
+
             alerts.forEach(alert => {
+
                 setTimeout(() => {
+
                     alert.style.opacity = '0';
                     alert.style.transform = 'translateY(-20px)';
                     alert.style.transition = 'all 0.3s ease';
+
                     setTimeout(() => alert.remove(), 300);
+
                 }, 5000);
+
             });
+
         });
 
-        // CSRF Token for AJAX requests
+        // CSRF Token for AJAX
         if (typeof $ !== 'undefined') {
             $.ajaxSetup({
                 headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
             });
         }
+
     </script>
 
     @yield('scripts')
+
 </body>
 </html>

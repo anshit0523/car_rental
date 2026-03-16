@@ -91,9 +91,7 @@ class PaymentController extends Controller
         |--------------------------------------
         */
 
-        $paymentMethod = PaymentMethods::firstOrCreate([
-            'name' => ucfirst($validated['payment_method'])
-        ]);
+      $paymentMethod = PaymentMethods::where('code', $validated['payment_method'])->firstOrFail();
 
         $paymentStatus = PaymentStatus::where('code', 'pending')->first();
 
@@ -142,7 +140,7 @@ class PaymentController extends Controller
         ]);
 
         return redirect()
-            ->route('user.booking.confirmation', $booking->id)
+            ->route('user.rentals.pending')
             ->with('success', 'Payment proof submitted. Waiting for verification.');
 
     }

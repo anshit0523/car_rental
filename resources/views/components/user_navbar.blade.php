@@ -46,8 +46,8 @@
         </a>
 
 
-        <a href="{{ route('user.browse') }}"
-            class="{{ $baseLinkClass }} text-gray-300 hover:bg-gray-800">
+        <a href="{{ route('user.payments') }}"
+             class="{{ $baseLinkClass }} {{ request()->routeIs('user.payments') ? 'bg-black text-white' : 'text-gray-300 hover:bg-gray-800' }}">
             <span class="text-lg flex-shrink-0">💳</span>
             <span class="menu-label">Payments</span>
         </a>
