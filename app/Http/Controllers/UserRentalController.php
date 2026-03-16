@@ -30,6 +30,11 @@ class UserRentalController extends Controller
         return $this->listByStatus('Cancelled');
     }
 
+    public function Pending()
+    {
+        return $this->listByStatus('Pending');
+    }
+
     private function listByStatus(string $statusName)
     {
         $bookings = Booking::where('user_id', auth()->id())

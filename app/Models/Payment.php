@@ -42,4 +42,9 @@ class Payment extends Model
     {
         return $this->hasOne(Receipt::class);
     }
+
+    public function photoReceipt()
+{
+    return $this->hasOne(PhotoReceipt::class);
+}
 }

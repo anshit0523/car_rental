@@ -10,6 +10,7 @@ use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\CarsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PayPalPaymentController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\UserBookingController;
@@ -38,6 +39,14 @@ Route::middleware(['auth', 'user'])
     ->group(function () {
 
         Route::get('/dashboard', [UserDashboardController::class, 'dashboard'])->name('dashboard');
+
+        // notification routes
+        Route::get('/notifications/read/{id}', [UserDashboardController::class, 'markRead'])
+        ->name('notifications.read');
+
+    Route::get('/notifications/latest', [UserDashboardController::class, 'latestNotifications'])
+        ->name('notifications.latest');
+
         Route::get('/rentals', [UserDashboardController::class, 'rentals'])->name('rentals');
 
         Route::get('/browse', [UserCarBrowseController::class, 'index'])->name('browse');
@@ -63,17 +72,16 @@ Route::middleware(['auth', 'user'])
         Route::get('/completed', [UserRentalController::class, 'completed'])->name('rentals.completed');
         Route::get('/cancelled', [UserRentalController::class, 'cancelled'])->name('rentals.cancelled');
         Route::post('/user/booking/{booking}/cancel', [UserRentalController::class, 'cancel'])->name('user.booking.cancel');
-      Route::post('/booking/{booking}/cancel', [UserBookingController::class, 'cancel'])->name('booking.cancel'); 
+        Route::post('/booking/{booking}/cancel', [UserBookingController::class, 'cancel'])->name('booking.cancel');
 
         Route::get('/payments', [UserBookingController::class, 'showPayment'])->name('payments');
-        Route::post('/payment/process', [UserBookingController::class, 'processPayment'])->name('payment.process');
 
-        // PayPal routes
-        Route::get('/paypal/payment/{booking_id}', [App\Http\Controllers\PayPalPaymentController::class, 'createPayment'])->name('paypal.payment');
-        Route::get('/paypal/success/{booking_id}', [App\Http\Controllers\PayPalPaymentController::class, 'success'])->name('paypal.success');
-         Route::get('/paypal/cancel/{booking_id}', [App\Http\Controllers\PayPalPaymentController::class, 'cancel'])->name('paypal.cancel');
+
+
+        Route::post('/payment/process', [PaymentController::class, 'process'])
+            ->name('payment.process');
         Route::get('/my-bookings', [UserBookingController::class, 'myBookings'])->name('my-bookings');
-        
+
         Route::get('/booking/{id}/confirmation', [UserBookingController::class, 'confirmation'])->name('booking.confirmation');
 
 
@@ -135,6 +143,7 @@ Route::middleware(['auth', 'admin'])
         Route::put('/payment-settings', [AdminPaymentSettingsContoller::class, 'update'])
             ->name('payment-settings.update');
 
+        // adminPayment routes
         Route::get('/payments', [AdminPaymentController::class, 'index'])
             ->name('payments.index');
 
@@ -143,4 +152,10 @@ Route::middleware(['auth', 'admin'])
 
         Route::get('/payments/export/csv', [AdminPaymentController::class, 'export'])
             ->name('payments.export');
+
+        Route::post('/payments/{id}/approve', [AdminPaymentController::class, 'approve'])
+            ->name('payments.approve');
+
+        Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])
+            ->name('payments.reject');
     });

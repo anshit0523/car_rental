@@ -203,50 +203,6 @@ class UserBookingController extends Controller
 
 
 
-    /**
-     * Process payment
-     */
-    public function processPayment(Request $request)
-    {
-        $validated = $request->validate([
-            'booking_id' => 'required|exists:bookings,id',
-            'payment_method' => 'required|in:card,paypal,apple_pay',
-            'card_number' => 'required_if:payment_method,card',
-            'expiry_date' => 'required_if:payment_method,card',
-            'cvv' => 'required_if:payment_method,card',
-            'cardholder_name' => 'required_if:payment_method,card',
-        ]);
-
-        try {
-            $booking = Booking::findOrFail($validated['booking_id']);
-
-            // ✅ Ensure booking belongs to the logged-in user
-            if ($booking->user_id !== auth()->id()) {
-                abort(403, 'Unauthorized');
-            }
-
-            // ✅ Check payment method
-            if ($validated['payment_method'] === 'paypal') {
-                // Redirect user to PayPal payment route
-                return redirect()->route('paypal.payment', ['booking_id' => $booking->id]);
-            }
-
-            // ✅ For card or Apple Pay, process immediately
-            $confirmedStatus = Status::firstOrCreate(['name' => 'Confirmed']);
-
-            // Update booking status
-            $booking->update(['status_id' => $confirmedStatus->id]);
-
-            return redirect()->route('user.booking.confirmation', ['id' => $booking->id])
-                ->with('success', 'Payment successful! Your booking is confirmed.');
-        } catch (\Exception $e) {
-            return back()
-                ->withErrors(['error' => 'Payment failed: ' . $e->getMessage()])
-                ->withInput();
-        }
-    }
-
-
     public function confirmation($id)
     {
         $booking = Booking::with(['car', 'user', 'payments', 'receipts'])->findOrFail($id);

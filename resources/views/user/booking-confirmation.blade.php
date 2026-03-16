@@ -4,19 +4,7 @@
     <div class="min-h-screen bg-gray-50 py-12">
         <div class="max-w-2xl mx-auto px-6">
 
-            <!-- Success Message -->
-            <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
-                <div class="flex items-center gap-3">
-                    <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                    </svg>
-                    <div>
-                        <h2 class="text-2xl font-bold text-green-900">Payment Successful!</h2>
-                        <p class="text-green-700">Your booking has been confirmed</p>
-                    </div>
-                </div>
-            </div>
-
+           
             <!-- Booking Details -->
             <form class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
                 <!-- Title -->
@@ -67,10 +55,10 @@
                                 <span
                                     class="px-3 py-1 bg-green-100 text-green-800 rounded-full font-semibold">{{ $payment->paymentStatus->name }}</span>
                             </div>
-                            <div class="flex justify-between">
+                           <!-- <div class="flex justify-between">
                                 <span class="text-gray-700">Transaction ID:</span>
                                 <span class="font-mono text-sm">{{ $payment->transaction_id }}</span>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 @endif

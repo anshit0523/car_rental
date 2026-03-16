@@ -60,4 +60,14 @@ class Booking extends Model
     {
         return $this->hasMany(Receipt::class);
     }
+
+public function photoReceipt()
+{
+    return $this->hasOne(\App\Models\PhotoReceipt::class);
+}
+public function notifications()
+{
+    return $this->hasMany(Notification::class);
+}
+
 }

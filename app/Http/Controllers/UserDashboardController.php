@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Car;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class UserDashboardController extends Controller
@@ -23,7 +24,7 @@ class UserDashboardController extends Controller
             $completedTrips = $user->bookings()->where('status_id', 3)->count();
 
             // Get loyalty points
-              $points_balance = $user?->points_balance ?? 0; 
+            $points_balance = $user?->points_balance ?? 0;
 
             // Get current active rentals with car and status details
             $currentRentals = Booking::where('user_id', $user->id)
@@ -38,7 +39,7 @@ class UserDashboardController extends Controller
                 ->latest()
                 ->limit(3)
                 ->get()
-                ->map(function($booking) {
+                ->map(function ($booking) {
                     return (object)[
                         'activity' => $booking->status->name . ' - ' . $booking->car->brand->name . ' ' . $booking->car->model,
                         'time' => $booking->updated_at->diffForHumans()
@@ -52,12 +53,21 @@ class UserDashboardController extends Controller
                 ->orderBy('pickup_at')
                 ->limit(3)
                 ->get()
-                ->map(function($booking) {
+                ->map(function ($booking) {
                     return (object)[
                         'event' => $booking->car->brand->name . ' Pickup',
                         'date' => $booking->pickup_at->format('M d, Y \a\t h:i A')
                     ];
                 });
+
+            $notifications = Notification::where('user_id', auth()->id())
+                ->latest()
+                ->take(5)
+                ->get();
+
+            $unreadCount = Notification::where('user_id', auth()->id())
+                ->where('is_read', false)
+                ->count();
 
             return view('user.userdashboard', [
                 'activeRentals' => $activeRentals,
@@ -66,14 +76,48 @@ class UserDashboardController extends Controller
                 'points_balance' => $points_balance,
                 'currentRentals' => $currentRentals,
                 'recentActivity' => $recentActivity,
-                'upcomingEvents' => $upcomingEvents
+                'upcomingEvents' => $upcomingEvents,
+                'notifications' => $notifications,
+                'unreadCount' => $unreadCount
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Dashboard Error: ' . $e->getMessage());
             return back()->with('error', 'Error loading dashboard: ' . $e->getMessage());
         }
     }
+
+    // notification mark as read
+    public function markRead($id)
+    {
+        $notification = Notification::findOrFail($id);
+
+        if ($notification->user_id == auth()->id()) {
+            $notification->update([
+                'is_read' => true
+            ]);
+        }
+
+        return redirect($notification->link ?? '/dashboard');
+    }
+
+    // Fetch latest notifications 
+    public function latestNotifications()
+    {
+        $notifications = Notification::where('user_id', auth()->id())
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $unreadCount = Notification::where('user_id', auth()->id())
+            ->where('is_read', false)
+            ->count();
+
+        return response()->json([
+            'notifications' => $notifications,
+            'unread' => $unreadCount
+        ]);
+    }
+
 
     public function rentals()
     {
