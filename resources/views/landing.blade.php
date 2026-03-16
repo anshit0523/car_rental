@@ -170,7 +170,6 @@
         <div class="container">
             <h1 class="display-4 fw-bold mb-3">DUMAGUETE EZE CAR RENTAL</h1>
             <p class="lead mb-4">Drive with Comfort & Confidence</p>
-
             
         </div>
     </section>
