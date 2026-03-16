@@ -13,7 +13,7 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            background: radial-gradient(circle at top, #1c1c1c, #000);
+            background: radial-gradient(circle at top, , #ffffff);
             font-family: 'Poppins', sans-serif;
         }
     </style>

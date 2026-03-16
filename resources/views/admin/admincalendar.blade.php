@@ -438,15 +438,14 @@ function openBookingModal(bookingId) {
                         ₱${data.total_price}
                     </div>
                 </div>
-            `;
-        })
-        .catch(() => {
-            content.innerHTML = `
-                <div class="text-red-500 text-center">
-                    Failed to load booking details.
-                </div>
-            `;
-        });
+            </div>`;
+    })
+    .catch(() => {
+        content.innerHTML = `
+            <div class="text-red-500 text-center py-4">
+                <i class="fas fa-exclamation-circle mr-2"></i>Failed to load booking details.
+            </div>`;
+    });
 }
 
 function closeBookingModal() {
