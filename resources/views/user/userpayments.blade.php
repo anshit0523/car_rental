@@ -90,7 +90,8 @@
                     </div>
 
 
-                    <form action="{{ route('user.payment.process') }}" method="POST" enctype="multipart/form-data">
+                    <form id="paymentForm" action="{{ route('user.payment.process') }}" method="POST"
+                        enctype="multipart/form-data">
 
                         @csrf
 
@@ -153,11 +154,16 @@
                                             </p>
                                         </div>
 
-                                        <span class="text-sm text-blue-600 font-medium">
-                                            Browse
-                                        </span>
+                                        
 
-                                        <input type="file" name="receipt_image" accept="image/*" class="hidden">
+                                        <input type="file" id="gcashInput" name="receipt_image" accept="image/*"
+                                            class="hidden">
+
+                                        <div id="gcashPreview" class="mt-4 hidden">
+                                            <p class="text-sm text-gray-600 mb-2">Receipt Preview</p>
+
+                                            <img id="gcashPreviewImg" class="w-40 rounded-lg border shadow-sm">
+                                        </div>
 
                                     </label>
 
@@ -222,8 +228,14 @@
                                 Upload Bank Receipt
                             </label>
 
-                            <input type="file" name="bank_receipt" accept="image/*"
+                            <input type="file" name="bank_receipt" accept="image/*" id="bankInput"
                                 class="border rounded-lg px-4 py-2 w-full">
+
+                            <div id="bankPreview" class="mt-4 hidden">
+                                <p class="text-sm text-gray-600 mb-2">Receipt Preview</p>
+
+                                <img id="bankPreviewImg" class="w-40 rounded-lg border shadow-sm">
+                            </div>
 
                             <p class="text-xs text-gray-500 mt-2">
                                 Upload screenshot after sending bank transfer.
@@ -302,10 +314,33 @@
 
                         </div>
 
-                      
+
 
                     </div>
 
+                </div>
+
+                <!-- ERROR MODAL -->
+                <div id="errorModal"
+                    class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50">
+                    <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+
+                        <div class="text-red-500 text-4xl mb-3">⚠️</div>
+
+                        <h3 class="text-lg font-bold mb-2">
+                            Upload Required
+                        </h3>
+
+                        <p class="text-gray-600 text-sm mb-5">
+                            Please upload your payment receipt before submitting.
+                        </p>
+
+                        <button onclick="closeModal()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold">
+                            OK
+                        </button>
+
+                    </div>
                 </div>
 
             </div>
@@ -315,37 +350,7 @@
     </div>
 
 
-    <script>
-
-        const paymentOptions = document.querySelectorAll('.payment-option');
-        const gcashSection = document.getElementById('gcashSection');
-        const bankSection = document.getElementById('bankSection');
-        const paymentMethodInput = document.getElementById('paymentMethod');
-
-        paymentOptions.forEach(option => {
-
-            option.addEventListener('click', () => {
-
-                const method = option.dataset.method;
-
-                gcashSection.classList.add('hidden');
-                bankSection.classList.add('hidden');
-
-                paymentOptions.forEach(o => {
-                    o.classList.remove('border-blue-500', 'bg-blue-50');
-                });
-
-                option.classList.add('border-blue-500', 'bg-blue-50');
-
-                paymentMethodInput.value = method;
-
-                if (method === 'gcash') gcashSection.classList.remove('hidden');
-                if (method === 'bank') bankSection.classList.remove('hidden');
-
-            });
-
-        });
-
-    </script>
 
 @endsection
+
+<script src="{{ asset('js/user/userpayment.js') }}"></script>

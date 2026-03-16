@@ -222,6 +222,8 @@ class UserBookingController extends Controller
         ]);
     }
 
+    
+
      public function cancel($bookingId)
     {
         $booking = Booking::findOrFail($bookingId);

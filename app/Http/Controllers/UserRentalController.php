@@ -30,10 +30,19 @@ class UserRentalController extends Controller
         return $this->listByStatus('Cancelled');
     }
 
-    public function Pending()
-    {
-        return $this->listByStatus('Pending');
-    }
+  public function pending()
+{
+    $bookings = Booking::where('user_id', auth()->id())
+        ->whereIn('status_id', [5,17]) 
+        ->with(['car.brand', 'car.fuelType', 'car.transmission', 'status'])
+        ->orderBy('pickup_at', 'desc')
+        ->paginate(10);
+
+    return view('user.userrentals', [
+        'bookings' => $bookings,
+        'status' => 'Pending',
+    ]);
+}
 
     private function listByStatus(string $statusName)
     {

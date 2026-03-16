@@ -56,6 +56,7 @@ Route::middleware(['auth', 'user'])
         Route::get('/profile', [UserProfileController::class, 'edit'])->name('profile');
         Route::post('/profile/update', [UserProfileController::class, 'updateInfo'])->name('profile.update');
         Route::post('/profile/password', [UserProfileController::class, 'updatePassword'])->name('profile.password');
+        
         // Booking routes
         Route::get('/car/{id}/detail', [UserCarBrowseController::class, 'show'])->name('cardetail');
 
@@ -68,6 +69,7 @@ Route::middleware(['auth', 'user'])
         })->name('rentals.index');
 
         Route::get('/active', [UserRentalController::class, 'active'])->name('rentals.active');
+        Route::get('/rentals/pending', [UserRentalController::class, 'pending'])->name('rentals.pending');
         Route::get('/upcoming', [UserRentalController::class, 'upcoming'])->name('rentals.upcoming');
         Route::get('/completed', [UserRentalController::class, 'completed'])->name('rentals.completed');
         Route::get('/cancelled', [UserRentalController::class, 'cancelled'])->name('rentals.cancelled');

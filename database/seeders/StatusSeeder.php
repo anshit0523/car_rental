@@ -18,6 +18,7 @@ class StatusSeeder extends Seeder
             ['name' => 'Checkup'],
             ['name' => 'Damage'],
             ['name' => 'Needs Repair'], 
+            ['name' => 'Failed'], 
         ];
 
         foreach ($statuses as $status) {

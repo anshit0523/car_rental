@@ -17,6 +17,7 @@ class PaymentMethodsSeeder extends Seeder
             ['name' => 'PayPal', 'code' => 'paypal'],
             ['name' => 'Cash', 'code' => 'cash'],
             ['name' => 'GCash', 'code' => 'gcash'],
+             ['name' => 'Bank Transfer', 'code' => 'bank'],
         ];
 
         foreach ($methods as $method) {
