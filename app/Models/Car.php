@@ -19,6 +19,7 @@ class Car extends Model
         'description',
         'images',
         'active',
+        'tracker_id',
     ];
 
     protected $casts = [
@@ -47,6 +48,11 @@ class Car extends Model
    
    
     }
+
+    public function tracker()
+{
+    return $this->belongsTo(Tracker::class);
+}
 
     
 }
