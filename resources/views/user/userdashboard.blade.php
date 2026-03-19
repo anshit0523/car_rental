@@ -208,7 +208,7 @@
                         </div>
                         <div class="p-6 space-y-3">
                             <a href="{{ route('user.browse') }}"
-                                class="w-full flex items-center justify-center bg-black text-white px-4 py-3 rounded-lg font-medium hover:bg-gray-900 transition">
+                                class="w-full flex items-center justify-center bg-[#ff4d00] text-white px-4 py-3 rounded-lg font-medium hover:bg-orange-500 transition">
                                 <span class="mr-2">+</span> New Rental
                             </a>
                             <button

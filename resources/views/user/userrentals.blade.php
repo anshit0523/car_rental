@@ -19,31 +19,31 @@
 
                     <a href="{{ route('user.rentals.active') }}"
                         class="px-6 py-4 font-medium border-b-2 transition
-                       {{ request()->routeIs('user.rentals.active') ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
+                       {{ request()->routeIs('user.rentals.active') ? 'text-orange-500 border-orange-500' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
                         Active Rentals
                     </a>
 
                     <a href="{{ route('user.rentals.pending') }}"
                         class="px-6 py-4 font-medium border-b-2 transition
-                       {{ request()->routeIs('user.rentals.pending') ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
+                       {{ request()->routeIs('user.rentals.pending') ? 'text-orange-500 border-orange-500' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
                         Pending
                     </a>
 
                     <a href="{{ route('user.rentals.upcoming') }}"
                         class="px-6 py-4 font-medium border-b-2 transition
-                       {{ request()->routeIs('user.rentals.upcoming') ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
+                       {{ request()->routeIs('user.rentals.upcoming') ? 'text-orange-500 border-orange-500' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
                         Upcoming
                     </a>
 
                     <a href="{{ route('user.rentals.completed') }}"
                         class="px-6 py-4 font-medium border-b-2 transition
-                       {{ request()->routeIs('user.rentals.completed') ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
+                       {{ request()->routeIs('user.rentals.completed') ? 'text-orange-500 border-orange-500' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
                         Completed
                     </a>
 
                     <a href="{{ route('user.rentals.cancelled') }}"
                         class="px-6 py-4 font-medium border-b-2 transition
-                       {{ request()->routeIs('user.rentals.cancelled') ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
+                       {{ request()->routeIs('user.rentals.cancelled') ? 'text-orange-500 border-orange-500' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
                         Cancelled
                     </a>
 
@@ -179,7 +179,7 @@ Upload Receipt
                         </p>
 
                         <a href="{{ route('user.browse') }}"
-                            class="mt-4 inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            class="mt-4 inline-block px-6 py-2 bg-[#ff4d00] text-white rounded-lg hover:bg-orange-500 transition">
                             Browse Cars
                         </a>
                     </div>

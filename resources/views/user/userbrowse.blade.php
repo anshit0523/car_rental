@@ -32,7 +32,7 @@
                         </select>
                     </div>
                     <div class="flex items-end">
-                        <button type="submit" class="w-full bg-black text-white rounded py-2 font-semibold hover:bg-gray-800 text-xs flex items-center justify-center space-x-1">
+                        <button type="submit" class="w-full bg-[#ff4d00] text-white rounded py-2 font-semibold hover:bg-orange-500 text-xs flex items-center justify-center space-x-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
@@ -119,7 +119,7 @@
                                                 'return_date' => request('return_date'),
                                                 'time' => request('time')
                                             ]) }}"
-                                                class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 font-semibold text-sm transition">
+                                                class="px-4 py-2 bg-[#ff4d00] text-white rounded-lg hover:bg-orange-500 font-semibold text-sm transition">
                                                 Rent Now
                                             </a>
                                         </div>

@@ -156,7 +156,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand fw-bold" href="#">
-                <img src="{{ asset('storage/logo/header pic.png') }}" alt="Logo">
+                <img src="{{ asset('storage/cars/ezelogo.png') }}" alt="Logo">
             </a>
             <div class="d-flex">
                 <a href="{{ route('login') }}" class="btn btn-outline-light me-2">Login</a>

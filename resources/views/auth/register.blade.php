@@ -118,7 +118,7 @@
 
       <!-- LOGO -->
       <div class="auth-logo">
-        <img src="{{ asset('storage/logo/header pic.png') }}" alt="Logo">
+        <img src="{{ asset('storage/cars/ezelogo.png') }}" alt="Logo">
       </div>
 
       <h2 class="auth-title">Create Your Account</h2>
