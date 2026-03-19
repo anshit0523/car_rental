@@ -74,3 +74,6 @@ Schedule::call(function () {
     }
 
 })->everyMinute();
+
+
+Schedule::command('traccar:sync-positions')->everyMinute();

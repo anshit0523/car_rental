@@ -8,10 +8,9 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\CarsController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\LiveMapController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\PayPalPaymentController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\UserBookingController;
 use App\Http\Controllers\UserCarBrowseController;
@@ -19,7 +18,6 @@ use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserRentalController;
 use Illuminate\Support\Facades\Route;
-
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 
@@ -160,4 +158,11 @@ Route::middleware(['auth', 'admin'])
 
         Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])
             ->name('payments.reject');
+
+
+            //map route
+            Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');
+
+        // json endpoint (protected)
+        Route::get('/live/positions', [LiveMapController::class, 'positions'])->name('live.positions');
     });

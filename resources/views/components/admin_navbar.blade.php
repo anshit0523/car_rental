@@ -53,6 +53,13 @@
         <span>Payments</span>
     </a>
 
+    
+    <a href="{{ route('admin.live-map') }}"
+   class="{{ $baseLinkClass }} {{ request()->routeIs('admin.live-map') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+    <i class="fas fa-map-marked-alt w-5"></i>
+    <span>Live Map</span>
+</a>
+
     <!-- Payment Settings -->
     <a href="{{ route('admin.payment-settings.edit') }}"
        class="{{ $baseLinkClass }} {{ request()->routeIs('admin.payment-settings*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
@@ -70,6 +77,11 @@
     </form>
 </nav>
         </div>
+
+
+
+
+
 
         <!-- Mobile Menu Toggle -->
         <div class="lg:hidden bg-gray-900 text-white p-4 flex items-center justify-between">
@@ -135,6 +147,13 @@
         <i class="fas fa-credit-card w-5"></i>
         <span>Payments</span>
     </a>
+    
+ <!-- #map-->
+<a href="{{ route('admin.live-map') }}"
+   class="{{ $baseLinkClass }} {{ request()->routeIs('admin.live-map') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+    <i class="fas fa-map-marked-alt w-5"></i>
+    <span>Live Map</span>
+</a>
 
     <!-- Payment Settings -->
     <a href="{{ route('admin.payment-settings.edit') }}"
