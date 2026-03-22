@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\AdminPaymentSettingsContoller;
+use App\Http\Controllers\AdminTrackerController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvailabilityController;
@@ -165,4 +166,7 @@ Route::middleware(['auth', 'admin'])
 
         // json endpoint (protected)
         Route::get('/live/positions', [LiveMapController::class, 'positions'])->name('live.positions');
+
+        Route::get('/trackers/create', [AdminTrackerController::class, 'create'])->name('trackers.create');
+Route::post('/trackers', [AdminTrackerController::class, 'store'])->name('trackers.store');
     });
