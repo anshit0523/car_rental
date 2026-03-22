@@ -270,16 +270,16 @@
 
                 <div class="col-md-3">
                     <div class="brand-container">
-                        <img class="brand-logo" src="{{ asset('storage/cars/Honda.jpg') }}" alt="Honda">
+                        <img class="brand-logo" src="{{ asset('storage/cars/ford.png') }}" alt="Honda">
                     </div>
-                    <h5 style="color: #000000;">Honda</h5>
+                    <h5 style="color: #000000;">Ford</h5>
                 </div>
 
                 <div class="col-md-3">
                     <div class="brand-container">
-                        <img class="brand-logo" src="{{ asset('storage/cars/Mazda.png') }}" alt="Mazda">
+                        <img class="brand-logo" src="{{ asset('storage/cars/mitsubishi.png') }}" alt="Mazda">
                     </div>
-                    <h5 style="color: #000000;">Mazda</h5>
+                    <h5 style="color: #000000;">Mitsubishi</h5>
                 </div>
 
                 <div class="col-md-3">
