@@ -62,7 +62,7 @@
         .hero {
             padding: 190px 0 135px;
             background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-                url("{{ asset('storage/cars/bgcar.png') }}");
+               url("{{ asset('storage/bg/toyota bg.png') }}");
             background-size: cover;
             background-position: center;
 
@@ -135,7 +135,7 @@
 
         .cta {
             background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-                url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee');
+               url("{{ asset('storage/bg/toyota bg.png') }}");
             background-size: cover;
             background-position: center;
             padding: 100px 0;
@@ -264,28 +264,28 @@
 
                 <div class="col-md-3">
                     <div class="brand-container">
-                        <img class="brand-logo" src="{{ asset('storage/cars/Toyota.jpg') }}" alt="Toyota">
+                        <img class="brand-logo" src="{{ asset('storage/logo/toyota1.png') }}" alt="Toyota">
                     </div>
                     <h5 style="color: #000000;">Toyota</h5>
                 </div>
 
                 <div class="col-md-3">
                     <div class="brand-container">
-                        <img class="brand-logo" src="{{ asset('storage/cars/Honda.jpg') }}" alt="Honda">
+                        <img class="brand-logo" src="{{ asset('storage/logo/fordlogo.png') }}" alt="Ford">
                     </div>
-                    <h5 style="color: #000000;">Honda</h5>
+                    <h5 style="color: #000000;">Ford</h5>
                 </div>
 
                 <div class="col-md-3">
                     <div class="brand-container">
-                        <img class="brand-logo" src="{{ asset('storage/cars/Mazda.png') }}" alt="Mazda">
+                        <img class="brand-logo" src="{{ asset('storage/logo/mishubishi.png') }}" alt="Mitsubishi">
                     </div>
-                    <h5 style="color: #000000;">Mazda</h5>
+                    <h5 style="color: #000000;">Mitsubishi</h5>
                 </div>
 
                 <div class="col-md-3">
                     <div class="brand-container">
-                        <img class="brand-logo" src="{{ asset('storage/cars/Nissan.png') }}" alt="Nissan">
+                        <img class="brand-logo" src="{{ asset('storage/logo/nissanlogo.png') }}" alt="Nissan">
                     </div>
                     <h5 style="color: #000000;">Nissan</h5>
                 </div>
