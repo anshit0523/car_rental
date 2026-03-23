@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Car;
+use App\Models\PaymentSetting;
 use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -172,35 +173,35 @@ class UserBookingController extends Controller
     }
 
     /**
-     * Show payment page
+     * Show payment page for a booking
      */
     public function showPayment()
-    {
-        // Get booking_id from query string
-        $bookingId = request()->query('booking_id');
+{
+    $bookingId = request()->query('booking_id');
 
-        if (!$bookingId) {
-            return redirect()->route('user.browse')
-                ->withErrors('Booking ID is required. Please complete your booking.');
-        }
-
-        $booking = Booking::with(['car', 'user', 'status'])->find($bookingId);
-
-        if (!$booking) {
-            return redirect()->route('user.browse')
-                ->withErrors('Booking not found.');
-        }
-
-        // Check if booking belongs to current user
-        if ($booking->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
-        return view('user.userpayments', [
-            'booking' => $booking,
-        ]);
+    if (!$bookingId) {
+        return redirect()->route('user.browse')
+            ->withErrors('Booking ID is required. Please complete your booking.');
     }
 
+    $booking = Booking::with(['car', 'user', 'status'])->find($bookingId);
+
+    if (!$booking) {
+        return redirect()->route('user.browse')
+            ->withErrors('Booking not found.');
+    }
+
+    if ($booking->user_id !== auth()->id()) {
+        abort(403, 'Unauthorized');
+    }
+
+    $paymentSetting = PaymentSetting::first();
+
+    return view('user.userpayments', [
+        'booking' => $booking,
+        'paymentSetting' => $paymentSetting,
+    ]);
+}
 
 
     public function confirmation($id)

@@ -3,7 +3,7 @@
 use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminPaymentController;
-use App\Http\Controllers\AdminPaymentSettingsContoller;
+use App\Http\Controllers\AdminPaymentSettingController;
 use App\Http\Controllers\AdminTrackerController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
@@ -137,13 +137,6 @@ Route::middleware(['auth', 'admin'])
 
         Route::get('/revenue', [AdminDashboardController::class, 'revenue'])->name('revenue');
 
-        // Payment Settings routes
-        Route::get('/payment-settings', [AdminPaymentSettingsContoller::class, 'edit'])
-            ->name('payment-settings.edit');
-
-        Route::put('/payment-settings', [AdminPaymentSettingsContoller::class, 'update'])
-            ->name('payment-settings.update');
-
         // adminPayment routes
         Route::get('/payments', [AdminPaymentController::class, 'index'])
             ->name('payments.index');
@@ -160,6 +153,10 @@ Route::middleware(['auth', 'admin'])
         Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])
             ->name('payments.reject');
 
+
+            // adminPaymentSettings routes
+             Route::get('/payment-settings', [AdminPaymentSettingController::class, 'edit'])->name('payment-settings.edit');
+           Route::post('/payment-settings', [AdminPaymentSettingController::class, 'update'])->name('payment-settings.update');
 
         //map route
         Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');

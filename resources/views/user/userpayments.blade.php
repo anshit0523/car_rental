@@ -154,7 +154,7 @@
                                             </p>
                                         </div>
 
-                                        
+
 
                                         <input type="file" id="gcashInput" name="receipt_image" accept="image/*"
                                             class="hidden">
@@ -173,15 +173,16 @@
                                 <!-- RIGHT -->
                                 <div class="text-center">
 
-                                    <img src="{{ asset('storage/cars/gcashqr.jpg') }}"
-                                        class="w-44 sm:w-52 mx-auto mb-3 border rounded-lg p-2 bg-white">
+                                    <img src="{{ $paymentSetting && $paymentSetting->gcash_qr_image ?
+                                     asset('storage/' . $paymentSetting->gcash_qr_image): asset('images/no-image.png') }}" 
+                                     class="w-44 sm:w-52 mx-auto mb-3 border rounded-lg p-2 bg-white">
 
                                     <p class="font-semibold text-gray-800">
-                                        Car Rental PH
+                                        {{ $paymentSetting->gcash_account_name ?? 'N/A' }}
                                     </p>
 
                                     <p class="text-sm text-gray-500">
-                                        GCash Number: 0912-345-6789
+                                        GCash Number: {{ $paymentSetting->gcash_number ?? 'N/A' }}
                                     </p>
 
                                 </div>
