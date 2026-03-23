@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\AdminPaymentSettingsContoller;
+use App\Http\Controllers\AdminTrackerController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvailabilityController;
@@ -40,10 +41,10 @@ Route::middleware(['auth', 'user'])
 
         // notification routes
         Route::get('/notifications/read/{id}', [UserDashboardController::class, 'markRead'])
-        ->name('notifications.read');
+            ->name('notifications.read');
 
-    Route::get('/notifications/latest', [UserDashboardController::class, 'latestNotifications'])
-        ->name('notifications.latest');
+        Route::get('/notifications/latest', [UserDashboardController::class, 'latestNotifications'])
+            ->name('notifications.latest');
 
         Route::get('/rentals', [UserDashboardController::class, 'rentals'])->name('rentals');
 
@@ -54,7 +55,7 @@ Route::middleware(['auth', 'user'])
         Route::get('/profile', [UserProfileController::class, 'edit'])->name('profile');
         Route::post('/profile/update', [UserProfileController::class, 'updateInfo'])->name('profile.update');
         Route::post('/profile/password', [UserProfileController::class, 'updatePassword'])->name('profile.password');
-        
+
         // Booking routes
         Route::get('/car/{id}/detail', [UserCarBrowseController::class, 'show'])->name('cardetail');
 
@@ -160,9 +161,13 @@ Route::middleware(['auth', 'admin'])
             ->name('payments.reject');
 
 
-            //map route
-            Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');
-
+        //map route
+        Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');
+       Route::get('/replay', [LiveMapController::class, 'replayPage'])->name('replay');
+       Route::get('/replay/history', [LiveMapController::class, 'history'])->name('replay.history');
         // json endpoint (protected)
         Route::get('/live/positions', [LiveMapController::class, 'positions'])->name('live.positions');
+
+        Route::get('/trackers/create', [AdminTrackerController::class, 'create'])->name('trackers.create');
+        Route::post('/trackers', [AdminTrackerController::class, 'store'])->name('trackers.store');
     });

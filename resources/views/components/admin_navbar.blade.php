@@ -60,12 +60,26 @@
     <span>Live Map</span>
 </a>
 
+<a href="{{ route('admin.replay') }}"
+   class="{{ $baseLinkClass }} {{ request()->routeIs('admin.replay*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+    <i class="fas fa-route w-5"></i>
+    <span>Replay</span>
+</a>
+
+<a href="{{ route('admin.trackers.create') }}"
+   class="{{ $baseLinkClass }} {{ request()->routeIs('admin.trackers.*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+  <i class="fas fa-map-marker-alt w-5"></i>
+  <span>Trackers</span>
+</a>
+
     <!-- Payment Settings -->
     <a href="{{ route('admin.payment-settings.edit') }}"
        class="{{ $baseLinkClass }} {{ request()->routeIs('admin.payment-settings*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
         <i class="fas fa-cog w-5"></i>
         <span>Payment Settings</span>
     </a>
+
+
 
     <form method="POST" action="{{ route('logout') }}">
         @csrf
@@ -153,6 +167,13 @@
    class="{{ $baseLinkClass }} {{ request()->routeIs('admin.live-map') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
     <i class="fas fa-map-marked-alt w-5"></i>
     <span>Live Map</span>
+</a>
+
+
+<a href="{{ route('admin.replay') }}"
+   class="{{ $baseLinkClass }} {{ request()->routeIs('admin.replay*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
+    <i class="fas fa-route w-5"></i>
+    <span>Replay</span>
 </a>
 
     <!-- Payment Settings -->
