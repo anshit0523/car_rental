@@ -23,4 +23,18 @@ class TraccarService
     {
         return $this->client()->get('/api/positions')->throw()->json();
     }
+
+    public function positionHistory(int $deviceId, string $from, string $to): array
+{
+    return $this->client()
+        ->acceptJson()
+        ->get('/api/positions', [
+            'deviceId' => $deviceId,
+            'from' => $from,
+            'to' => $to,
+        ])
+        ->throw()
+        ->json();
+}
+
 }

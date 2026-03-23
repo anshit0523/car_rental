@@ -1,8 +1,8 @@
 @extends('layouts.adminlayout')
 
 @section('content')
-<div class="min-h-[calc(100vh-80px)] bg-gray-50">
-    <div class="max-w-4xl mx-auto px-6 py-10">
+<div class="h-screen overflow-y-auto bg-gray-50">
+    <div class="max-w-4xl mx-auto px-6 py-10 pb-8">
 
         {{-- Header --}}
         <div class="mb-8">
@@ -40,7 +40,7 @@
                             {{-- IMEI --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Device Identifier <span class="text-red-500">*</span>
+                                    Device Identifier / IMEI <span class="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -52,26 +52,7 @@
                                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                                 <p class="text-xs text-gray-500 mt-1">
-                                    Used in Traccar as the device identifier.
-                                </p>
-                            </div>
-
-                            {{-- Traccar ID --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Traccar Device ID <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    name="traccar_device_id"
-                                    value="{{ old('traccar_device_id') }}"
-                                    required
-                                    placeholder="e.g. 12560"
-                                    class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm
-                                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                                <p class="text-xs text-gray-500 mt-1">
-                                    From Traccar API → <code>/api/devices</code>
+                                    Traccar device ID will be detected automatically from this IMEI.
                                 </p>
                             </div>
 
@@ -213,10 +194,7 @@
 
         {{-- Tip --}}
         <div class="mt-5 text-xs text-gray-500">
-            Tip: Get device ID via:
-            <code class="bg-gray-200 px-2 py-1 rounded">
-                app(App\Services\TraccarService::class)->devices()
-            </code>
+            Tip: Traccar device ID is now fetched automatically from the IMEI during save.
         </div>
 
     </div>
