@@ -112,7 +112,7 @@
 
             <button
                 type="submit"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg"
+                class="bg-[#ff4d00] hover:bg-orange-500 text-white font-semibold px-6 py-3 rounded-lg"
             >
                 Save Settings
             </button>

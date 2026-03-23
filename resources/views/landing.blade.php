@@ -135,7 +135,7 @@
 
         .cta {
             background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-               url("{{ asset('storage/bg/toyota bg.png') }}");
+               url("{{ asset('/bg/toyota-bg.png') }}");
             background-size: cover;
             background-position: center;
             padding: 100px 0;
@@ -263,7 +263,7 @@
 
                 <div class="col-md-3">
                     <div class="brand-container">
-                        <img class="brand-logo" src="{{ asset('storage/logo/toyota1.png') }}" alt="Toyota">
+                        <img class="brand-logo" src="{{ asset('storage/cars/toyota.png') }}" alt="Toyota">
                     </div>
                     <h5 style="color: #000000;">Toyota</h5>
                 </div>
@@ -273,7 +273,6 @@
                         <img class="brand-logo" src="{{ asset('storage/cars/ford.png') }}" alt="Honda">
                     </div>
                     <h5 style="color: #000000;">Ford</h5>
-                    <h5 style="color: #000000;">Ford</h5>
                 </div>
 
                 <div class="col-md-3">
@@ -281,12 +280,11 @@
                         <img class="brand-logo" src="{{ asset('storage/cars/mitsubishi.png') }}" alt="Mazda">
                     </div>
                     <h5 style="color: #000000;">Mitsubishi</h5>
-                    <h5 style="color: #000000;">Mitsubishi</h5>
                 </div>
 
                 <div class="col-md-3">
                     <div class="brand-container">
-                        <img class="brand-logo" src="{{ asset('storage/logo/nissanlogo.png') }}" alt="Nissan">
+                        <img class="brand-logo" src="{{ asset('storage/cars/Nissan.png') }}" alt="Nissan">
                     </div>
                     <h5 style="color: #000000;">Nissan</h5>
                 </div>

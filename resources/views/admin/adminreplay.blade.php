@@ -4,6 +4,62 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<style>
+    #replaySeek {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 9999px;
+        outline: none;
+        background: linear-gradient(to right, #60a5fa 0%, #60a5fa 0%, #d1d5db 0%, #d1d5db 100%);
+    }
+
+    #replaySeek::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 9999px;
+        background: #2563eb;
+        border: 0;
+        cursor: pointer;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    #replaySeek::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border: 0;
+        border-radius: 9999px;
+        background: #2563eb;
+        cursor: pointer;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    .replay-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 9999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        color: #111827;
+        font-size: 16px;
+        transition: 0.2s ease;
+    }
+
+    .replay-btn:hover {
+        background: #f3f4f6;
+    }
+
+    .replay-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+</style>
+
 <div class="h-screen overflow-y-auto bg-gray-50">
     <div class="max-w-7xl mx-auto p-4 pb-8">
         <div class="flex items-center justify-between mb-4">
@@ -14,11 +70,52 @@
             <div id="historyStatus" class="text-sm text-gray-500">Ready</div>
         </div>
 
-        {{-- Map on top --}}
-        <div id="map" class="h-[78vh] rounded-xl border border-gray-200 shadow-sm mb-4"></div>
+        {{-- Map --}}
+        <div id="map" class="h-[68vh] rounded-xl border border-gray-200 shadow-sm mb-4"></div>
 
-        {{-- Controls below map --}}
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+        {{-- Replay Player --}}
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-4">
+            <div class="px-1 py-1">
+                <div id="replayDeviceName" class="text-center text-xl md:text-1xl font-semibold text-gray-900">
+                    No vehicle selected
+                </div>
+
+                <div class="mt-2">
+                    <input id="replaySeek" type="range" min="0" max="0" value="0" disabled>
+                </div>
+
+                <div class="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div class="flex flex-wrap items-center gap-1 md:gap-2">
+                        <div id="replayCounter" class="text-gray-900 text-1xl md:text-1xl font-semibold tracking-tight mr-1">
+                            0/0
+                        </div>
+
+                        <button id="prevPoint" type="button" class="replay-btn" title="Previous point" disabled>
+                            &#9194;
+                        </button>
+
+                        <button id="playReplay" type="button" class="replay-btn" title="Play" disabled>
+                            &#9654;
+                        </button>
+
+                        <button id="nextPoint" type="button" class="replay-btn" title="Next point" disabled>
+                            &#9193;
+                        </button>
+
+                        <button id="stopReplay" type="button" class="replay-btn" title="Stop" disabled>
+                            &#9632;
+                        </button>
+                    </div>
+
+                    <div id="replayCurrentTime" class="text-gray-900 text-lg md:text-1xl font-medium">
+                        —
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Filter Card --}}
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-4">
             <div class="grid md:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Vehicle</label>
@@ -26,7 +123,10 @@
                         <option value="">Select vehicle</option>
                         @foreach($cars as $car)
                             @if($car->tracker && $car->tracker->traccar_device_id)
-                                <option value="{{ $car->tracker->traccar_device_id }}">
+                                <option
+                                    value="{{ $car->tracker->traccar_device_id }}"
+                                    data-label="{{ $car->model }}"
+                                >
                                     {{ $car->model }} (Device ID: {{ $car->tracker->traccar_device_id }})
                                 </option>
                             @endif
@@ -52,50 +152,35 @@
                     >
                 </div>
 
-                <div class="flex items-end gap-2">
+                <div class="flex items-end">
                     <button
                         id="loadReplay"
                         type="button"
-                        class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                        class="w-full inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
                     >
-                        Load
-                    </button>
-
-                    <button
-                        id="playReplay"
-                        type="button"
-                        class="inline-flex items-center justify-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-                    >
-                        Play
-                    </button>
-
-                    <button
-                        id="stopReplay"
-                        type="button"
-                        class="inline-flex items-center justify-center rounded-lg bg-gray-700 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-                    >
-                        Stop
+                        Load Replay
                     </button>
                 </div>
             </div>
+        </div>
 
-            <div class="mt-4 grid md:grid-cols-4 gap-4 text-sm">
-                <div class="rounded-lg border border-gray-200 p-3 bg-gray-50">
-                    <div class="text-gray-500">Points</div>
-                    <div id="pointCount" class="text-lg font-semibold text-gray-900">0</div>
-                </div>
-                <div class="rounded-lg border border-gray-200 p-3 bg-gray-50">
-                    <div class="text-gray-500">Current Time</div>
-                    <div id="currentFixTime" class="text-sm font-medium text-gray-900">—</div>
-                </div>
-                <div class="rounded-lg border border-gray-200 p-3 bg-gray-50">
-                    <div class="text-gray-500">Speed</div>
-                    <div id="currentSpeed" class="text-lg font-semibold text-gray-900">0</div>
-                </div>
-                <div class="rounded-lg border border-gray-200 p-3 bg-gray-50">
-                    <div class="text-gray-500">Address</div>
-                    <div id="currentAddress" class="text-sm font-medium text-gray-900 truncate">—</div>
-                </div>
+        {{-- Info Cards --}}
+        <div class="mt-4 grid md:grid-cols-4 gap-4 text-sm">
+            <div class="rounded-lg border border-gray-200 p-3 bg-white shadow-sm">
+                <div class="text-gray-500">Points</div>
+                <div id="pointCount" class="text-lg font-semibold text-gray-900">0</div>
+            </div>
+            <div class="rounded-lg border border-gray-200 p-3 bg-white shadow-sm">
+                <div class="text-gray-500">Current Time</div>
+                <div id="currentFixTime" class="text-sm font-medium text-gray-900">—</div>
+            </div>
+            <div class="rounded-lg border border-gray-200 p-3 bg-white shadow-sm">
+                <div class="text-gray-500">Speed</div>
+                <div id="currentSpeed" class="text-lg font-semibold text-gray-900">0</div>
+            </div>
+            <div class="rounded-lg border border-gray-200 p-3 bg-white shadow-sm">
+                <div class="text-gray-500">Address</div>
+                <div id="currentAddress" class="text-sm font-medium text-gray-900 truncate">—</div>
             </div>
         </div>
     </div>
@@ -122,6 +207,16 @@
     const currentSpeedEl = document.getElementById('currentSpeed');
     const currentAddressEl = document.getElementById('currentAddress');
 
+    const replaySeekEl = document.getElementById('replaySeek');
+    const replayCounterEl = document.getElementById('replayCounter');
+    const replayCurrentTimeEl = document.getElementById('replayCurrentTime');
+    const replayDeviceNameEl = document.getElementById('replayDeviceName');
+
+    const playReplayBtn = document.getElementById('playReplay');
+    const stopReplayBtn = document.getElementById('stopReplay');
+    const prevPointBtn = document.getElementById('prevPoint');
+    const nextPointBtn = document.getElementById('nextPoint');
+
     function toDatetimeLocal(date) {
         const pad = (n) => String(n).padStart(2, '0');
         return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -135,7 +230,96 @@
         document.getElementById('toTime').value = toDatetimeLocal(now);
     }
 
+    function formatFixTime(value) {
+        if (!value) return '—';
+
+        const date = new Date(value);
+        if (isNaN(date.getTime())) return value;
+
+        return date.toLocaleString([], {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
+    }
+
+    function updateSliderProgress() {
+        const max = Number(replaySeekEl.max) || 0;
+        const value = Number(replaySeekEl.value) || 0;
+        const percent = max === 0 ? 0 : (value / max) * 100;
+
+        replaySeekEl.style.background = `linear-gradient(to right, #60a5fa 0%, #60a5fa ${percent}%, #d1d5db ${percent}%, #d1d5db 100%)`;
+    }
+
+    function setPlaybackControlsDisabled(disabled) {
+        replaySeekEl.disabled = disabled;
+        playReplayBtn.disabled = disabled;
+        stopReplayBtn.disabled = disabled;
+        prevPointBtn.disabled = disabled;
+        nextPointBtn.disabled = disabled;
+    }
+
+    function updateCounter() {
+        replayCounterEl.textContent = replayPoints.length
+            ? `${replayIndex + 1}/${replayPoints.length}`
+            : '0/0';
+    }
+
+    function updatePlayButton(isPlaying = false) {
+        playReplayBtn.innerHTML = isPlaying ? '&#10074;&#10074;' : '&#9654;';
+        playReplayBtn.title = isPlaying ? 'Pause' : 'Play';
+    }
+
+    function stopTimer() {
+        if (replayTimer) {
+            clearInterval(replayTimer);
+            replayTimer = null;
+        }
+        updatePlayButton(false);
+    }
+
+    function updateInfo(point) {
+        currentFixTimeEl.textContent = formatFixTime(point.fixTime);
+        replayCurrentTimeEl.textContent = formatFixTime(point.fixTime);
+        currentSpeedEl.textContent = point.speed ?? 0;
+        currentAddressEl.textContent = point.address ?? '—';
+    }
+
+    function renderPoint(index, panMap = true) {
+        if (!replayPoints.length || !replayMarker) return;
+
+        replayIndex = Math.max(0, Math.min(index, replayPoints.length - 1));
+
+        const point = replayPoints[replayIndex];
+        const pos = [Number(point.lat), Number(point.lng)];
+
+        replaySeekEl.value = replayIndex;
+        updateSliderProgress();
+        updateCounter();
+        updateInfo(point);
+
+        replayMarker.setLatLng(pos);
+        replayMarker.setPopupContent(`
+            <div style="font-size:12px">
+                <b>Replay</b><br>
+                Time: ${formatFixTime(point.fixTime)}<br>
+                Speed: ${point.speed ?? 0}<br>
+                Address: ${point.address ?? '-'}
+            </div>
+        `);
+
+        if (panMap) {
+            map.panTo(pos, { animate: true, duration: 0.5 });
+        }
+    }
+
     function clearReplayLayers() {
+        stopTimer();
+
         if (replayLine) {
             map.removeLayer(replayLine);
             replayLine = null;
@@ -156,27 +340,27 @@
             endMarker = null;
         }
 
-        if (replayTimer) {
-            clearInterval(replayTimer);
-            replayTimer = null;
-        }
-
         replayPoints = [];
         replayIndex = 0;
+
         pointCountEl.textContent = '0';
         currentFixTimeEl.textContent = '—';
         currentSpeedEl.textContent = '0';
         currentAddressEl.textContent = '—';
-    }
+        replayCurrentTimeEl.textContent = '—';
+        replayDeviceNameEl.textContent = 'No vehicle selected';
 
-    function updateInfo(point) {
-        currentFixTimeEl.textContent = point.fixTime ?? '—';
-        currentSpeedEl.textContent = point.speed ?? 0;
-        currentAddressEl.textContent = point.address ?? '—';
+        replaySeekEl.max = 0;
+        replaySeekEl.value = 0;
+        updateSliderProgress();
+        updateCounter();
+        setPlaybackControlsDisabled(true);
     }
 
     async function loadReplay() {
-        const deviceId = document.getElementById('deviceSelect').value;
+        const deviceSelect = document.getElementById('deviceSelect');
+        const selectedOption = deviceSelect.options[deviceSelect.selectedIndex];
+        const deviceId = deviceSelect.value;
         const from = document.getElementById('fromTime').value;
         const to = document.getElementById('toTime').value;
 
@@ -192,6 +376,7 @@
 
         clearReplayLayers();
         statusEl.textContent = 'Loading history...';
+        replayDeviceNameEl.textContent = selectedOption?.dataset?.label || 'Vehicle';
 
         try {
             const fromIso = new Date(from).toISOString();
@@ -220,6 +405,7 @@
 
             if (!replayPoints.length) {
                 statusEl.textContent = 'No history found for the selected range.';
+                replayDeviceNameEl.textContent = selectedOption?.dataset?.label || 'Vehicle';
                 return;
             }
 
@@ -228,22 +414,21 @@
             replayLine = L.polyline(latlngs, { weight: 4 }).addTo(map);
 
             startMarker = L.marker(latlngs[0]).addTo(map)
-                .bindPopup(`Start<br>${replayPoints[0].fixTime ?? '-'}`);
+                .bindPopup(`Start<br>${formatFixTime(replayPoints[0].fixTime)}`);
 
             endMarker = L.marker(latlngs[latlngs.length - 1]).addTo(map)
-                .bindPopup(`End<br>${replayPoints[replayPoints.length - 1].fixTime ?? '-'}`);
+                .bindPopup(`End<br>${formatFixTime(replayPoints[replayPoints.length - 1].fixTime)}`);
 
-            replayMarker = L.marker(latlngs[0]).addTo(map)
-                .bindPopup(`
-                    <div style="font-size:12px">
-                        <b>Replay</b><br>
-                        Time: ${replayPoints[0].fixTime ?? '-'}<br>
-                        Speed: ${replayPoints[0].speed ?? 0}<br>
-                        Address: ${replayPoints[0].address ?? '-'}
-                    </div>
-                `);
+            replayMarker = L.marker(latlngs[0]).addTo(map);
 
-            updateInfo(replayPoints[0]);
+            replayIndex = 0;
+            replaySeekEl.max = replayPoints.length - 1;
+            replaySeekEl.value = 0;
+            updateSliderProgress();
+            updateCounter();
+            setPlaybackControlsDisabled(false);
+
+            renderPoint(0, false);
 
             map.fitBounds(replayLine.getBounds(), { padding: [30, 30] });
             statusEl.textContent = `Loaded ${replayPoints.length} points`;
@@ -261,68 +446,73 @@
         }
 
         if (replayTimer) {
-            clearInterval(replayTimer);
+            stopTimer();
+            statusEl.textContent = 'Replay paused';
+            return;
         }
 
+        if (replayIndex >= replayPoints.length - 1) {
+            replayIndex = 0;
+            renderPoint(0, false);
+        }
+
+        updatePlayButton(true);
         statusEl.textContent = 'Playing replay...';
 
         replayTimer = setInterval(() => {
-            if (replayIndex >= replayPoints.length) {
-                clearInterval(replayTimer);
-                replayTimer = null;
+            if (replayIndex >= replayPoints.length - 1) {
+                stopTimer();
                 statusEl.textContent = 'Replay finished';
                 return;
             }
 
-            const point = replayPoints[replayIndex];
-            const pos = [Number(point.lat), Number(point.lng)];
-
-            replayMarker.setLatLng(pos);
-            replayMarker.setPopupContent(`
-                <div style="font-size:12px">
-                    <b>Replay</b><br>
-                    Time: ${point.fixTime ?? '-'}<br>
-                    Speed: ${point.speed ?? 0}<br>
-                    Address: ${point.address ?? '-'}
-                </div>
-            `);
-
-            updateInfo(point);
-            replayIndex++;
+            renderPoint(replayIndex + 1);
         }, 500);
     }
 
     function stopReplay() {
-        if (replayTimer) {
-            clearInterval(replayTimer);
-            replayTimer = null;
-        }
+        stopTimer();
 
-        replayIndex = 0;
-
-        if (replayPoints.length && replayMarker) {
-            const firstPoint = replayPoints[0];
-            replayMarker.setLatLng([Number(firstPoint.lat), Number(firstPoint.lng)]);
-            replayMarker.setPopupContent(`
-                <div style="font-size:12px">
-                    <b>Replay</b><br>
-                    Time: ${firstPoint.fixTime ?? '-'}<br>
-                    Speed: ${firstPoint.speed ?? 0}<br>
-                    Address: ${firstPoint.address ?? '-'}
-                </div>
-            `);
-
-            updateInfo(firstPoint);
+        if (replayPoints.length) {
+            renderPoint(0, false);
         }
 
         statusEl.textContent = 'Replay stopped';
     }
 
+    function previousPoint() {
+        if (!replayPoints.length) return;
+
+        stopTimer();
+        renderPoint(replayIndex - 1);
+        statusEl.textContent = 'Moved to previous point';
+    }
+
+    function nextPoint() {
+        if (!replayPoints.length) return;
+
+        stopTimer();
+        renderPoint(replayIndex + 1);
+        statusEl.textContent = 'Moved to next point';
+    }
+
     document.getElementById('loadReplay').addEventListener('click', loadReplay);
-    document.getElementById('playReplay').addEventListener('click', playReplay);
-    document.getElementById('stopReplay').addEventListener('click', stopReplay);
+    playReplayBtn.addEventListener('click', playReplay);
+    stopReplayBtn.addEventListener('click', stopReplay);
+    prevPointBtn.addEventListener('click', previousPoint);
+    nextPointBtn.addEventListener('click', nextPoint);
+
+    replaySeekEl.addEventListener('input', function () {
+        if (!replayPoints.length) return;
+
+        stopTimer();
+        renderPoint(Number(this.value));
+        statusEl.textContent = 'Replay position updated';
+    });
 
     setDefaultTimeRange();
+    updateSliderProgress();
+    setPlaybackControlsDisabled(true);
 
     @if(request('deviceId'))
         document.getElementById('deviceSelect').value = "{{ request('deviceId') }}";

@@ -181,7 +181,7 @@
                     <div class="pt-4 flex justify-end">
                         <button
                             type="submit"
-                            class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700
+                            class="inline-flex items-center gap-2 bg-[#ff4d00] hover:bg-orange-500
                                    text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-sm transition"
                         >
                             Save Tracker
