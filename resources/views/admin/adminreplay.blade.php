@@ -156,7 +156,7 @@
                     <button
                         id="loadReplay"
                         type="button"
-                        class="w-full inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                        class="w-full inline-flex items-center justify-center rounded-lg bg-[#ff4d00] px-4 py-2 text-sm font-medium text-white hover:bg-orange-500"
                     >
                         Load Replay
                     </button>

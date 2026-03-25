@@ -62,7 +62,7 @@
         .hero {
             padding: 190px 0 135px;
             background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-                url("{{ asset('/bg/toyota-bg.png') }}");
+                url("{{ asset('public/bg/toyota-bg.png') }}");
             background-size: cover;
             background-position: center;
 
