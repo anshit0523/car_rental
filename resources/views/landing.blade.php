@@ -1,319 +1,536 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Dumaguete EZE Car Rental</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
     <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #efefef;
-            color: #ffffff;
+            font-family: 'Outfit', sans-serif;
+            background: #f8fafc;
         }
 
-        .navbar .container {
-            min-height: 60px;
-            padding-top: 2px;
-            padding-bottom: 8px;
+        .brand-orange {
+            color: #ff5a1f;
         }
 
-        .navbar {
-            background: transparent !important;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
+        .bg-brand-orange {
+            background-color: #ff5a1f;
         }
 
-        .navbar-brand img {
-            height: 85px;
-            width: auto;
-            object-fit: contain;
+        .border-brand-orange {
+            border-color: #ff5a1f;
         }
 
-        .navbar .btn {
-            padding: .45rem .9rem;
-            font-size: 1rem;
-            line-height: 1.2;
+        .hero-overlay {
+            background:
+                linear-gradient(to right, rgba(0,0,0,.72), rgba(0,0,0,.45)),
+                url("{{ asset('storage/bg/toyota bg.png') }}") center/cover no-repeat;
         }
 
-        .btn-orange {
-            background-color: #ff4d00;
-            color: white;
-            border: none;
+        .glass {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.15);
         }
 
-        .btn-orange:hover {
-            background-color: #e04300;
+        .card-hover {
+            transition: all .3s ease;
         }
 
-        .hero {
-            padding: 190px 0 135px;
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-               url("{{ asset('storage/bg/toyota bg.png') }}");
-            background-size: cover;
-            background-position: center;
-
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
         }
 
-        .search-box {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 20px;
+        .brand-box {
+            transition: all .3s ease;
         }
 
-      
-        .card-custom {
-            background-color: #ffffff;
-            color: #000000;
-            border: none;
-            border-radius: 12px;
-            transition: 0.3s;
+        .brand-box:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.10);
         }
 
-        .card-custom:hover {
-            transform: translateY(-5px);
-            /* box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4); */
-        }
-
-        .card-custom .text-muted {
-            color: #bbbbbb !important;
-        }
-
-        .price {
-            color: #ff4d00;
-            font-weight: 600;
+        .section-subtitle {
+            color: #ff5a1f;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            font-weight: 700;
+            font-size: 0.85rem;
         }
 
         .section-title {
-            font-weight: 700;
-            margin-bottom: 40px;
+            color: #0f172a;
+            font-size: 2rem;
+            line-height: 1.2;
+            font-weight: 800;
         }
 
-        .feature-icon {
-            font-size: 40px;
-            color: #ff4d00;
-            margin-bottom: 15px;
-        }
-        .brandscontainer{
-            display: flex;
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh;
-            gap: 20px;
-        }
-        .brand-container {
-            height: 120px;
-            width: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #ffffff;
-            border: none;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 0 auto;
-        }
-        .brand-logo {
-            width: 100%;
-            height: 100px;
-            object-fit: contain;
-        }
+      .popular-showcase-card {
+    position: relative;
+    height: 100%;
 
-        .cta {
-            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-               url("{{ asset('storage/bg/toyota bg.png') }}");
-            background-size: cover;
-            background-position: center;
-            padding: 100px 0;
-            text-align: center;
-        }
+}
 
-        footer {
-            background: #000;
-            padding: 20px 0;
-            text-align: center;
-        }
+.popular-showcase-image-wrap {
+    position: relative;
+    border-radius: 22px;
+    overflow: hidden;
+}
+
+.popular-showcase-image {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    display: block;
+}
+
+.popular-showcase-price {
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    background: #f8f8f8;
+    color: #475569;
+    border-radius: 9999px;
+    padding: 12px 24px;
+    font-weight: 500;
+    font-size: 18px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.popular-showcase-price span {
+    color: #ff5a1f;
+    font-size: 34px;
+    line-height: 1;
+    font-weight: 700;
+    margin-right: 2px;
+}
+
+.popular-showcase-content {
+    position: relative;
+    width: calc(100% - 48px);
+    margin: -58px auto 0;
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 28px 28px 30px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    min-height: 390px;
+}
+
+.popular-showcase-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 26px;
+}
+
+.popular-showcase-title {
+    font-size: 26px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    flex: 1;
+}
+
+.popular-showcase-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 9999px;
+    padding: 8px 14px;
+    font-size: 16px;
+    color: #64748b;
+    background: #fff;
+    white-space: nowrap;
+}
+
+.popular-showcase-rating i {
+    color: #f4b000;
+    font-size: 18px;
+}
+
+.popular-showcase-info {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 28px 0;
+}
+
+.popular-showcase-info li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 18px;
+    color: #1e293b;
+    margin-bottom: 18px;
+}
+
+.popular-showcase-info li i {
+    color: #ff5a1f;
+    width: 20px;
+    text-align: center;
+    font-size: 20px;
+}
+
+.popular-showcase-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 56px;
+    border: 1.5px solid #1f2937;
+    border-radius: 10px;
+    background: #fff;
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin-top: auto;
+}
+
+.popular-showcase-btn:hover {
+    background: #ff5a1f;
+    border-color: #ff5a1f;
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .popular-showcase-image {
+        height: 260px;
+    }
+
+    .popular-showcase-content {
+        width: calc(100% - 24px);
+        margin-top: -40px;
+        padding: 22px 20px 24px;
+    }
+
+    .popular-showcase-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .popular-showcase-title {
+        font-size: 22px;
+    }
+
+    .popular-showcase-price span {
+        font-size: 28px;
+    }
+}
     </style>
 </head>
+<body class="text-slate-800">
 
-<body>
-    
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">
-                <img src="{{ asset('storage/logo/header pic.png') }}" alt="Logo">
-            </a>
-            <div class="d-flex">
-                <a href="{{ route('login') }}" class="btn btn-outline-light me-2">Login</a>
-                <a href="{{ route('register') }}" class="btn btn-orange">Register</a>
+    <header class="absolute top-0 left-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-4">
+                <a href="#" class="flex items-center">
+                    <img src="{{ asset('storage/logo/header pic.png') }}" alt="Logo" class="h-16 md:h-20 w-auto object-contain">
+                </a>
+
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('login') }}"
+                       class="rounded-full border border-white/40 px-5 py-2 text-sm md:text-base text-white hover:bg-white hover:text-slate-900 transition">
+                        Login
+                    </a>
+                    <a href="{{ route('register') }}"
+                       class="rounded-full bg-brand-orange px-5 py-2 text-sm md:text-base text-white hover:opacity-90 transition">
+                        Register
+                    </a>
+                </div>
             </div>
         </div>
-    </nav>
+    </header>
 
     <!-- HERO -->
-    <section class="hero text-center">
-        <div class="container">
-            <h1 class="display-4 fw-bold mb-3">DUMAGUETE EZE CAR RENTAL</h1>
-            <p class="lead mb-4">Drive with Comfort & Confidence</p>
+    <section class="hero-overlay min-h-[92vh] flex items-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="grid lg:grid-cols-2 gap-10 items-center pt-28 pb-16">
+                <div class="text-white">
+                    <p class="section-subtitle mb-4 text-orange-400">Car Rental</p>
+                    <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-5">
+                        Drive Dumaguete with
+                        <span class="text-orange-400">Comfort & Confidence</span>
+                    </h1>
+                    <p class="text-white/85 text-lg md:text-xl max-w-xl mb-8">
+                        Premium and affordable car rentals for your next city ride, out-of-town trip, or island adventure.
+                    </p>
 
-            
-        </div>
-    </section>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="{{ route('register') }}"
+                           class="rounded-full bg-brand-orange px-7 py-3 text-white font-semibold hover:opacity-90 transition">
+                            Book Now
+                        </a>
+                        <a href="#available-cars"
+                           class="rounded-full border border-white/40 px-7 py-3 text-white font-semibold hover:bg-white hover:text-slate-900 transition">
+                            Explore Cars
+                        </a>
+                    </div>
+                </div>
 
-    <!-- AVAILABLE CARS -->
-    <section class="py-5">
-        <div class="container">
-            <h2 class="text-center section-title" style="color: #000000;">Available Cars</h2>
-            <div class="row">
+                <!-- Search / Booking Style Box -->
+                <div class="glass rounded-3xl p-6 md:p-8 shadow-2xl">
+                    <h3 class="text-white text-2xl font-bold mb-6">Quick Booking Preview</h3>
 
-                @forelse ($cars as $car)
-                    <div class="col-md-4 mb-4">
-                        <div class="card card-custom h-100 ">
-                            @php
-                                $images = is_string($car->images) ? json_decode($car->images, true) : $car->images;
-                            @endphp
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-white/80 text-sm mb-2">Pickup Location</label>
+                            <input type="text" placeholder="Dumaguete City"
+                                   class="w-full rounded-xl bg-white px-4 py-3 text-slate-800 outline-none">
+                        </div>
 
-                            @if($images && count($images) > 0)
-                                <img src="{{ asset('storage/' . $images[0]) }}" class="card-img-top"
-                                    style="height:220px; object-fit:cover;">
-                            @endif
+                        <div>
+                            <label class="block text-white/80 text-sm mb-2">Car Type</label>
+                            <select class="w-full rounded-xl bg-white px-4 py-3 text-slate-800 outline-none">
+                                <option>Choose Type</option>
+                                <option>Sedan</option>
+                                <option>SUV</option>
+                                <option>Van</option>
+                                <option>Pickup</option>
+                            </select>
+                        </div>
 
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    {{ $car->brand->name ?? '' }} {{ $car->model }}
-                                </h5>
+                        <div>
+                            <label class="block text-white/80 text-sm mb-2">Start Date</label>
+                            <input type="date" class="w-full rounded-xl bg-white px-4 py-3 text-slate-800 outline-none">
+                        </div>
 
-                                <p class="text-muted small">
-                                    <i class="fas fa-user"></i> {{ $car->seats }} seats •
-                                    <i class="fas fa-cogs"></i> {{ $car->transmission->type ?? '' }} •
-                                    <i class="fas fa-gas-pump"></i> {{ $car->fuelType->type ?? '' }}
-                                </p>
-
-                                <p class="price">
-                                    ₱{{ number_format($car->price_per_day, 2) }} / day
-                                </p>
-
-                                <a href="{{ route('login') }}" class="btn btn-orange w-100">
-                                    Book Now
-                                </a>
-                            </div>
+                        <div>
+                            <label class="block text-white/80 text-sm mb-2">End Date</label>
+                            <input type="date" class="w-full rounded-xl bg-white px-4 py-3 text-slate-800 outline-none">
                         </div>
                     </div>
-                @empty
-                    <p class="text-center text-muted">No cars available.</p>
-                @endforelse
 
+                    <a href="{{ route('login') }}"
+                       class="mt-6 block w-full rounded-xl bg-brand-orange px-5 py-3 text-center text-white font-semibold hover:opacity-90 transition">
+                        Search Available Cars
+                    </a>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- ✅ WHY CHOOSE US -->
-    <section class="py-5 text-center">
-        <div class="container mb-5">
-            <h2 class="section-title" style="color: #000000;">Why Choose Us?</h2>
-            <div class="row">
+<!-- AVAILABLE CARS -->
+<section class="pt-28 pb-20 bg-slate-50" id="available-cars">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-14">
+            <p class="section-subtitle mb-3">Popular Cars</p>
+            <h2 class="section-title">Most Popular Cars</h2>
+        </div>
 
-                <div class="col-md-3">
-                    <div class="feature-icon"><i class="fas fa-car"></i></div>
-                    <h5 style="color: #000000;">Wide Selection</h5>
-                    <p class="text-muted" style="color: #000000;">Luxury & Economy Cars</p>
+        <div class="grid sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+            @forelse ($cars as $car)
+                @php
+                    $images = is_string($car->images) ? json_decode($car->images, true) : $car->images;
+                @endphp
+
+                <div class="popular-showcase-card">
+                    <div class="popular-showcase-image-wrap">
+                        @if($images && count($images) > 0)
+                            <img src="{{ asset('storage/' . $images[0]) }}"
+                                 alt="{{ $car->model }}"
+                                 class="popular-showcase-image">
+                        @else
+                            <div class="popular-showcase-image flex items-center justify-center bg-slate-200 text-slate-500">
+                                No Image
+                            </div>
+                        @endif
+
+                        <div class="popular-showcase-price">
+                            <span>₱{{ number_format($car->price_per_day, 0) }}</span> / Day
+                        </div>
+                    </div>
+
+                    <div class="popular-showcase-content">
+                        <div class="popular-showcase-top">
+                            <h3 class="popular-showcase-title">
+                                {{ $car->brand->name ?? '' }} {{ $car->model }}
+                            </h3>
+
+                            <div class="popular-showcase-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.8</span>
+                            </div>
+                        </div>
+
+                        <ul class="popular-showcase-info">
+                            <li>
+                                <i class="fas fa-car-side"></i>
+                                <span>Doors: {{ $car->doors ?? '2' }}</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-cogs"></i>
+                                <span>Transmission: {{ $car->transmission->type ?? 'Automatic' }}</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-user"></i>
+                                <span>Passengers: {{ $car->seats ?? '0' }}</span>
+                            </li>
+                        </ul>
+
+                        <a href="{{ route('login') }}" class="popular-showcase-btn">
+                            Rent Now
+                        </a>
+                    </div>
+                </div>
+            @empty
+                <div class="col-span-full text-center text-slate-500">
+                    No cars available.
+                </div>
+            @endforelse
+        </div>
+    </div>
+</section>
+
+    <!-- WHY CHOOSE US -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <p class="section-subtitle mb-3">Why Choose Us</p>
+                <h2 class="section-title">A Better Car Rental Experience</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-8">
+                <div class="rounded-3xl border border-slate-200 p-8 text-center bg-slate-50">
+                    <div class="text-4xl brand-orange mb-4"><i class="fas fa-car"></i></div>
+                    <h4 class="text-lg font-bold text-slate-900 mb-2">Wide Selection</h4>
+                    <p class="text-slate-600">Luxury, family, and economy vehicles for every travel style.</p>
                 </div>
 
-                <div class="col-md-3">
-                    <div class="feature-icon"><i class="fas fa-tags"></i></div>
-                    <h5 style="color: #000000;">Affordable Rates</h5>
-                    <p class="text-muted" style="color: #000000;">Best Price Guarantee</p>
+                <div class="rounded-3xl border border-slate-200 p-8 text-center bg-slate-50">
+                    <div class="text-4xl brand-orange mb-4"><i class="fas fa-tags"></i></div>
+                    <h4 class="text-lg font-bold text-slate-900 mb-2">Affordable Rates</h4>
+                    <p class="text-slate-600">Competitive daily pricing with value you can trust.</p>
                 </div>
 
-                <div class="col-md-3">
-                    <div class="feature-icon"><i class="fas fa-headset"></i></div>
-                    <h5 style="color: #000000;">24/7 Support</h5>
-                    <p class="text-muted" style="color: #000000;">Always Here for You</p>
+                <div class="rounded-3xl border border-slate-200 p-8 text-center bg-slate-50">
+                    <div class="text-4xl brand-orange mb-4"><i class="fas fa-headset"></i></div>
+                    <h4 class="text-lg font-bold text-slate-900 mb-2">24/7 Support</h4>
+                    <p class="text-slate-600">We’re here whenever you need help before or during your trip.</p>
                 </div>
 
-                <div class="col-md-3">
-                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
-                    <h5 style="color: #000000;">Trusted Local Rental</h5>
-                    <p class="text-muted" style="color: #000000;">Based in Dumaguete</p>
+                <div class="rounded-3xl border border-slate-200 p-8 text-center bg-slate-50">
+                    <div class="text-4xl brand-orange mb-4"><i class="fas fa-shield-alt"></i></div>
+                    <h4 class="text-lg font-bold text-slate-900 mb-2">Trusted Local Rental</h4>
+                    <p class="text-slate-600">A dependable Dumaguete-based rental service you can rely on.</p>
                 </div>
-
             </div>
         </div>
     </section>
-    <!-- EXPLORE PREMIUME CAR BRANDS -->
-    <section class="py-5 text-center">
-        <div class="container">
-            <h2 class="section-title" style="color: #000000;">Drive with Premium Car Brands</h2>
 
-            <div class="row justify-content-center text-center">
+    <!-- BRANDS -->
+    <section class="py-20 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <p class="section-subtitle mb-3">Brands</p>
+                <h2 class="section-title">Drive with Premium Car Brands</h2>
+            </div>
 
-                <div class="col-md-3">
-                    <div class="brand-container">
-                        <img class="brand-logo" src="{{ asset('storage/logo/toyota1.png') }}" alt="Toyota">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="brand-box bg-white rounded-3xl p-6 text-center shadow-sm">
+                    <div class="h-24 flex items-center justify-center mb-4">
+                        <img class="max-h-20 object-contain" src="{{ asset('storage/logo/toyota1.png') }}" alt="Toyota">
                     </div>
-                    <h5 style="color: #000000;">Toyota</h5>
+                    <h5 class="font-semibold text-slate-900">Toyota</h5>
                 </div>
 
-                <div class="col-md-3">
-                    <div class="brand-container">
-                        <img class="brand-logo" src="{{ asset('storage/logo/fordlogo.png') }}" alt="Ford">
+                <div class="brand-box bg-white rounded-3xl p-6 text-center shadow-sm">
+                    <div class="h-24 flex items-center justify-center mb-4">
+                        <img class="max-h-20 object-contain" src="{{ asset('storage/logo/fordlogo.png') }}" alt="Ford">
                     </div>
-                    <h5 style="color: #000000;">Ford</h5>
+                    <h5 class="font-semibold text-slate-900">Ford</h5>
                 </div>
 
-                <div class="col-md-3">
-                    <div class="brand-container">
-                        <img class="brand-logo" src="{{ asset('storage/logo/mishubishi.png') }}" alt="Mitsubishi">
+                <div class="brand-box bg-white rounded-3xl p-6 text-center shadow-sm">
+                    <div class="h-24 flex items-center justify-center mb-4">
+                        <img class="max-h-20 object-contain" src="{{ asset('storage/logo/mishubishi.png') }}" alt="Mitsubishi">
                     </div>
-                    <h5 style="color: #000000;">Mitsubishi</h5>
+                    <h5 class="font-semibold text-slate-900">Mitsubishi</h5>
                 </div>
 
-                <div class="col-md-3">
-                    <div class="brand-container">
-                        <img class="brand-logo" src="{{ asset('storage/logo/nissanlogo.png') }}" alt="Nissan">
+                <div class="brand-box bg-white rounded-3xl p-6 text-center shadow-sm">
+                    <div class="h-24 flex items-center justify-center mb-4">
+                        <img class="max-h-20 object-contain" src="{{ asset('storage/logo/nissanlogo.png') }}" alt="Nissan">
                     </div>
-                    <h5 style="color: #000000;">Nissan</h5>
+                    <h5 class="font-semibold text-slate-900">Nissan</h5>
                 </div>
-
             </div>
         </div>
     </section>
-    <!-- ✅ CTA SECTION -->
-    <section class="cta">
-        <div class="container">
-            <h2 class="fw-bold mb-3" style="color: #ffffff;">Ready for Your Next Adventure?</h2>
-            <p class="mb-4" style="color: #ffffff;">Book Your Ride Today!</p>
-            <a href="{{ route('register') }}" class="btn btn-orange btn-lg px-5">
-                Get Started
+
+    <!-- CTA -->
+    <section class="relative py-24">
+        <div class="absolute inset-0 bg-cover bg-center"
+             style="background-image: linear-gradient(rgba(0,0,0,.78), rgba(0,0,0,.78)), url('{{ asset('storage/bg/toyota bg.png') }}');">
+        </div>
+
+        <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+            <p class="section-subtitle text-orange-400 mb-3">Get Started</p>
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-4">Ready for Your Next Adventure?</h2>
+            <p class="text-white/80 text-lg mb-8">Reserve your car today and enjoy a smooth ride around Dumaguete and beyond.</p>
+
+            <a href="{{ route('register') }}"
+               class="inline-block rounded-full bg-brand-orange px-8 py-4 text-white font-semibold hover:opacity-90 transition">
+                Create an Account
             </a>
         </div>
     </section>
 
-    <footer>
-        <div class="container">
-            <p class="mb-0">
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-3 gap-10">
+                <div>
+                    <img src="{{ asset('storage/logo/header pic.png') }}" alt="Logo" class="h-16 w-auto mb-4">
+                    <p class="text-white/70">
+                        Dumaguete EZE Car Rental provides clean, reliable, and affordable vehicles for locals and travelers.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-white/70">
+                        <li><a href="#" class="hover:text-orange-400">Home</a></li>
+                        <li><a href="#available-cars" class="hover:text-orange-400">Available Cars</a></li>
+                        <li><a href="{{ route('login') }}" class="hover:text-orange-400">Login</a></li>
+                        <li><a href="{{ route('register') }}" class="hover:text-orange-400">Register</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Contact</h4>
+                    <ul class="space-y-2 text-white/70">
+                        <li><i class="fas fa-location-dot mr-2 brand-orange"></i>Mangnao Dumaguete City, Philippines</li>
+                        <li><i class="fas fa-phone mr-2 brand-orange"></i>0981-225-5442</li>
+                        <li><i class="fas fa-envelope mr-2 brand-orange"></i>Your Email Address</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-white/10 mt-10 pt-6 text-center text-white/60 text-sm">
                 © {{ date('Y') }} Dumaguete EZE Car Rental. All Rights Reserved.
-            </p>
+            </div>
         </div>
     </footer>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
