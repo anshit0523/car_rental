@@ -135,7 +135,6 @@
                     </nav>
                 </div>
                 <div class="header_right_content">
-                    <button class="search-toggler"><i class="fas fa-search"></i></button>
                     <div class="link-btn"><a href="#" class="btn-style-one">Account</a></div>
                 </div>
             </div>            

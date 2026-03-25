@@ -20,7 +20,9 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserRentalController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [LandingController::class, 'index'])->name('landing');
+Route::get('/', function () {
+    return view('contact');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
