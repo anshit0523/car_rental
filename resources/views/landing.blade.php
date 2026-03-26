@@ -78,71 +78,70 @@
             font-weight: 800;
         }
 
-      .popular-showcase-card {
+   .popular-showcase-card {
     position: relative;
     height: 100%;
-
 }
 
 .popular-showcase-image-wrap {
     position: relative;
-    border-radius: 22px;
+    border-radius: 8px;
     overflow: hidden;
 }
 
 .popular-showcase-image {
     width: 100%;
-    height: 320px;
+    height: 250px;
     object-fit: cover;
     display: block;
 }
 
 .popular-showcase-price {
     position: absolute;
-    top: 22px;
-    right: 22px;
+    top: 16px;
+    right: 16px;
     background: #f8f8f8;
     color: #475569;
-    border-radius: 9999px;
-    padding: 12px 24px;
+    border-radius: 8px;
+    padding: 10px 18px;
     font-weight: 500;
-    font-size: 18px;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    font-size: 14px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
 .popular-showcase-price span {
     color: #ff5a1f;
-    font-size: 34px;
+    font-size: 15px;
     line-height: 1;
     font-weight: 700;
-    margin-right: 2px;
+    margin-right: 4px;
 }
 
 .popular-showcase-content {
     position: relative;
-    width: calc(100% - 48px);
-    margin: -58px auto 0;
+    width: calc(100% - 30px);
+    margin: -42px auto 0;
     background: #ffffff;
-    border-radius: 22px;
-    padding: 28px 28px 30px;
-    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    border-radius: 10px;
+    padding: 22px 22px 24px;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.07);
     z-index: 2;
     display: flex;
     flex-direction: column;
-    min-height: 390px;
+    min-height: 250px;
 }
 
 .popular-showcase-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 26px;
+    gap: 12px;
+    margin-bottom: 18px;
 }
 
 .popular-showcase-title {
-    font-size: 26px;
-    line-height: 1.2;
+    font-size: 19px;
+    line-height: 1.25;
     font-weight: 700;
     color: #0f172a;
     margin: 0;
@@ -152,11 +151,11 @@
 .popular-showcase-rating {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     border: 1px solid #e5e7eb;
     border-radius: 9999px;
-    padding: 8px 14px;
-    font-size: 16px;
+    padding: 6px 12px;
+    font-size: 14px;
     color: #64748b;
     background: #fff;
     white-space: nowrap;
@@ -164,29 +163,29 @@
 
 .popular-showcase-rating i {
     color: #f4b000;
-    font-size: 18px;
+    font-size: 15px;
 }
 
 .popular-showcase-info {
     list-style: none;
     padding: 0;
-    margin: 0 0 28px 0;
+    margin: 0 0 22px 0;
 }
 
 .popular-showcase-info li {
     display: flex;
     align-items: center;
-    gap: 14px;
-    font-size: 18px;
+    gap: 10px;
+    font-size: 16px;
     color: #1e293b;
-    margin-bottom: 18px;
+    margin-bottom: 12px;
 }
 
 .popular-showcase-info li i {
     color: #ff5a1f;
-    width: 20px;
+    width: 18px;
     text-align: center;
-    font-size: 20px;
+    font-size: 17px;
 }
 
 .popular-showcase-btn {
@@ -194,16 +193,16 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 56px;
+    height: 48px;
     border: 1.5px solid #1f2937;
     border-radius: 10px;
     background: #fff;
     color: #0f172a;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     text-decoration: none;
     transition: all 0.3s ease;
-    margin-top: auto;
+    margin-top: -10px;
 }
 
 .popular-showcase-btn:hover {
@@ -214,28 +213,35 @@
 
 @media (max-width: 768px) {
     .popular-showcase-image {
-        height: 260px;
+        height: 220px;
     }
 
     .popular-showcase-content {
-        width: calc(100% - 24px);
-        margin-top: -40px;
-        padding: 22px 20px 24px;
+        width: calc(100% - 20px);
+        margin-top: -34px;
+        padding: 18px 18px 20px;
+        min-height: auto;
     }
 
     .popular-showcase-top {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
     }
 
     .popular-showcase-title {
-        font-size: 22px;
+        font-size: 18px;
+    }
+
+    .popular-showcase-price {
+        padding: 8px 14px;
+        font-size: 13px;
     }
 
     .popular-showcase-price span {
-        font-size: 28px;
+        font-size: 20px;
     }
 }
+
     </style>
 </head>
 <body class="text-slate-800">
@@ -331,14 +337,14 @@
     </section>
 
 <!-- AVAILABLE CARS -->
-<section class="pt-28 pb-20 bg-slate-50" id="available-cars">
+<section class="pt-20 pb-16 bg-slate-50" id="available-cars">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-14">
             <p class="section-subtitle mb-3">Popular Cars</p>
             <h2 class="section-title">Most Popular Cars</h2>
         </div>
 
-        <div class="grid sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+        <div class="grid sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             @forelse ($cars as $car)
                 @php
                     $images = is_string($car->images) ? json_decode($car->images, true) : $car->images;
