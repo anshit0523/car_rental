@@ -42,14 +42,42 @@ class AdminBookingController extends Controller
 
 
     
-    public function updateStatus(Request $request, Booking $booking)
+public function updateStatus(Request $request, Booking $booking)
 {
     $request->validate([
         'status_id' => 'required|exists:statuses,id',
     ]);
 
+    $newStatus = \App\Models\Status::findOrFail($request->status_id);
+    $currentStatus = $booking->status->name ?? null;
+
+    $allowedTransitions = [
+        'Pending' => ['Cancelled'],
+        'Reserved' => ['Cancelled'],
+        'Return' => ['Checkup', 'Damage', 'Needs Repair', 'Completed'],
+        'Active' => [],
+        'Completed' => [],
+        'Cancelled' => [],
+        'Checkup' => [],
+        'Damage' => [],
+        'Needs Repair' => [],
+        'Failed' => [],
+    ];
+
+    if (!array_key_exists($currentStatus, $allowedTransitions)) {
+        return redirect()
+            ->route('admin.bookings.index')
+            ->with('error', 'Invalid current booking status.');
+    }
+
+    if (!in_array($newStatus->name, $allowedTransitions[$currentStatus])) {
+        return redirect()
+            ->route('admin.bookings.index')
+            ->with('error', "Cannot change status from {$currentStatus} to {$newStatus->name}.");
+    }
+
     $booking->update([
-        'status_id' => $request->status_id,
+        'status_id' => $newStatus->id,
     ]);
 
     return redirect()

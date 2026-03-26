@@ -242,6 +242,53 @@
     }
 }
 
+    /* How it works cards */
+.work-step-card-light {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 22px 18px;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.work-step-card-light:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.10);
+    border-color: #fed7aa;
+}
+
+.work-step-icon-light {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 14px;
+    border-radius: 9999px;
+    background: #fff7ed;
+    color: #ff5a1f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    border: 1px solid #fed7aa;
+}
+
+.work-step-title-light {
+    color: #0f172a;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.work-step-text-light {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+}
+
     </style>
 </head>
 <body class="text-slate-800">
@@ -335,6 +382,50 @@
             </div>
         </div>
     </section>
+
+
+ <section class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <p class="section-subtitle mb-3">How It Works</p>
+            <h2 class="section-title">How it works</h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+            <div class="work-step-card-light">
+                <div class="work-step-icon-light">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h3 class="work-step-title-light">Sign up Account</h3>
+                <p class="work-step-text-light">Create your account to start booking quickly and easily.</p>
+            </div>
+
+            <div class="work-step-card-light">
+                <div class="work-step-icon-light">
+                    <i class="fas fa-magnifying-glass"></i>
+                </div>
+                <h3 class="work-step-title-light">Search your Vehicle</h3>
+                <p class="work-step-text-light">Browse the available cars and choose the best one for your trip.</p>
+            </div>
+
+            <div class="work-step-card-light">
+                <div class="work-step-icon-light">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <h3 class="work-step-title-light">Pay the Car Rent</h3>
+                <p class="work-step-text-light">Confirm your reservation and complete the payment securely.</p>
+            </div>
+
+            <div class="work-step-card-light">
+                <div class="work-step-icon-light">
+                    <i class="fas fa-car-side"></i>
+                </div>
+                <h3 class="work-step-title-light">Take Car to Road</h3>
+                <p class="work-step-text-light">Pick up the car and enjoy a smooth ride on your journey.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
 <!-- AVAILABLE CARS -->
 <section class="pt-20 pb-16 bg-slate-50" id="available-cars">
@@ -528,7 +619,7 @@
                     <ul class="space-y-2 text-white/70">
                         <li><i class="fas fa-location-dot mr-2 brand-orange"></i>Mangnao Dumaguete City, Philippines</li>
                         <li><i class="fas fa-phone mr-2 brand-orange"></i>0981-225-5442</li>
-                        <li><i class="fas fa-envelope mr-2 brand-orange"></i>Your Email Address</li>
+                        <li><i class="fas fa-envelope mr-2 brand-orange"></i>EZE CAR RENTAL@gmail.com</li>
                     </ul>
                 </div>
             </div>
