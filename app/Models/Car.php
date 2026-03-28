@@ -49,9 +49,9 @@ class Car extends Model
    
     }
 
-    public function tracker()
+   public function tracker()
 {
-    return $this->belongsTo(Tracker::class);
+    return $this->belongsTo(\App\Models\Tracker::class);
 }
 
     

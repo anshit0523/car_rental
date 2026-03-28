@@ -179,6 +179,8 @@ public function calendar(Request $request)
     return view('admin.admincalendar', $data);
 }
 
+
+
  public function showJson(Booking $booking): JsonResponse
 {
     try {

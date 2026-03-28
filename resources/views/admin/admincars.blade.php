@@ -20,6 +20,24 @@
                     </button>
                 </div>
 
+                <!-- Success Message -->
+                @if(session('success'))
+                    <div class="mb-6 rounded-lg bg-green-100 border border-green-200 text-green-800 px-4 py-3">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                <!-- Error Message -->
+                @if($errors->any())
+                    <div class="mb-6 rounded-lg bg-red-100 border border-red-200 text-red-800 px-4 py-3">
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <!-- Cars Table -->
                 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
@@ -31,6 +49,7 @@
                                     </th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Photo</th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
+                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Tracker</th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Total Booking</th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Price per day</th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
@@ -43,9 +62,10 @@
                                         <td class="px-6 py-4">
                                             <input type="checkbox" class="w-4 h-4 rounded">
                                         </td>
+
                                         <td class="px-6 py-4">
-                                            @if($car->images && count(json_decode($car->images)) > 0)
-                                                <img src="{{ asset('storage/' . json_decode($car->images)[0]) }}"
+                                            @if($car->images && count(json_decode($car->images, true) ?? []) > 0)
+                                                <img src="{{ asset('storage/' . json_decode($car->images, true)[0]) }}"
                                                     alt="{{ $car->model }}" class="w-16 h-10 object-cover rounded">
                                             @else
                                                 <div class="w-16 h-10 bg-gray-200 rounded flex items-center justify-center">
@@ -53,13 +73,31 @@
                                                 </div>
                                             @endif
                                         </td>
+
                                         <td class="px-6 py-4 text-sm text-gray-900 font-medium">
                                             {{ $car->brand->name ?? 'N/A' }} {{ $car->model }}
                                         </td>
+
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            @if($car->tracker)
+                                                <div class="font-medium">{{ $car->tracker->imei }}</div>
+                                                <div class="text-xs text-gray-500">
+                                                    {{ $car->tracker->provider ?? 'N/A' }}
+                                                    {{ $car->tracker->model ?? '' }}
+                                                </div>
+                                            @else
+                                                <span class="text-gray-400">No Tracker</span>
+                                            @endif
+                                        </td>
+
                                         <td class="px-6 py-4 text-sm text-blue-600 font-semibold">
-                                            {{ $car->bookings_count ?? 0 }}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-900">₱
-                                            {{ number_format($car->price_per_day, 2) }}</td>
+                                            {{ $car->bookings_count ?? 0 }}
+                                        </td>
+
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            ₱ {{ number_format($car->price_per_day, 2) }}
+                                        </td>
+
                                         <td class="px-6 py-4">
                                             @if($car->active)
                                                 <span
@@ -73,33 +111,44 @@
                                                 </span>
                                             @endif
                                         </td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex justify-center gap-2">
-                                                <!-- Edit Button -->
-                                                <button
-                                                    class="editCarBtn w-8 h-8 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded flex items-center justify-center transition"
-                                                    title="Edit" data-car="{{ json_encode($car) }}">
-                                                    <i class="fas fa-pen text-sm"></i>
-                                                </button>
 
-                                                <!-- Delete Form -->
-                                                <form id="deleteForm-{{ $car->id }}"
-                                                    action="{{ route('admin.cars.destroy', $car->id) }}" method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button"
-                                                        class="deleteCarBtn w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded flex items-center justify-center transition"
-                                                        title="Delete" data-form-id="deleteForm-{{ $car->id }}">
-                                                        <i class="fas fa-trash text-sm"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
+                                     <td class="px-6 py-4">
+    <div class="flex justify-center gap-2">
+        <button
+            class="editCarBtn w-8 h-8 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded flex items-center justify-center transition"
+            title="Edit"
+            data-car="{{ json_encode([
+                'id' => $car->id,
+                'brand_id' => $car->brand_id,
+                'model' => $car->model,
+                'transmission_id' => $car->transmission_id,
+                'fuel_type_id' => $car->fuel_type_id,
+                'seats' => $car->seats,
+                'price_per_day' => $car->price_per_day,
+                'description' => $car->description,
+                'active' => $car->active,
+                'tracker_id' => $car->tracker_id,
+            ]) }}">
+            <i class="fas fa-pen text-sm"></i>
+        </button>
+
+        <form id="deleteForm-{{ $car->id }}"
+            action="{{ route('admin.cars.destroy', $car->id) }}" method="POST">
+            @csrf
+            @method('DELETE')
+            <button type="button"
+                class="deleteCarBtn w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded flex items-center justify-center transition"
+                title="Delete" data-form-id="deleteForm-{{ $car->id }}">
+                <i class="fas fa-trash text-sm"></i>
+            </button>
+        </form>
+    </div>
+</td>
                                         </td>
-
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                        <td colspan="8" class="px-6 py-12 text-center text-gray-500">
                                             <i class="fas fa-inbox text-4xl mb-3 opacity-50"></i>
                                             <p class="text-lg">No cars found</p>
                                         </td>
@@ -209,6 +258,23 @@
                                 <p class="text-xs text-gray-500 mt-1">Upload multiple images (optional)</p>
                             </div>
 
+                            <!-- Tracker -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tracker</label>
+                                <select name="tracker_id" id="trackerId"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <option value="">No Tracker</option>
+                                    @foreach($trackers as $tracker)
+                                        <option value="{{ $tracker->id }}">
+                                            {{ $tracker->imei }} -
+                                            {{ $tracker->provider ?? 'N/A' }}
+                                            {{ $tracker->model ?? '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">Assign a tracker to this car</p>
+                            </div>
+
                             <!-- Active Status -->
                             <div class="flex items-center">
                                 <input type="checkbox" name="active" id="activeCheckbox" value="1" checked
@@ -257,6 +323,6 @@
 
 @endsection
 
-    @section('scripts')
-        <script src="{{ asset('js/admin/admincars.js') }}"></script>
-    @endsection
+@section('scripts')
+    <script src="{{ asset('js/admin/admincars.js') }}"></script>
+@endsection

@@ -23,10 +23,10 @@ class Tracker extends Model
         'is_active' => 'boolean',
     ];
 
-    public function car(): HasOne
-    {
-        return $this->hasOne(Car::class);
-    }
+   public function car()
+{
+    return $this->hasOne(\App\Models\Car::class);
+}
 
     public function positions(): HasMany
     {

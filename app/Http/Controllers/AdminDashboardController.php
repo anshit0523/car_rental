@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\Car;
-use App\Models\User;
-use App\Models\Brand;
-use App\Models\Booking;
-
-use App\Models\FuelType;
-use App\Models\Transmission;
 use App\Http\Middleware\CheckRole;
-use Illuminate\Support\Facades\DB;
+use App\Models\Booking;
+use App\Models\Brand;
+use App\Models\Car;
+use App\Models\FuelType;
+use App\Models\Tracker;
+use App\Models\Transmission;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
 {
@@ -131,17 +131,24 @@ class AdminDashboardController extends Controller
 
 
     public function cars()
-    {
-        $cars = Car::with(['brand', 'transmission', 'fuelType'])
-            ->withCount(['bookings'])
-            ->paginate(9);
+{
+    $brands = Brand::all();
+    $transmissions = Transmission::all();
+    $fuelTypes = FuelType::all();
+    $trackers = Tracker::orderBy('imei')->get();
 
-        $brands = Brand::all();
-        $transmissions = Transmission::all();
-        $fuelTypes = FuelType::all();
+    $cars = Car::with(['brand', 'transmission', 'fuelType', 'tracker'])
+        ->withCount('bookings')
+        ->paginate(9);
 
-        return view('admin.admincars', compact('cars', 'brands', 'transmissions', 'fuelTypes'));
-    }
+    return view('admin.admincars', compact(
+        'brands',
+        'transmissions',
+        'fuelTypes',
+        'trackers',
+        'cars'
+    ));
+}
 
 
 
