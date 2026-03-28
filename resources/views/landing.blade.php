@@ -320,7 +320,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div class="grid lg:grid-cols-2 gap-10 items-center pt-28 pb-16">
                 <div class="text-white">
-                    <p class="section-subtitle mb-4 text-orange-400">Car Rental</p>
+                    <p class="section-subtitle mb-4 text-orange-400"> Eze Car Rental</p>
                     <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-5">
                         Drive Dumaguete with
                         <span class="text-orange-400">Comfort & Confidence</span>
