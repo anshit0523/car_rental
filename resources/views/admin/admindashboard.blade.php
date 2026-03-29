@@ -38,7 +38,7 @@
                             <div>
                                 <p class="text-gray-600 text-sm font-medium">Total Revenue</p>
                                 <p class="text-3xl font-bold text-gray-900 mt-2">
-                                    &#8369;{{ number_format($totalRevenue, 1) }}
+                                    &#8369;{{ number_format($totalRevenue, ) }}
                                 </p>
                                 <p class="{{ $revenueTrendColor }} text-sm mt-2">
                                     {{ $revenueTrendIcon }} {{ abs($revenueTrend) }}% vs last month

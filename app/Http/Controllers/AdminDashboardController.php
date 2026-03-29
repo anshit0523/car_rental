@@ -20,19 +20,18 @@ class AdminDashboardController extends Controller
 
     public function index()
     {
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
-        $currentMonthStr = Carbon::now()->format('Y-m');
-        $lastMonthStr = Carbon::create(Carbon::now()->year, Carbon::now()->month, 1)
-            ->subMonth()
-            ->format('Y-m');
+      $currentMonthStr = now()->format('Y-m');
+    $lastMonthStr = now()->startOfMonth()->subMonth()->format('Y-m');
+
+    $startOfMonth = now()->startOfMonth();
+    $endOfMonth = now()->endOfMonth();
+
 
         $totalBookings = Booking::whereBetween('pickup_at', [$startOfMonth, $endOfMonth])->count();
         $totalCars = Car::count();
         $activeCars = Booking::where('status_id', 2)->count();
         $totalUsers = User::count();
-        $totalRevenue = Booking::whereBetween('pickup_at', [$startOfMonth, $endOfMonth])
-            ->sum('total_price');
+        $totalRevenue = Booking::whereBetween('pickup_at', [$startOfMonth, $endOfMonth])->sum('total_price');
 
         $monthlyData = DB::table('bookings')
             ->selectRaw('YEAR(pickup_at) as year, MONTH(pickup_at) as month_num, DATE_FORMAT(pickup_at, "%b %Y") as month_label, COUNT(*) as bookings, COALESCE(SUM(total_price), 0) as revenue')
@@ -154,33 +153,31 @@ class AdminDashboardController extends Controller
     }
 
     public function revenue()
-    {
-        $monthlyRevenue = DB::table('bookings')
-            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month_key, SUM(total_price) as total')
-            ->groupByRaw('DATE_FORMAT(created_at, "%Y-%m")')
-            ->orderBy('month_key', 'desc')
-            ->limit(6)
-            ->get();
+{
+    $monthlyRevenue = DB::table('bookings')
+        ->selectRaw('
+            YEAR(pickup_at) as year,
+            MONTH(pickup_at) as month_num,
+            DATE_FORMAT(MIN(pickup_at), "%b %Y") as month_label,
+            SUM(total_price) as total
+        ')
+        ->groupByRaw('YEAR(pickup_at), MONTH(pickup_at)')
+        ->orderByRaw('YEAR(pickup_at) DESC, MONTH(pickup_at) DESC')
+        ->limit(6)
+        ->get();
 
-        // Calculate real month-over-month growth for each row
-        $revenueWithGrowth = $monthlyRevenue->map(function ($row, $index) use ($monthlyRevenue) {
-            // Previous month is the next item (since ordered desc)
-            $prevTotal = $monthlyRevenue->get($index + 1)?->total ?? null;
+    $revenueWithGrowth = $monthlyRevenue->map(function ($row, $index) use ($monthlyRevenue) {
+        $prevTotal = $monthlyRevenue->get($index + 1)?->total ?? null;
 
-            $growth = null;
-            if ($prevTotal && $prevTotal > 0) {
-                $growth = round((($row->total - $prevTotal) / $prevTotal) * 100, 1);
-            }
+        $row->growth = ($prevTotal && $prevTotal > 0)
+            ? round((($row->total - $prevTotal) / $prevTotal) * 100, 1)
+            : null;
 
-            // Format month label e.g. "Jan 2025"
-            $row->month_label = \Carbon\Carbon::createFromFormat('Y-m', $row->month_key)->format('M Y');
-            $row->growth      = $growth;
+        return $row;
+    });
 
-            return $row;
-        });
-
-        return view('admin.adminrevenue', [
-            'monthlyRevenue' => $revenueWithGrowth,
-        ]);
-    }
+    return view('admin.adminrevenue', [
+        'monthlyRevenue' => $revenueWithGrowth,
+    ]);
+}
 }
