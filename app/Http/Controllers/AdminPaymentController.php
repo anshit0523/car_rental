@@ -227,14 +227,19 @@ class AdminPaymentController extends Controller
             }
         }
 
-        // Create notification
+        $notificationMessage = 'Your payment has been verified and your booking is now confirmed.';
+
+        if ((int) $booking->points_used > 0) {
+            $notificationMessage .= ' No points were earned because redeemed points were used for this booking.';
+        } else {
+            $notificationMessage .= " You earned {$pointsEarned} points from this booking.";
+        }
+
         Notification::create([
             'user_id' => $booking->user_id,
             'booking_id' => $booking->id,
             'title' => 'Payment Approved',
-            'message' => ((int) $booking->points_used > 0)
-                ? 'Your payment has been verified and your booking is now confirmed. No points were earned because redeemed points were used for this booking.'
-                : 'Your payment has been verified and your booking is now confirmed. Points have been added to your account.',
+            'message' => $notificationMessage,
             'type' => 'payment',
             'link' => route('user.booking.confirmation', $booking->id)
         ]);
