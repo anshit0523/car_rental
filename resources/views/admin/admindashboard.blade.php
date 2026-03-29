@@ -84,9 +84,11 @@
 
                 <!-- Booking Status Chart -->
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Booking Status</h3>
-                    <canvas id="statusChart"></canvas>
-                </div>
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Booking Status</h3>
+    <div class="relative h-72">
+        <canvas id="statusChart"></canvas>
+    </div>
+</div>
             </div>
 
             <!-- Recent Bookings Table -->
@@ -156,12 +158,12 @@
 @section('scripts')
     <script>
         window.dashboardData = {
-            months: {!! json_encode($months) !!},
-            bookingsData: {!! json_encode($bookingsData) !!},
-            revenueData: {!! json_encode($revenueData) !!},
-            statusLabels: {!! json_encode($statusLabels) !!},
-            statusData: {!! json_encode($statusData) !!}
-        };
+    months: @json($months),
+    bookingsData: @json($bookingsData),
+    revenueData: @json($revenueData),
+    statusLabels: @json($statusLabels),
+    statusData: @json($statusData),
+};
     </script>
 
     <script src="{{ asset('js/admin/admindashboard.js') }}"></script>

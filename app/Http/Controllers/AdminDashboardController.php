@@ -32,21 +32,19 @@ class AdminDashboardController extends Controller
             ->sum('total_price');
 
         // Get last 4 months of data using database grouping (solves timezone issues)
-        $monthlyData = DB::table('bookings')
-            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as bookings, SUM(total_price) as revenue')
-            ->groupByRaw('DATE_FORMAT(created_at, "%Y-%m")')
-            ->orderBy('month', 'asc')
-            ->limit(8)
-            ->get();
+      $monthlyData = DB::table('bookings')
+    ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month_num, DATE_FORMAT(created_at, "%b %Y") as month_label, COUNT(*) as bookings, COALESCE(SUM(total_price), 0) as revenue')
+    ->groupByRaw('YEAR(created_at), MONTH(created_at), DATE_FORMAT(created_at, "%b %Y")')
+    ->orderByRaw('YEAR(created_at) DESC, MONTH(created_at) DESC')
+    ->limit(8)
+    ->get()
+    ->reverse()
+    ->values();
 
+$months = $monthlyData->pluck('month_label')->toArray();
+$bookingsData = $monthlyData->pluck('bookings')->toArray();
+$revenueData = $monthlyData->pluck('revenue')->toArray();
 
-        // Extract month labels and data
-        $months = $monthlyData->pluck('month')->map(function ($month) {
-            return Carbon::createFromFormat('Y-m', $month)->format('M');
-        })->toArray();
-
-        $bookingsData = $monthlyData->pluck('bookings')->toArray();
-        $revenueData = $monthlyData->pluck('revenue')->toArray();
 
         // Calculate trends for this month vs last month
         $currentMonthStr = Carbon::now()->format('Y-m');
