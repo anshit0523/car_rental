@@ -131,10 +131,14 @@ class AdminPaymentController extends Controller
 
     // aprove payment and update booking status to confirmed
     public function approve($paymentId)
-    {
-        $payment = Payment::with(['booking', 'booking.photoReceipt'])->findOrFail($paymentId);
+{
+    DB::transaction(function () use ($paymentId) {
+        $payment = Payment::with(['booking', 'booking.photoReceipt', 'booking.user'])
+            ->lockForUpdate()
+            ->findOrFail($paymentId);
 
         $booking = $payment->booking;
+        $user = $booking->user;
 
         // Get completed payment status
         $completedStatusId = DB::table('payment_statuses')
@@ -165,19 +169,79 @@ class AdminPaymentController extends Controller
             ]);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | GIVE POINTS ONLY IF NO REDEEM WAS USED
+        |--------------------------------------------------------------------------
+        */
+        if ((int) $booking->points_used === 0) {
+
+            // Prevent duplicate earn if admin clicks approve twice
+            $alreadyEarned = DB::table('points_transactions')
+                ->where('user_id', $booking->user_id)
+                ->where('booking_id', $booking->id)
+                ->whereExists(function ($query) {
+                    $query->select(DB::raw(1))
+                        ->from('points_transaction_types')
+                        ->whereColumn('points_transaction_types.id', 'points_transactions.points_id')
+                        ->where('points_transaction_types.name', 'earn');
+                })
+                ->exists();
+
+            if (! $alreadyEarned) {
+                //rule: earn 1 point for every $100 spent----
+              $pointsEarned = (int) floor($booking->final_total / 100);
+
+                if ($pointsEarned > 0) {
+                    $earnTypeId = (int) DB::table('points_transaction_types')
+                        ->where('name', 'earn')
+                        ->value('id');
+
+                    $userRow = DB::table('users')
+                        ->where('id', $booking->user_id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    $balanceBefore = (int) $userRow->points_balance;
+                    $balanceAfter = $balanceBefore + $pointsEarned;
+
+                    DB::table('users')
+                        ->where('id', $booking->user_id)
+                        ->update([
+                            'points_balance' => $balanceAfter,
+                            'updated_at' => now(),
+                        ]);
+
+                    DB::table('points_transactions')->insert([
+                        'user_id' => $booking->user_id,
+                        'booking_id' => $booking->id,
+                        'points_id' => $earnTypeId,
+                        'points_change' => $pointsEarned,
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balanceAfter,
+                        'note' => 'Points earned from approved booking',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        }
+
         // Create notification
         Notification::create([
             'user_id' => $booking->user_id,
             'booking_id' => $booking->id,
             'title' => 'Payment Approved',
-            'message' => 'Your payment has been verified and your booking is now confirmed.',
+            'message' => ((int) $booking->points_used > 0)
+                ? 'Your payment has been verified and your booking is now confirmed. No points were earned because redeemed points were used for this booking.'
+                : 'Your payment has been verified and your booking is now confirmed. Points have been added to your account.',
             'type' => 'payment',
             'link' => route('user.booking.confirmation', $booking->id)
         ]);
+    });
 
-        return back()->with('success', 'Payment approved and booking confirmed.');
-    }
-
+    return back()->with('success', 'Payment approved and booking confirmed.');
+}
 
     // reject payment and update receipt status to rejected
     public function reject(Request $request, $paymentId)
