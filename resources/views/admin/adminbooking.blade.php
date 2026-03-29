@@ -166,6 +166,24 @@
     <p id="statusHelpText" class="text-sm text-gray-500 mt-2 hidden"></p>
 </div>
 
+<div id="adminMessageWrapper" class="mb-4 hidden">
+    <label for="adminMessage" class="block text-gray-700 font-medium mb-1">
+        Optional Message to User
+    </label>
+
+    <textarea
+        name="admin_message"
+        id="adminMessage"
+        rows="4"
+        placeholder="Example: The car was returned with low fuel level."
+        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+    ></textarea>
+
+    <p class="text-sm text-gray-500 mt-2">
+        Add a note for damages, low fuel, or return concerns.
+    </p>
+</div>
+
              <div class="flex justify-end gap-2 mt-6">
     <button
         type="button"

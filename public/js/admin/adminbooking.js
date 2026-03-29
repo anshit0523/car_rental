@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusHelpText = document.getElementById('statusHelpText');
     const saveStatusBtn = document.getElementById('saveStatusBtn');
 
+    // new
+    const adminMessageWrapper = document.getElementById('adminMessageWrapper');
+    const adminMessage = document.getElementById('adminMessage');
+
     let typingTimer;
 
     if (searchInput) {
@@ -37,6 +41,23 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const statusMap = window.bookingStatusMap || {};
+
+    function toggleAdminMessageField() {
+        if (!statusDropdown || !adminMessageWrapper) return;
+
+        const selectedText = statusDropdown.options[statusDropdown.selectedIndex]?.text?.trim() || '';
+
+        const showFor = ['Completed', 'Checkup', 'Damage', 'Needs Repair'];
+
+        if (showFor.includes(selectedText)) {
+            adminMessageWrapper.classList.remove('hidden');
+        } else {
+            adminMessageWrapper.classList.add('hidden');
+            if (adminMessage) {
+                adminMessage.value = '';
+            }
+        }
+    }
 
     document.querySelectorAll('.editBookingBtn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -70,6 +91,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 statusHelpText.textContent = '';
                 statusHelpText.classList.add('hidden');
+
+                // new
+                toggleAdminMessageField();
             } else {
                 statusDropdown.disabled = true;
 
@@ -80,12 +104,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 statusHelpText.textContent = `No manual action available for ${currentStatusName}.`;
                 statusHelpText.classList.remove('hidden');
+
+                // new
+                if (adminMessageWrapper) adminMessageWrapper.classList.add('hidden');
+                if (adminMessage) adminMessage.value = '';
             }
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         });
     });
+
+    if (statusDropdown) {
+        statusDropdown.addEventListener('change', toggleAdminMessageField);
+    }
 
     function closeModal() {
         modal.classList.add('hidden');
@@ -101,6 +133,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         statusHelpText.textContent = '';
         statusHelpText.classList.add('hidden');
+
+        // new
+        if (adminMessageWrapper) adminMessageWrapper.classList.add('hidden');
+        if (adminMessage) adminMessage.value = '';
     }
 
     if (closeModalBtn) {
