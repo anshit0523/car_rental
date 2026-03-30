@@ -101,4 +101,58 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect('/');
     }
+
+
+
+//controller for api ---------------------------------------
+
+public function apiLogin(Request $request)
+{
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
+
+    if (Auth::attempt($credentials)) {
+        $user = Auth::user();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successful',
+            'user' => $user,
+        ]);
+    }
+
+    return response()->json([
+        'success' => false,
+        'message' => 'Invalid email or password',
+    ], 401);
+}
+
+
+  // API REGISTER
+    public function apiRegister(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'phone' => 'nullable|string|max:20',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone ?? null,
+            'password' => Hash::make($request->password),
+            'role_id' => 2,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Registration successful',
+            'user' => $user,
+        ], 201);
+    }
+
 }

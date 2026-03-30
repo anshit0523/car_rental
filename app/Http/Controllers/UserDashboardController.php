@@ -28,7 +28,7 @@ class UserDashboardController extends Controller
 
             // Get current active rentals with car and status details
             $currentRentals = Booking::where('user_id', $user->id)
-                ->whereIn('status_id', [2, 3])
+                ->where('status_id', 2)
                 ->with(['car.brand', 'status'])
                 ->orderBy('pickup_at', 'desc')
                 ->paginate(3);
@@ -85,6 +85,8 @@ class UserDashboardController extends Controller
             return back()->with('error', 'Error loading dashboard: ' . $e->getMessage());
         }
     }
+
+
 
     // notification mark as read
     public function markRead($id)

@@ -20,14 +20,29 @@
   const markers = new Map();
   let didAutoCenter = false;
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const selectedDeviceId = urlParams.get('deviceId'); // from ?deviceId=123
+
   function popupHtml(v){
+    const replayUrl = v.traccar_device_id
+      ? `{{ route('admin.replay') }}?deviceId=${encodeURIComponent(v.traccar_device_id)}`
+      : null;
+
     return `
       <div style="font-size:12px">
         <b>${v.plate_no ?? 'Car'}</b><br>
         Status: ${v.online ? 'ONLINE' : 'OFFLINE'}<br>
         Speed: ${(v.speed_kmh ?? 0)} km/h<br>
         Battery: ${v.battery_level ?? '-'}%<br>
-        Fix: ${v.fix_time ?? '-'}
+        Fix: ${v.fix_time ?? '-'}<br><br>
+        ${
+          replayUrl
+            ? `<a href="${replayUrl}"
+                 style="display:inline-block;padding:6px 10px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;font-size:12px;">
+                 Go to Replay
+               </a>`
+            : `<span style="color:#6b7280;">No tracker available</span>`
+        }
       </div>
     `;
   }
@@ -38,31 +53,44 @@
 
     const bounds = L.latLngBounds();
     let hasAny = false;
+    let selectedMarker = null;
 
     (json.data || []).forEach(v => {
       const lat = Number(v.lat);
       const lng = Number(v.lng);
-      if (!lat || !lng) return;
+
+      if (isNaN(lat) || isNaN(lng)) return;
 
       hasAny = true;
       const pos = [lat, lng];
       bounds.extend(pos);
 
+      let m;
       if (!markers.has(v.car_id)) {
-        const m = L.marker(pos).addTo(map);
+        m = L.marker(pos).addTo(map);
         m.bindPopup(popupHtml(v));
         markers.set(v.car_id, m);
       } else {
-        const m = markers.get(v.car_id);
+        m = markers.get(v.car_id);
         m.setLatLng(pos);
         m.setPopupContent(popupHtml(v));
       }
+
+      // match the clicked tracker/device
+      if (selectedDeviceId && String(v.traccar_device_id) === String(selectedDeviceId)) {
+        selectedMarker = m;
+      }
     });
 
-    // ✅ Auto-center once (first time we have markers)
-    if (!didAutoCenter && hasAny) {
-      map.fitBounds(bounds, { padding: [40, 40] });
-      didAutoCenter = true;
+    if (!didAutoCenter) {
+      if (selectedMarker) {
+        map.setView(selectedMarker.getLatLng(), 16);
+        selectedMarker.openPopup();
+        didAutoCenter = true;
+      } else if (hasAny) {
+        map.fitBounds(bounds, { padding: [40, 40] });
+        didAutoCenter = true;
+      }
     }
   }
 

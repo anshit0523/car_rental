@@ -60,11 +60,7 @@
     <span>Live Map</span>
 </a>
 
-<a href="{{ route('admin.replay') }}"
-   class="{{ $baseLinkClass }} {{ request()->routeIs('admin.replay*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
-    <i class="fas fa-route w-5"></i>
-    <span>Replay</span>
-</a>
+
 
 <a href="{{ route('admin.trackers.create') }}"
    class="{{ $baseLinkClass }} {{ request()->routeIs('admin.trackers.*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
@@ -169,12 +165,6 @@
     <span>Live Map</span>
 </a>
 
-
-<a href="{{ route('admin.replay') }}"
-   class="{{ $baseLinkClass }} {{ request()->routeIs('admin.replay*') ? 'bg-white/20 text-white' : 'hover:bg-white/10' }}">
-    <i class="fas fa-route w-5"></i>
-    <span>Replay</span>
-</a>
 
     <!-- Payment Settings -->
     <a href="{{ route('admin.payment-settings.edit') }}"

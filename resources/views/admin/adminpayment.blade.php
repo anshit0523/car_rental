@@ -198,25 +198,25 @@
                                                     class="inline">
                                                     @csrf
 
-                                                    <button class="text-green-600 hover:text-green-800">
-
+                                                    <!-- APPROVE -->
+                                                    <button type="button"
+                                                       onclick="openApproveModal({{ $payment->id }}, '{{ $payment->booking_id }}')"
+                                                        class="text-green-600 hover:text-green-800">
                                                         <i class="fas fa-check"></i>
-
                                                     </button>
 
                                                 </form>
 
+
+
+
                                                 <!-- REJECT -->
-                                               
+                                                <button type="button"
+                                                    onclick="openRejectModal({{ $payment->id }}, '{{ $payment->booking_id }}')"
+                                                    class="text-red-600 hover:text-red-800">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
 
-                                                    <button onclick="openRejectModal({{ $payment->id }})"
-                                                        class="text-red-600 hover:text-red-800">
-
-                                                        <i class="fas fa-times"></i>
-
-                                                    </button>
-
-                                             
 
                                             </td>
                                         </tr>
@@ -261,14 +261,74 @@
         </div>
     </div>
 
+    <!-- APPROVE MODAL -->
+    <div id="approveModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Approve Payment</h3>
+                    <p class="text-sm text-slate-500 mt-1">
+                        Are you sure you want to approve this booking payment?
+                    </p>
+                </div>
+
+                <button type="button" onclick="closeApproveModal()" class="text-gray-400 hover:text-gray-700 text-xl">
+                    ✕
+                </button>
+            </div>
+
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <p class="text-sm text-green-800">
+                    Booking:
+                    <span id="approveBookingLabel" class="font-semibold"></span>
+                </p>
+                <p class="text-xs text-green-700 mt-1">
+                    This will mark the payment as completed and confirm the booking.
+                </p>
+            </div>
+
+            <form id="approveForm" method="POST">
+                @csrf
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeApproveModal()"
+                        class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                        Yes, Approve
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- REJECT MODAL -->
     <div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Reject Payment</h3>
+                    <p class="text-sm text-slate-500 mt-1">
+                        Are you sure you want to reject this booking payment?
+                    </p>
+                </div>
 
-            <h3 class="text-lg font-bold mb-4">
-                Reject Payment
-            </h3>
+                <button type="button" onclick="closeRejectModal()" class="text-gray-400 hover:text-gray-700 text-xl">
+                    ✕
+                </button>
+            </div>
+
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <p class="text-sm text-red-800">
+                    Booking:
+                    <span id="rejectBookingLabel" class="font-semibold"></span>
+                </p>
+                <p class="text-xs text-red-700 mt-1">
+                    Please provide the reason for rejection before continuing.
+                </p>
+            </div>
 
             <form id="rejectForm" method="POST">
                 @csrf
@@ -281,19 +341,16 @@
                     placeholder="Explain why the receipt is rejected..." required></textarea>
 
                 <div class="flex justify-end gap-3 mt-4">
-
-                    <button type="button" onclick="closeRejectModal()" class="px-4 py-2 bg-gray-300 rounded">
+                    <button type="button" onclick="closeRejectModal()"
+                        class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
                         Cancel
                     </button>
 
-                    <button class="px-4 py-2 bg-red-600 text-white rounded">
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
                         Reject Payment
                     </button>
-
                 </div>
-
             </form>
-
         </div>
     </div>
 
