@@ -62,6 +62,12 @@
 
 <div class="h-screen overflow-y-auto bg-gray-50">
     <div class="max-w-7xl mx-auto p-4 pb-8">
+
+        <div class="mb-3 text-sm text-gray-600">
+    <a href="{{ route('admin.live-map') }}" class="hover:text-blue-600">Live Map</a>
+    <span class="mx-1">/</span>
+    <span class="text-gray-900 font-medium">Replay History</span>
+</div>
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h1 class="text-xl font-semibold text-gray-900">Replay History</h1>
@@ -201,6 +207,9 @@
     let startMarker = null;
     let endMarker = null;
 
+    // optional follow mode while replay plays
+    let followMarker = true;
+
     const statusEl = document.getElementById('historyStatus');
     const pointCountEl = document.getElementById('pointCount');
     const currentFixTimeEl = document.getElementById('currentFixTime');
@@ -252,7 +261,8 @@
         const value = Number(replaySeekEl.value) || 0;
         const percent = max === 0 ? 0 : (value / max) * 100;
 
-        replaySeekEl.style.background = `linear-gradient(to right, #60a5fa 0%, #60a5fa ${percent}%, #d1d5db ${percent}%, #d1d5db 100%)`;
+        replaySeekEl.style.background =
+            `linear-gradient(to right, #60a5fa 0%, #60a5fa ${percent}%, #d1d5db ${percent}%, #d1d5db 100%)`;
     }
 
     function setPlaybackControlsDisabled(disabled) {
@@ -307,12 +317,12 @@
             <div style="font-size:12px">
                 <b>Replay</b><br>
                 Time: ${formatFixTime(point.fixTime)}<br>
-                Speed: ${point.speed ?? 0}<br>
+                Speed: ${point.speed ?? 0} km/h<br>
                 Address: ${point.address ?? '-'}
             </div>
         `);
 
-        if (panMap) {
+        if (panMap && followMarker) {
             map.panTo(pos, { animate: true, duration: 0.5 });
         }
     }
@@ -383,9 +393,7 @@
             const toIso = new Date(to).toISOString();
 
             const res = await fetch(`{{ route('admin.replay.history') }}?deviceId=${encodeURIComponent(deviceId)}&from=${encodeURIComponent(fromIso)}&to=${encodeURIComponent(toIso)}`, {
-                headers: {
-                    'Accept': 'application/json'
-                }
+                headers: { 'Accept': 'application/json' }
             });
 
             if (!res.ok) {
@@ -419,7 +427,14 @@
             endMarker = L.marker(latlngs[latlngs.length - 1]).addTo(map)
                 .bindPopup(`End<br>${formatFixTime(replayPoints[replayPoints.length - 1].fixTime)}`);
 
-            replayMarker = L.marker(latlngs[0]).addTo(map);
+            replayMarker = L.marker(latlngs[0]).addTo(map).bindPopup(`
+    <div style="font-size:12px">
+        <b>Replay</b><br>
+        Time: ${formatFixTime(replayPoints[0].fixTime)}<br>
+        Speed: ${replayPoints[0].speed ?? 0} km/h<br>
+        Address: ${replayPoints[0].address ?? '-'}
+    </div>
+`);
 
             replayIndex = 0;
             replaySeekEl.max = replayPoints.length - 1;
@@ -428,9 +443,13 @@
             updateCounter();
             setPlaybackControlsDisabled(false);
 
+            // auto-center
             renderPoint(0, false);
+            map.setView(latlngs[0], 16);
 
-            map.fitBounds(replayLine.getBounds(), { padding: [30, 30] });
+            // auto-open popup for replay marker
+            replayMarker.openPopup();
+
             statusEl.textContent = `Loaded ${replayPoints.length} points`;
         } catch (error) {
             console.error(error);
@@ -457,7 +476,7 @@
         }
 
         updatePlayButton(true);
-        statusEl.textContent = 'Playing replay...';
+        statusEl.textContent = followMarker ? 'Playing replay with follow mode...' : 'Playing replay...';
 
         replayTimer = setInterval(() => {
             if (replayIndex >= replayPoints.length - 1) {
@@ -466,7 +485,7 @@
                 return;
             }
 
-            renderPoint(replayIndex + 1);
+            renderPoint(replayIndex + 1, true);
         }, 500);
     }
 
@@ -475,6 +494,8 @@
 
         if (replayPoints.length) {
             renderPoint(0, false);
+            map.setView([Number(replayPoints[0].lat), Number(replayPoints[0].lng)], 16);
+            replayMarker.openPopup();
         }
 
         statusEl.textContent = 'Replay stopped';
@@ -484,7 +505,8 @@
         if (!replayPoints.length) return;
 
         stopTimer();
-        renderPoint(replayIndex - 1);
+        renderPoint(replayIndex - 1, true);
+        replayMarker.openPopup();
         statusEl.textContent = 'Moved to previous point';
     }
 
@@ -492,7 +514,8 @@
         if (!replayPoints.length) return;
 
         stopTimer();
-        renderPoint(replayIndex + 1);
+        renderPoint(replayIndex + 1, true);
+        replayMarker.openPopup();
         statusEl.textContent = 'Moved to next point';
     }
 
@@ -506,7 +529,8 @@
         if (!replayPoints.length) return;
 
         stopTimer();
-        renderPoint(Number(this.value));
+        renderPoint(Number(this.value), true);
+        replayMarker.openPopup();
         statusEl.textContent = 'Replay position updated';
     });
 
@@ -514,8 +538,15 @@
     updateSliderProgress();
     setPlaybackControlsDisabled(true);
 
+    // auto-load from deviceId
     @if(request('deviceId'))
         document.getElementById('deviceSelect').value = "{{ request('deviceId') }}";
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loadReplay();
+            }, 300);
+        });
     @endif
 </script>
 @endsection

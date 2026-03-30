@@ -84,7 +84,11 @@ class LiveMapController extends Controller
                 'speed' => $p['speed'] ?? 0,
                 'course' => $p['course'] ?? 0,
                 'fixTime' => $p['fixTime'] ?? null,
-                'address' => $p['address'] ?? null,
+                'address' => $p['address'] ?? (
+    isset($p['latitude'], $p['longitude'])
+        ? $p['latitude'] . ', ' . $p['longitude']
+        : null
+),
             ];
         })->values();
 
