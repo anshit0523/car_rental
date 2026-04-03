@@ -14,7 +14,7 @@ class UserCarBrowseController extends Controller
      public function index(Request $request)
     {
         // Start query builder - only show active cars
-        $query = Car::query()->where('active', true);
+        $query = Car::query()->where('active', false);
 
         // Search by location (if you have a location column)
         if ($request->filled('location')) {

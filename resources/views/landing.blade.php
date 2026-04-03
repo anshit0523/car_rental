@@ -464,10 +464,7 @@
                                 {{ $car->brand->name ?? '' }} {{ $car->model }}
                             </h3>
 
-                            <div class="popular-showcase-rating">
-                                <i class="fas fa-star"></i>
-                                <span>4.8</span>
-                            </div>
+                            
                         </div>
 
                         <ul class="popular-showcase-info">

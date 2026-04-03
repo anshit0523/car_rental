@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Middleware\CheckRole;
 use App\Models\Booking;
 use App\Models\Brand;
+use App\Models\CarType;
 use App\Models\Car;
 use App\Models\FuelType;
 use App\Models\Tracker;
@@ -124,25 +125,7 @@ class AdminDashboardController extends Controller
         ]);
     }
 
-    public function cars()
-    {
-        $brands = Brand::all();
-        $transmissions = Transmission::all();
-        $fuelTypes = FuelType::all();
-        $trackers = Tracker::orderBy('imei')->get();
-
-        $cars = Car::with(['brand', 'transmission', 'fuelType', 'tracker'])
-            ->withCount('bookings')
-            ->paginate(9);
-
-        return view('admin.admincars', compact(
-            'brands',
-            'transmissions',
-            'fuelTypes',
-            'trackers',
-            'cars'
-        ));
-    }
+    
 
 
 

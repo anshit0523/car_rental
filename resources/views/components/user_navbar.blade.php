@@ -25,24 +25,26 @@
         <h1 class="font-bold text-lg text-white">Car Rental</h1>
     </div>
 
-    <!-- Navigation Menu -->
+    <!-- Navigation Menu 
     <nav class="flex-1 p-3 space-y-2 overflow-y-auto">
         <a href="{{ route('user.dashboard') }}"
             class="{{ $baseLinkClass }} {{ request()->routeIs('user.dashboard') ? 'bg-black text-white' : 'text-gray-300 hover:bg-gray-800' }}">
             <span class="text-lg flex-shrink-0">📊</span>
             <span class="menu-label">Dashboard</span>
-        </a>
+        </a>-->
 
-        <a href="{{ route('user.rentals.index') }}"
-            class="{{ $baseLinkClass }} {{ request()->routeIs('user.rentals') ? 'bg-black text-white' : 'text-gray-300 hover:bg-gray-800' }}">
-            <span class="text-lg flex-shrink-0">🚗</span>
-            <span class="menu-label">My Rentals</span>
-        </a>
+     
 
         <a href="{{ route('user.browse') }}"
             class="{{ $baseLinkClass }} {{ request()->routeIs('user.browse') ? 'bg-black text-white' : 'text-gray-300 hover:bg-gray-800' }}">
             <span class="text-lg flex-shrink-0">🔍</span>
             <span class="menu-label">Browse Cars</span>
+        </a>
+
+           <a href="{{ route('user.rentals.index') }}"
+            class="{{ $baseLinkClass }} {{ request()->routeIs('user.rentals') ? 'bg-black text-white' : 'text-gray-300 hover:bg-gray-800' }}">
+            <span class="text-lg flex-shrink-0">🚗</span>
+            <span class="menu-label">My Rentals</span>
         </a>
 
 

@@ -3,11 +3,8 @@
 @section('content')
 
     <div class="flex h-screen overflow-hidden">
-
         <div class="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100">
-            <!-- Main Content -->
             <div class="flex-1 p-6 lg:p-8 w-full lg:ml-0">
-                <!-- Page Header -->
                 <div class="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                     <div>
                         <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Fleet Management</h1>
@@ -20,14 +17,12 @@
                     </button>
                 </div>
 
-                <!-- Success Message -->
                 @if(session('success'))
                     <div class="mb-6 rounded-lg bg-green-100 border border-green-200 text-green-800 px-4 py-3">
                         {{ session('success') }}
                     </div>
                 @endif
 
-                <!-- Error Message -->
                 @if($errors->any())
                     <div class="mb-6 rounded-lg bg-red-100 border border-red-200 text-red-800 px-4 py-3">
                         <ul class="list-disc list-inside text-sm space-y-1">
@@ -38,7 +33,6 @@
                     </div>
                 @endif
 
-                <!-- Cars Table -->
                 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full">
@@ -76,6 +70,9 @@
 
                                         <td class="px-6 py-4 text-sm text-gray-900 font-medium">
                                             {{ $car->brand->name ?? 'N/A' }} {{ $car->model }}
+                                            <div class="text-xs text-gray-500">
+                                                {{ optional($car->carType)->name ?: 'No Type' }}
+                                            </div>
                                         </td>
 
                                         <td class="px-6 py-4 text-sm text-gray-900">
@@ -100,50 +97,47 @@
 
                                         <td class="px-6 py-4">
                                             @if($car->active)
-                                                <span
-                                                    class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full inline-flex items-center gap-1">
+                                                <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full inline-flex items-center gap-1">
                                                     <i class="fas fa-check text-green-600"></i> Active
                                                 </span>
                                             @else
-                                                <span
-                                                    class="px-3 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full inline-flex items-center gap-1">
+                                                <span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full inline-flex items-center gap-1">
                                                     <i class="fas fa-times text-red-600"></i> Inactive
                                                 </span>
                                             @endif
                                         </td>
 
-                                     <td class="px-6 py-4">
-    <div class="flex justify-center gap-2">
-        <button
-            class="editCarBtn w-8 h-8 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded flex items-center justify-center transition"
-            title="Edit"
-            data-car="{{ json_encode([
-                'id' => $car->id,
-                'brand_id' => $car->brand_id,
-                'model' => $car->model,
-                'transmission_id' => $car->transmission_id,
-                'fuel_type_id' => $car->fuel_type_id,
-                'seats' => $car->seats,
-                'price_per_day' => $car->price_per_day,
-                'description' => $car->description,
-                'active' => $car->active,
-                'tracker_id' => $car->tracker_id,
-            ]) }}">
-            <i class="fas fa-pen text-sm"></i>
-        </button>
+                                        <td class="px-6 py-4">
+                                            <div class="flex justify-center gap-2">
+<button
+    type="button"
+    class="editCarBtn w-8 h-8 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded flex items-center justify-center transition"
+    title="Edit"
+    data-id="{{ $car->id }}"
+    data-brand-id="{{ $car->brand_id }}"
+    data-car-type-id="{{ $car->car_type_id }}"
+    data-model="{{ $car->model }}"
+    data-transmission-id="{{ $car->transmission_id }}"
+    data-fuel-type-id="{{ $car->fuel_type_id }}"
+    data-seats="{{ $car->seats }}"
+    data-price-per-day="{{ $car->price_per_day }}"
+    data-description="{{ $car->description }}"
+    data-active="{{ $car->active ? 1 : 0 }}"
+    data-tracker-id="{{ $car->tracker_id }}">
+    <i class="fas fa-pen text-sm"></i>
+</button>
 
-        <form id="deleteForm-{{ $car->id }}"
-            action="{{ route('admin.cars.destroy', $car->id) }}" method="POST">
-            @csrf
-            @method('DELETE')
-            <button type="button"
-                class="deleteCarBtn w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded flex items-center justify-center transition"
-                title="Delete" data-form-id="deleteForm-{{ $car->id }}">
-                <i class="fas fa-trash text-sm"></i>
-            </button>
-        </form>
-    </div>
-</td>
+                                                <form id="deleteForm-{{ $car->id }}"
+                                                    action="{{ route('admin.cars.destroy', $car->id) }}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button"
+                                                        class="deleteCarBtn w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded flex items-center justify-center transition"
+                                                        title="Delete" data-form-id="deleteForm-{{ $car->id }}">
+                                                        <i class="fas fa-trash text-sm"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -158,16 +152,13 @@
                         </table>
                     </div>
 
-                    <!-- Pagination -->
                     <div class="p-2 border-t border-gray-200">
                         {{ $cars->links() }}
                     </div>
                 </div>
 
-                <!-- Add/Edit Car Modal -->
                 <div id="addCarModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
-                        <!-- Modal Header -->
                         <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
                             <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">Add New Car</h2>
                             <button id="closeModal" class="text-gray-500 hover:text-gray-700 text-2xl">
@@ -175,7 +166,6 @@
                             </button>
                         </div>
 
-                        <!-- Modal Body -->
                         <form id="addCarForm" action="{{ route('admin.cars.store') }}" method="POST"
                             enctype="multipart/form-data" class="p-6 space-y-6"
                             data-store-route="{{ route('admin.cars.store') }}"
@@ -184,7 +174,6 @@
                             <input type="hidden" id="carId" name="car_id">
                             <input type="hidden" id="methodField" name="_method" value="POST">
 
-                            <!-- Brand -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Brand *</label>
                                 <select name="brand_id" id="brandId" required
@@ -196,14 +185,23 @@
                                 </select>
                             </div>
 
-                            <!-- Model -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Car Type *</label>
+                                <select name="car_type_id" id="carTypeId" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <option value="">Select Car Type</option>
+                                    @foreach($carTypes as $carType)
+                                        <option value="{{ $carType->id }}">{{ $carType->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Model *</label>
                                 <input type="text" name="model" id="modelInput" required placeholder="e.g., Camry, Accord"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                             </div>
 
-                            <!-- Transmission -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Transmission *</label>
                                 <select name="transmission_id" id="transmissionId" required
@@ -215,7 +213,6 @@
                                 </select>
                             </div>
 
-                            <!-- Fuel Type -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Fuel Type *</label>
                                 <select name="fuel_type_id" id="fuelTypeId" required
@@ -227,14 +224,12 @@
                                 </select>
                             </div>
 
-                            <!-- Seats -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Seats</label>
                                 <input type="number" name="seats" id="seatsInput" value="4" min="1" max="10"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                             </div>
 
-                            <!-- Price Per Day -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Price Per Day (₱) *</label>
                                 <input type="number" name="price_per_day" id="priceInput" step="0.01" required
@@ -242,7 +237,6 @@
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                             </div>
 
-                            <!-- Description -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
                                 <textarea name="description" id="descriptionInput" rows="4"
@@ -250,7 +244,6 @@
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
                             </div>
 
-                            <!-- Images -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Images</label>
                                 <input type="file" name="images[]" multiple accept="image/*"
@@ -258,7 +251,6 @@
                                 <p class="text-xs text-gray-500 mt-1">Upload multiple images (optional)</p>
                             </div>
 
-                            <!-- Tracker -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Tracker</label>
                                 <select name="tracker_id" id="trackerId"
@@ -275,14 +267,12 @@
                                 <p class="text-xs text-gray-500 mt-1">Assign a tracker to this car</p>
                             </div>
 
-                            <!-- Active Status -->
                             <div class="flex items-center">
                                 <input type="checkbox" name="active" id="activeCheckbox" value="1" checked
                                     class="w-4 h-4 text-green-600 rounded">
                                 <label for="activeCheckbox" class="ml-2 text-sm font-medium text-gray-700">Active</label>
                             </div>
 
-                            <!-- Modal Footer -->
                             <div class="border-t border-gray-200 pt-6 flex gap-3 justify-end">
                                 <button type="button" id="cancelBtn"
                                     class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition font-medium">
@@ -298,7 +288,6 @@
                     </div>
                 </div>
 
-                <!-- Delete Confirmation Modal -->
                 <div id="deleteModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div class="bg-white rounded-lg shadow-xl w-full max-w-sm">
                         <div class="p-6 text-center">

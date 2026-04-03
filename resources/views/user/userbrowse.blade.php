@@ -61,7 +61,7 @@
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                             <div>
                                 <h2 class="text-2xl font-bold text-gray-900">Available Cars</h2>
-                                <p class="text-gray-600 text-sm">{{ $totalCount }} cars found</p>
+                                <p class="text-gray-600 text-sm">{{ $totalCount = $cars->total() }} cars found</p>
                             </div>
                             <form action="{{ route('user.browse') }}" method="GET" class="w-full sm:w-auto">
                                 <select name="sort_by" onchange="this.form.submit()"

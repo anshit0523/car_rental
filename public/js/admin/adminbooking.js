@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusHelpText = document.getElementById('statusHelpText');
     const saveStatusBtn = document.getElementById('saveStatusBtn');
 
-    // new
+   
     const adminMessageWrapper = document.getElementById('adminMessageWrapper');
     const adminMessage = document.getElementById('adminMessage');
 
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const allowedTransitions = {
         Pending: ['Cancelled'],
-        Reserved: ['Cancelled'],
+        Confirmed: ['Cancelled'],
         Return: ['Completed', 'Checkup', 'Damage', 'Needs Repair'],
         Active: [],
         Completed: [],

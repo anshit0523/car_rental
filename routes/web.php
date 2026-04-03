@@ -120,10 +120,12 @@ Route::middleware(['auth', 'admin'])
 
         Route::put('/bookings/{booking}/update-status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
         Route::post('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
-        Route::get('/cars', [AdminDashboardController::class, 'cars'])->name('cars');
+        
         Route::get('/calendar', [AdminBookingController::class, 'calendar'])->name('calendar');
         Route::get('/bookings/{booking}', [AdminBookingController::class, 'showJson'])->name('bookings.json');
+        // Car management routes
 
+        Route::get('/cars', [CarsController::class, 'cars'])->name('cars');
         Route::post('/cars', [CarsController::class, 'store'])->name('cars.store');
         Route::get('/cars/{id}/edit', [CarsController::class, 'edit'])->name('cars.edit');
         Route::put('/cars/{id}', [CarsController::class, 'update'])->name('cars.update');

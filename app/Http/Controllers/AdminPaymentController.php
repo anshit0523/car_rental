@@ -189,7 +189,7 @@ class AdminPaymentController extends Controller
                 ->exists();
 
             if (! $alreadyEarned) {
-                //rule: earn 1 point for every $100 spent----
+                //rule: earn 1 point for every peso 100 spent----
               $pointsEarned = (int) floor($booking->final_total / 100);
 
                 if ($pointsEarned > 0) {
