@@ -11,12 +11,25 @@ use Illuminate\Support\Facades\DB;
 
 class UserCarBrowseController extends Controller
 {
-     public function index(Request $request)
-    {
-        // Start query builder - only show active cars
-        $query = Car::query()->where('active', false);
+    public function index(Request $request)
+{
+    $hasFilters =
+        $request->filled('location') ||
+        $request->filled('min_price') ||
+        $request->filled('max_price') ||
+        $request->filled('brand_id') ||
+        $request->filled('fuel_type_id') ||
+        $request->filled('transmission_id') ||
+        $request->filled('min_seats');
 
-        // Search by location (if you have a location column)
+    // Default: show no cars
+    $query = Car::query()->whereRaw('1 = 0');
+
+    // Only run real car query when user applies filters
+    if ($hasFilters) {
+        $query = Car::query()->where('active', true);
+
+        // Search by location
         if ($request->filled('location')) {
             $query->where('location', 'like', '%' . $request->location . '%');
         }
@@ -61,23 +74,24 @@ class UserCarBrowseController extends Controller
             'price_low' => $query->orderBy('price_per_day'),
             default => $query->orderBy('price_per_day'),
         };
-
-        // Pagination
-        $cars = $query->with(['brand', 'fuelType', 'transmission'])->paginate(9)->appends($request->query());
-
-        // Get filter options for the sidebar
-        $brands = Brand::all();
-        $fuelTypes = FuelType::all();
-        $transmissions = Transmission::all();
-
-        return view('user.userbrowse', [
-            'cars' => $cars,
-            'brands' => $brands,
-            'fuelTypes' => $fuelTypes,
-            'transmissions' => $transmissions,
-            'totalCount' => Car::where('active', true)->count(),
-        ]);
     }
+
+    $cars = $query->with(['brand', 'fuelType', 'transmission'])
+        ->paginate(9)
+        ->appends($request->query());
+
+    $brands = Brand::all();
+    $fuelTypes = FuelType::all();
+    $transmissions = Transmission::all();
+
+    return view('user.userbrowse', [
+        'cars' => $cars,
+        'brands' => $brands,
+        'fuelTypes' => $fuelTypes,
+        'transmissions' => $transmissions,
+        'totalCount' => Car::where('active', true)->count(),
+    ]);
+}
 
     /**
      * Display a single car detail page.
@@ -108,35 +122,35 @@ class UserCarBrowseController extends Controller
      * Search cars by pickup/return dates and check availability.
      */
     public function search(Request $request)
-    {
-        $validated = $request->validate([
-            'pickup_date' => 'required|date',
-            'return_date' => 'required|date|after:pickup_date',
-            'time' => 'nullable|date_format:H:i',
-        ]);
+{
+    $validated = $request->validate([
+        'pickup_date' => 'required|date',
+        'return_date' => 'required|date|after:pickup_date',
+        'time' => 'nullable|date_format:H:i',
+    ]);
 
-        // Check for car availability
-        $cars = Car::where('active', true)
-            ->whereDoesntHave('bookings', function ($query) use ($validated) {
-                $query->whereBetween('pickup_at', [$validated['pickup_date'], $validated['return_date']])
-                    ->orWhereBetween('return_at', [$validated['pickup_date'], $validated['return_date']])
-                    ->whereIn('status_id', [1, 2]);
-            })
-            ->with(['brand', 'fuelType', 'transmission'])
-            ->paginate(9);
+    $cars = Car::where('active', true)
+        ->whereDoesntHave('bookings', function ($query) use ($validated) {
+            $query->whereBetween('pickup_at', [$validated['pickup_date'], $validated['return_date']])
+                ->orWhereBetween('return_at', [$validated['pickup_date'], $validated['return_date']])
+                ->whereIn('status_id', [1, 2]);
+        })
+        ->with(['brand', 'fuelType', 'transmission'])
+        ->paginate(9)
+        ->appends($request->query());
 
-        $brands = Brand::all();
-        $fuelTypes = FuelType::all();
-        $transmissions = Transmission::all();
+    $brands = Brand::all();
+    $fuelTypes = FuelType::all();
+    $transmissions = Transmission::all();
 
-        return view('user.userbrowse', [
-            'cars' => $cars,
-            'brands' => $brands,
-            'fuelTypes' => $fuelTypes,
-            'transmissions' => $transmissions,
-            'totalCount' => $cars->total(),
-            'searchParams' => $validated,
-        ]);
-    }
+    return view('user.userbrowse', [
+        'cars' => $cars,
+        'brands' => $brands,
+        'fuelTypes' => $fuelTypes,
+        'transmissions' => $transmissions,
+        'totalCount' => $cars->total(),
+        'searchParams' => $validated,
+    ]);
+}
 }
 

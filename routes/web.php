@@ -49,7 +49,8 @@ Route::middleware(['auth', 'user'])
         Route::get('/rentals', [UserDashboardController::class, 'rentals'])->name('rentals');
 
         Route::get('/browse', [UserCarBrowseController::class, 'index'])->name('browse');
-        Route::post('/search', [UserCarBrowseController::class, 'search'])->name('search');
+        Route::get('/search', [UserCarBrowseController::class, 'search'])->name('search');
+        
 
         //profile routes
         Route::get('/profile', [UserProfileController::class, 'edit'])->name('profile');
