@@ -19,29 +19,23 @@
                 <form action="{{ route('user.search') }}" method="GET" class="grid grid-cols-5 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Pick-up Date</label>
-                        <input
-                            type="date"
-                            name="pickup_date"
-                            class="w-full border border-gray-300 rounded px-2 py-2 text-xs"
-                            value="{{ request('pickup_date') }}">
+                        <input type="date" name="pickup_date"min="{{ now()->format('Y-m-d') }}"
+                        value="{{ request('pickup_date') }}"class="w-full border border-gray-300 rounded px-2 py-2 text-xs">    
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Return Date</label>
-                        <input
-                            type="date"
-                            name="return_date"
-                            class="w-full border border-gray-300 rounded px-2 py-2 text-xs"
-                            value="{{ request('return_date') }}">
+                        <input type="date"
+                        name="return_date"min="{{ now()->format('Y-m-d') }}"
+                        value="{{ request('return_date') }}"
+                        class="w-full border border-gray-300 rounded px-2 py-2 text-xs">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Time</label>
-                       <input
-    type="time"
-    name="time"
-    class="w-full border border-gray-300 rounded px-2 py-2 text-xs"
-    value="{{ request('time') }}">
+                       <input type="time" name="time" 
+                       class="w-full border border-gray-300 rounded px-2 py-2 text-xs"
+                       value="{{ request('time') }}">
                     </div>
 
                     <div class="flex items-end">

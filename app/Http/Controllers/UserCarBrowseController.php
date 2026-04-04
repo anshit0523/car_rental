@@ -71,8 +71,8 @@ class UserCarBrowseController extends Controller
     public function search(Request $request)
     {
         $validated = $request->validate([
-            'pickup_date' => 'required|date',
-            'return_date' => 'required|date|after:pickup_date',
+           'pickup_date' => 'required|date|after_or_equal:today',
+           'return_date' => 'required|date|after:pickup_date',
             'time' => 'nullable|date_format:H:i',
         ]);
 
