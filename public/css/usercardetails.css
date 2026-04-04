@@ -18,6 +18,7 @@
 /* Legend */
 .fp-legend{
   display:flex;
+  justify-content:center;
   gap:20px;
   align-items:center;
   padding:10px 12px;
