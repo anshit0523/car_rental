@@ -13,34 +13,35 @@
 @endphp
 
 <div class="flex h-screen bg-gray-100">
-    <!-- Main Content -->
     <div class="flex-1 overflow-auto flex flex-col">
-        <!-- Header -->
         <div class="bg-white shadow-sm border-b border-gray-200 p-1">
             <div class="bg-gray-50 p-3 rounded-lg">
                 <form action="{{ route('user.search') }}" method="GET" class="grid grid-cols-5 gap-3">
-                    
-
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Pick-up Date</label>
-                        <input type="date" name="pickup_date" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" value="{{ request('pickup_date') }}">
+                        <input
+                            type="date"
+                            name="pickup_date"
+                            class="w-full border border-gray-300 rounded px-2 py-2 text-xs"
+                            value="{{ request('pickup_date') }}">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Return Date</label>
-                        <input type="date" name="return_date" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" value="{{ request('return_date') }}">
+                        <input
+                            type="date"
+                            name="return_date"
+                            class="w-full border border-gray-300 rounded px-2 py-2 text-xs"
+                            value="{{ request('return_date') }}">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Time</label>
-                        <select name="time" class="w-full border border-gray-300 rounded px-2 py-2 text-xs">
-                            <option value="">Select Time</option>
-
-                             <option value="8:00" @selected(request('time') == '8:00')>8:00 AM</option>
-                            <option value="9:00" @selected(request('time') == '9:00')>9:00 AM</option>
-                            <option value="11:00" @selected(request('time') == '11:00')>11:00 AM</option>
-                            <option value="12:00" @selected(request('time') == '12:00')>12:00 PM</option>
-                        </select>
+                       <input
+    type="time"
+    name="time"
+    class="w-full border border-gray-300 rounded px-2 py-2 text-xs"
+    value="{{ request('time') }}">
                     </div>
 
                     <div class="flex items-end">
@@ -56,7 +57,7 @@
                         <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                         </div>
-                        <div class="hidden sm:block ">
+                        <div class="hidden sm:block">
                             <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
                             <p class="text-xs text-gray-500">Customer</p>
                         </div>
@@ -65,19 +66,36 @@
             </div>
         </div>
 
-        <!-- Content Area -->
         <div class="flex-1 p-4 lg:p-6 overflow-y-auto">
             <div class="flex flex-col lg:flex-row gap-6">
-                <!-- Main Content -->
                 <div class="flex-1">
-                    <!-- Title and Sort -->
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                         <div>
                             <h2 class="text-2xl font-bold text-gray-900">Available Cars</h2>
                             <p class="text-gray-600 text-sm">{{ $cars->total() }} cars found</p>
                         </div>
 
-                        <form action="{{ route('user.browse') }}" method="GET" class="w-full sm:w-auto">
+                        <form action="{{ route(request()->filled('pickup_date') && request()->filled('return_date') ? 'user.search' : 'user.browse') }}" method="GET" class="w-full sm:w-auto">
+                            <input type="hidden" name="pickup_date" value="{{ request('pickup_date') }}">
+                            <input type="hidden" name="return_date" value="{{ request('return_date') }}">
+                            <input type="hidden" name="time" value="{{ request('time') }}">
+
+                            @foreach((array) request('brand_id', []) as $brandId)
+                                <input type="hidden" name="brand_id[]" value="{{ $brandId }}">
+                            @endforeach
+
+                            @foreach((array) request('fuel_type_id', []) as $fuelTypeId)
+                                <input type="hidden" name="fuel_type_id[]" value="{{ $fuelTypeId }}">
+                            @endforeach
+
+                            @foreach((array) request('transmission_id', []) as $transmissionId)
+                                <input type="hidden" name="transmission_id[]" value="{{ $transmissionId }}">
+                            @endforeach
+
+                            <input type="hidden" name="min_price" value="{{ request('min_price') }}">
+                            <input type="hidden" name="max_price" value="{{ request('max_price') }}">
+                            <input type="hidden" name="min_seats" value="{{ request('min_seats') }}">
+
                             <select name="sort_by" onchange="this.form.submit()"
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold">
                                 <option value="price_low" @selected(request('sort_by') == 'price_low')>Sort by: Price (Low to High)</option>
@@ -87,11 +105,9 @@
                         </form>
                     </div>
 
-                    <!-- Cars Grid -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8">
                         @forelse($cars as $car)
                             <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                                <!-- Car Image -->
                                 <div class="h-48 bg-gray-300 flex items-center justify-center overflow-hidden">
                                     @if($car->images && count(json_decode($car->images)) > 0)
                                         @php
@@ -108,7 +124,6 @@
                                     @endif
                                 </div>
 
-                                <!-- Car Details -->
                                 <div class="p-4">
                                     <h3 class="text-lg font-bold text-gray-900 mb-3">
                                         {{ $car->brand->name ?? 'N/A' }} {{ $car->model }}
@@ -132,7 +147,8 @@
                                             'id' => $car->id,
                                             'pickup_date' => request('pickup_date'),
                                             'return_date' => request('return_date'),
-                                            'time' => request('time')
+                                            'pickup_time' => request('time'),
+                                            'return_time' => request('time')
                                         ]) }}"
                                             class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 font-semibold text-sm transition">
                                             Rent Now
@@ -142,29 +158,31 @@
                             </div>
                         @empty
                             <div class="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-12">
-                                @if(!$hasFilters)
-                                    <p class="text-gray-600 text-lg font-semibold">Apply filters to find available cars</p>
-                                    <p class="text-gray-500 text-sm mt-2">Select your preferred price, brand, fuel type, or transmission.</p>
+                                @if(!request()->filled('pickup_date') && !$hasFilters)
+                                    <p class="text-gray-600 text-lg font-semibold">Search or apply filters to find available cars</p>
+                                    <p class="text-gray-500 text-sm mt-2">Select pickup and return dates or choose your preferred filters.</p>
                                 @else
                                     <p class="text-gray-600 text-lg font-semibold">No cars available matching your criteria</p>
-                                    <p class="text-gray-500 text-sm mt-2">Try changing or clearing some filters.</p>
+                                    <p class="text-gray-500 text-sm mt-2">Try changing the dates or clearing some filters.</p>
                                 @endif
                             </div>
                         @endforelse
                     </div>
 
-                    <!-- Pagination -->
                     <div class="flex items-center justify-center">
                         {{ $cars->links() }}
                     </div>
                 </div>
 
-                <!-- Filters Sidebar (Right) -->
                 <div class="w-full lg:w-64 bg-white rounded-lg shadow-md p-4 lg:p-6 h-fit">
                     <h3 class="text-lg font-bold text-gray-900 mb-6">Filters</h3>
 
-                    <form action="{{ route('user.browse') }}" method="GET" id="filterForm" class="space-y-6">
-                        <!-- Price Range -->
+                    <form action="{{ route(request()->filled('pickup_date') && request()->filled('return_date') ? 'user.search' : 'user.browse') }}" method="GET" id="filterForm" class="space-y-6">
+                        <input type="hidden" name="pickup_date" value="{{ request('pickup_date') }}">
+                        <input type="hidden" name="return_date" value="{{ request('return_date') }}">
+                        <input type="hidden" name="time" value="{{ request('time') }}">
+                        <input type="hidden" name="sort_by" value="{{ request('sort_by', 'price_low') }}">
+
                         <div>
                             <h4 class="font-semibold text-gray-900 mb-3">Price Range</h4>
                             <input type="range" name="max_price" min="0" max="8000"
@@ -176,7 +194,6 @@
                             </div>
                         </div>
 
-                        <!-- Brand -->
                         <div>
                             <h4 class="font-semibold text-gray-900 mb-3">Brand</h4>
                             <div class="space-y-2 max-h-48 overflow-y-auto">
@@ -192,7 +209,6 @@
                             </div>
                         </div>
 
-                        <!-- Fuel Type -->
                         <div>
                             <h4 class="font-semibold text-gray-900 mb-3">Fuel Type</h4>
                             <div class="space-y-2">
@@ -208,7 +224,6 @@
                             </div>
                         </div>
 
-                        <!-- Transmission -->
                         <div>
                             <h4 class="font-semibold text-gray-900 mb-3">Transmission</h4>
                             <div class="space-y-2">
@@ -224,8 +239,13 @@
                             </div>
                         </div>
 
-                        <!-- Clear Filters -->
-                        <a href="{{ route('user.browse') }}"
+                        <a href="{{ request()->filled('pickup_date') && request()->filled('return_date')
+                            ? route('user.search', [
+                                'pickup_date' => request('pickup_date'),
+                                'return_date' => request('return_date'),
+                                'time' => request('time')
+                            ])
+                            : route('user.browse') }}"
                             class="w-full px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition font-semibold text-center block">
                             Clear All Filters
                         </a>
