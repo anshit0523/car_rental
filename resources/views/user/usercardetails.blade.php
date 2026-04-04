@@ -162,7 +162,6 @@
               </div>
             </div>
 
-            {{-- ✅ BOOKING FORM (STATIC UNDER TERMS) --}}
             <div class="bg-white rounded-lg shadow-md p-6 mt-6">
               <div class="flex items-start justify-between gap-4 mb-4">
                 <div>
@@ -233,7 +232,6 @@
                     <p class="text-[11px] text-gray-500 mt-1">This will be saved to your profile.</p>
                   </div>
 
-                  {{-- Location (toggle) --}}
                   <div id="locationWrap" class="md:col-span-2">
                     <label class="text-xs font-semibold text-gray-700 mb-1 block">Pickup / Delivery Location</label>
                     <input id="service_location" type="text" name="service_location"
@@ -246,12 +244,7 @@
 
                 <div class="border-t border-gray-200 my-4"></div>
 
-                
                 <div class="space-y-2 mb-4 text-xs">
-
-                 
-    
-
                   <div class="flex justify-between">
                     <span class="text-gray-600">Daily rate</span>
                     <span class="text-gray-900 font-semibold">₱{{ number_format($car->price_per_day, 0) }}</span>
@@ -279,7 +272,6 @@
                   <p class="text-xl font-bold text-gray-900" id="total-price">₱0.00</p>
                 </div>
 
-                {{-- Discount Points Card --}}
                 @php
                   $availablePoints = (int) (auth()->user()->points_balance ?? 0);
                 @endphp
@@ -322,7 +314,6 @@
                   <input type="hidden" id="points_discount_amount" name="points_discount_amount" value="0">
                 </div>
 
-                {{-- Agree to Terms --}}
                 <div class="mb-3 mt-4">
                   <label class="flex items-start gap-2 cursor-pointer select-none">
                     <input type="checkbox" id="agree_terms"

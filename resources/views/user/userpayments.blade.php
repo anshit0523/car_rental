@@ -174,8 +174,8 @@
                                 <div class="text-center">
 
                                     <img src="{{ $paymentSetting && $paymentSetting->gcash_qr_image ?
-                                     asset('storage/' . $paymentSetting->gcash_qr_image): asset('images/no-image.png') }}" 
-                                     class="w-44 sm:w-52 mx-auto mb-3 border rounded-lg p-2 bg-white">
+        asset('storage/' . $paymentSetting->gcash_qr_image) : asset('images/no-image.png') }}"
+                                        class="w-44 sm:w-52 mx-auto mb-3 border rounded-lg p-2 bg-white">
 
                                     <p class="font-semibold text-gray-800">
                                         {{ $paymentSetting->gcash_account_name ?? 'N/A' }}
@@ -245,11 +245,9 @@
                         </div>
 
 
-                        <button type="submit"
-                            class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg">
-
+                        <button type="submit" id="submitPaymentBtn"
+                            class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
                             Submit Payment Proof
-
                         </button>
 
                     </form>
