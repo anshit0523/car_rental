@@ -13,6 +13,11 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LiveMapController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\Staff\StaffBookingController;
+use App\Http\Controllers\Staff\StaffCalendarController;
+use App\Http\Controllers\Staff\StaffDashboardController;
+use App\Http\Controllers\Staff\StaffMapController;
+use App\Http\Controllers\Staff\StaffPaymentController;
 use App\Http\Controllers\UserBookingController;
 use App\Http\Controllers\UserCarBrowseController;
 use App\Http\Controllers\UserDashboardController;
@@ -50,7 +55,7 @@ Route::middleware(['auth', 'user'])
 
         Route::get('/browse', [UserCarBrowseController::class, 'index'])->name('browse');
         Route::get('/search', [UserCarBrowseController::class, 'search'])->name('search');
-        
+
 
         //profile routes
         Route::get('/profile', [UserProfileController::class, 'edit'])->name('profile');
@@ -121,7 +126,7 @@ Route::middleware(['auth', 'admin'])
 
         Route::put('/bookings/{booking}/update-status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
         Route::post('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
-        
+
         Route::get('/calendar', [AdminBookingController::class, 'calendar'])->name('calendar');
         Route::get('/bookings/{booking}', [AdminBookingController::class, 'showJson'])->name('bookings.json');
         // Car management routes
@@ -157,17 +162,43 @@ Route::middleware(['auth', 'admin'])
             ->name('payments.reject');
 
 
-            // adminPaymentSettings routes
-             Route::get('/payment-settings', [AdminPaymentSettingController::class, 'edit'])->name('payment-settings.edit');
-           Route::post('/payment-settings', [AdminPaymentSettingController::class, 'update'])->name('payment-settings.update');
+        // adminPaymentSettings routes
+        Route::get('/payment-settings', [AdminPaymentSettingController::class, 'edit'])->name('payment-settings.edit');
+        Route::post('/payment-settings', [AdminPaymentSettingController::class, 'update'])->name('payment-settings.update');
 
         //map route
         Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');
-       Route::get('/replay', [LiveMapController::class, 'replayPage'])->name('replay');
-       Route::get('/replay/history', [LiveMapController::class, 'history'])->name('replay.history');
+        Route::get('/replay', [LiveMapController::class, 'replayPage'])->name('replay');
+        Route::get('/replay/history', [LiveMapController::class, 'history'])->name('replay.history');
         // json endpoint (protected)
         Route::get('/live/positions', [LiveMapController::class, 'positions'])->name('live.positions');
 
         Route::get('/trackers/create', [AdminTrackerController::class, 'create'])->name('trackers.create');
         Route::post('/trackers', [AdminTrackerController::class, 'store'])->name('trackers.store');
+    });
+
+
+
+
+Route::middleware(['auth', 'staff'])
+    ->prefix('staff')
+    ->name('staff.')
+    ->group(function () {
+
+        Route::get('/dashboard', [StaffDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/bookings', [StaffBookingController::class, 'index'])->name('bookings.index');
+        Route::put('/bookings/{booking}/status', [StaffBookingController::class, 'updateStatus'])->name('bookings.update-status');
+        Route::get('/payments', [StaffPaymentController::class, 'index'])->name('payments.index');
+        Route::post('/payments/{payment}/approve', [StaffPaymentController::class, 'approve'])->name('payments.approve');
+        Route::post('/payments/{payment}/reject', [StaffPaymentController::class, 'reject'])->name('payments.reject');
+        Route::get('/calendar', [StaffCalendarController::class, 'index'])->name('calendar');
+        Route::get('/bookings/{booking}/json', [StaffCalendarController::class, 'showBookingJson'])->name('bookings.show-json');
+        Route::get('/live-map', [StaffMapController::class, 'index'])->name('live-map');
+        Route::get('/live/positions', [StaffMapController::class, 'positions'])->name('live.positions');
+        Route::get('/replay', [StaffMapController::class, 'replayPage'])->name('replay');
+        Route::get('/replay/history', [StaffMapController::class, 'history'])->name('replay.history');
+
+
+
+
     });

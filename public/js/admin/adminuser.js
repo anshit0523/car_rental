@@ -1,64 +1,78 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    const userSearch = document.getElementById('userSearch');
+    const roleFilter = document.getElementById('roleFilter');
+    const userForm = document.getElementById('userForm');
+    const formMethod = document.getElementById('formMethod');
 
-// ========== FUNCTION: COMBINED FILTER ==========
-function filterTable() {
-    let searchValue = document.getElementById('userSearch').value.toLowerCase();
-    let roleValue = document.getElementById('roleFilter').value.toLowerCase();
+    // ========== FUNCTION: COMBINED FILTER ==========
+    function filterTable() {
+        const searchValue = userSearch.value.toLowerCase().trim();
+        const roleValue = roleFilter.value.toLowerCase().trim();
 
-    document.querySelectorAll("table tbody tr").forEach(row => {
+        document.querySelectorAll('table tbody tr').forEach(row => {
+            if (row.cells.length < 3) return;
 
-        let name = row.cells[0].innerText.toLowerCase();
-        let email = row.cells[1].innerText.toLowerCase();
+            const name = row.cells[0].innerText.toLowerCase();
+            const email = row.cells[1].innerText.toLowerCase();
+            const roleBadge = row.cells[2].innerText.toLowerCase();
 
-        // Read role text (Admin/User)
-        let roleBadge = row.cells[2].innerText.toLowerCase();
+            const matchesSearch =
+                name.includes(searchValue) ||
+                email.includes(searchValue);
 
-        let matchesSearch =
-            name.includes(searchValue) ||
-            email.includes(searchValue);
+            const matchesRole =
+                roleValue === '' || roleBadge.includes(roleValue);
 
-        let matchesRole =
-            roleValue === "" || roleBadge.includes(roleValue);
+            row.style.display = (matchesSearch && matchesRole) ? '' : 'none';
+        });
+    }
 
-        row.style.display = (matchesSearch && matchesRole) ? "" : "none";
-    });
-}
+    if (userSearch) {
+        userSearch.addEventListener('keyup', filterTable);
+    }
 
-document.getElementById('userSearch').addEventListener('keyup', filterTable);
-document.getElementById('roleFilter').addEventListener('change', filterTable);
+    if (roleFilter) {
+        roleFilter.addEventListener('change', filterTable);
+    }
 
- window.openAddModal = function() {
+    // ========== OPEN ADD MODAL ==========
+    window.openAddModal = function () {
         document.getElementById('modalTitle').innerText = 'Add User';
-        document.getElementById('userForm').action = "{{ route('admin.users.store') }}";
-        document.getElementById('formMethod').value = 'POST';
 
+        userForm.action = userForm.dataset.storeRoute;
+        formMethod.value = 'POST';
+
+        userForm.reset();
         document.getElementById('name').value = '';
         document.getElementById('email').value = '';
         document.getElementById('password').value = '';
         document.getElementById('role').value = '';
 
         showModal();
-    }
+    };
 
-    window.openEditModal = function(user) {
+    // ========== OPEN EDIT MODAL ==========
+    window.openEditModal = function (user) {
         document.getElementById('modalTitle').innerText = 'Edit User';
-        document.getElementById('userForm').action = `/admin/users/${user.id}`;
-        document.getElementById('formMethod').value = 'PUT';
 
-        document.getElementById('name').value = user.name;
-        document.getElementById('email').value = user.email;
+        userForm.action = userForm.dataset.updateRoute.replace(':id', user.id);
+        formMethod.value = 'PUT';
+
+        document.getElementById('name').value = user.name ?? '';
+        document.getElementById('email').value = user.email ?? '';
         document.getElementById('password').value = '';
-        document.getElementById('role').value = user.role_id;
+        document.getElementById('role').value = user.role_id ?? '';
 
         showModal();
-    }
+    };
 
-    // ========== MODAL SHOW WITH ANIMATION ==========
+    // ========== MODAL SHOW ==========
     function showModal() {
         const modal = document.getElementById('userModal');
         const modalContent = document.getElementById('modalContent');
 
         modal.classList.remove('hidden');
+
         setTimeout(() => {
             modal.classList.remove('opacity-0');
             modalContent.classList.remove('scale-90');
@@ -66,113 +80,112 @@ document.getElementById('roleFilter').addEventListener('change', filterTable);
         }, 10);
     }
 
-    // ========== MODAL CLOSE WITH ANIMATION ==========
-    window.closeModal = function() {
+    // ========== MODAL CLOSE ==========
+    window.closeModal = function () {
         const modal = document.getElementById('userModal');
         const modalContent = document.getElementById('modalContent');
 
         modal.classList.add('opacity-0');
         modalContent.classList.add('scale-90');
+        modalContent.classList.remove('scale-100');
 
         setTimeout(() => {
             modal.classList.add('hidden');
         }, 300);
-    }
+    };
 
+    // ========== SUCCESS MODAL ==========
+    window.showSuccess = function (message) {
+        const modal = document.getElementById('successModal');
+        const content = document.getElementById('successContent');
+        const msg = document.getElementById('successMessage');
 
-    // ========== SUCCESS MODAL POPUP ==========
-window.showSuccess = function (message) {
-    const modal = document.getElementById('successModal');
-    const content = document.getElementById('successContent');
-    const msg = document.getElementById('successMessage');
+        msg.innerText = message;
+        modal.classList.remove('hidden');
 
-    msg.innerText = message;
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-90');
+            content.classList.add('scale-100');
+        }, 10);
 
-    modal.classList.remove('hidden');
+        setTimeout(() => {
+            closeSuccess();
+        }, 2500);
+    };
 
-    setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        content.classList.remove('scale-90');
-        content.classList.add('scale-100');
-    }, 10);
+    window.closeSuccess = function () {
+        const modal = document.getElementById('successModal');
+        const content = document.getElementById('successContent');
 
-    // Auto close after 2 seconds
-    setTimeout(() => {
-        closeSuccess();
-    }, 2500);
-};
+        modal.classList.add('opacity-0');
+        content.classList.add('scale-90');
+        content.classList.remove('scale-100');
 
-window.closeSuccess = function () {
-    const modal = document.getElementById('successModal');
-    const content = document.getElementById('successContent');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    };
 
-    modal.classList.add('opacity-0');
-    content.classList.add('scale-90');
+    // ========== DELETE MODAL ==========
+    window.openDeleteModal = function (id) {
+        const modal = document.getElementById('deleteModal');
+        const content = document.getElementById('deleteContent');
+        const deleteForm = document.getElementById('deleteForm');
 
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 300);
-};
+        deleteForm.action = `/admin/users/${id}`;
+        modal.classList.remove('hidden');
 
- // ========== Delete MODAL POPUP ==========
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-90');
+            content.classList.add('scale-100');
+        }, 10);
+    };
 
-window.openDeleteModal = function(id) {
-    const modal = document.getElementById('deleteModal');
-    const content = document.getElementById('deleteContent');
+    window.closeDeleteModal = function () {
+        const modal = document.getElementById('deleteModal');
+        const content = document.getElementById('deleteContent');
 
-    document.getElementById('deleteForm').action = `/admin/users/${id}`;
+        modal.classList.add('opacity-0');
+        content.classList.add('scale-90');
+        content.classList.remove('scale-100');
 
-    modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    };
 
-    setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        content.classList.remove('scale-90');
-        content.classList.add('scale-100');
-    }, 10);
-};
-window.closeDeleteModal = function() {
-    const modal = document.getElementById('deleteModal');
-    const content = document.getElementById('deleteContent');
+    // ========== ERROR MODAL ==========
+    window.showError = function (message) {
+        const modal = document.getElementById('errorModal');
+        const content = document.getElementById('errorContent');
+        const msg = document.getElementById('errorMessage');
 
-    modal.classList.add('opacity-0');
-    content.classList.add('scale-90');
+        msg.innerText = message;
+        modal.classList.remove('hidden');
 
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 300);
-};
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-90');
+            content.classList.add('scale-100');
+        }, 10);
 
-window.showError = function(message) {
-    const modal = document.getElementById('errorModal');
-    const content = document.getElementById('errorContent');
-    const msg = document.getElementById('errorMessage');
+        setTimeout(() => {
+            closeError();
+        }, 2500);
+    };
 
-    msg.innerText = message;
+    window.closeError = function () {
+        const modal = document.getElementById('errorModal');
+        const content = document.getElementById('errorContent');
 
-    modal.classList.remove('hidden');
+        modal.classList.add('opacity-0');
+        content.classList.add('scale-90');
+        content.classList.remove('scale-100');
 
-    setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        content.classList.remove('scale-90');
-        content.classList.add('scale-100');
-    }, 10);
-
-    setTimeout(() => {
-        closeError();
-    }, 2500);
-};
-
-window.closeError = function() {
-    const modal = document.getElementById('errorModal');
-    const content = document.getElementById('errorContent');
-
-    modal.classList.add('opacity-0');
-    content.classList.add('scale-90');
-
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 300);
-};
-
-
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    };
 });
