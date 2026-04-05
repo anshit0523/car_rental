@@ -6,7 +6,7 @@
             <div style="flex-shrink:0;">
                 <a href="{{ route('user.browse') }}"
                    style="font-size:32px; font-weight:700; color:#111; font-family:'Outfit', sans-serif; text-decoration:none;">
-                    Car Rental
+                    EZE Car Rental
                 </a>
             </div>
 
@@ -15,28 +15,28 @@
                 <ul style="display:flex; align-items:center; gap:34px; margin:0; padding:0; list-style:none;">
                     <li>
                         <a href="{{ route('user.browse') }}"
-                           style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.browse') || request()->routeIs('user.search') ? 'color:#ff2c3b; font-weight:700;' : 'color:#222; font-weight:500;' }}">
+                           style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.browse') || request()->routeIs('user.search') ? 'color:#ff9913; font-weight:700;' : 'color:#222; font-weight:500;' }}">
                             Browse Cars
                         </a>
                     </li>
 
                     <li>
                         <a href="{{ route('user.rentals.index') }}"
-                           style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.rentals.*') ? 'color:#ff2c3b; font-weight:700;' : 'color:#222; font-weight:500;' }}">
+                           style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.rentals.*') ? 'color:#ff9913; font-weight:700;' : 'color:#222; font-weight:500;' }}">
                             My Rentals
                         </a>
                     </li>
 
                     <li>
                         <a href="{{ route('user.payments') }}"
-                           style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.payments') ? 'color:#ff2c3b; font-weight:700;' : 'color:#222; font-weight:500;' }}">
+                           style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.payments') ? 'color:#ff9913; font-weight:700;' : 'color:#222; font-weight:500;' }}">
                             Payments
                         </a>
                     </li>
 
                     <li>
                         <a href="{{ route('user.profile') }}"
-                           style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.profile') ? 'color:#ff2c3b; font-weight:700;' : 'color:#222; font-weight:500;' }}">
+                           style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.profile') ? 'color:#ff9913; font-weight:700;' : 'color:#222; font-weight:500;' }}">
                             Profile
                         </a>
                     </li>
@@ -46,7 +46,7 @@
             <!-- Right User Area -->
             <div style="display:flex; align-items:center; gap:14px; flex-shrink:0;">
                 <div style="display:flex; align-items:center; gap:12px;">
-                    <div style="width:44px; height:44px; border-radius:50%; background:#ff2c3b; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px;">
+                    <div style="width:44px; height:44px; border-radius:50%; background:#ff9913; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px;">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </div>
 

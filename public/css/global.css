@@ -3,7 +3,7 @@
     --body-color: #6a6a6a;
     --grey-bg: #F6F6F6;
     --rating-color: #FFBA07;
-    --theme-color: #FF2C3B;
+    --theme-color: #ff9913;
     --primary-font: "Outfit", sans-serif;
     --secondary-font: 'Inter', sans-serif;
 }
@@ -226,9 +226,9 @@ img {
     opacity: 0;
     transition: 0.3s ease-out;
 }  
-.handle-preloader .animation-preloader .txt-loading .letters-loading{
+/* .handle-preloader .animation-preloader .txt-loading .letters-loading{
     
-}  
+}   */
 .handle-preloader .animation-preloader .txt-loading .letters-loading:before{
     color: #ffffff;
 }  
@@ -413,6 +413,7 @@ img {
     border: 1px solid var(--theme-color);
     transition: all .5s;
 }
+
 .btn-style-one:hover{
     color: var(--bs-white);
     background: var(--theme-color);

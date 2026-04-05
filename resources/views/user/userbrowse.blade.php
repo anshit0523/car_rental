@@ -37,7 +37,7 @@
     }
 
     .car-sidebar input[type="range"] {
-        accent-color: #7a3b26;
+        accent-color: #ff9913;
     }
 
     .item-shorting {
@@ -130,7 +130,7 @@
 
     .car-two-grid-price span {
         color: #ff5a1f;
-        font-size: 24px;
+        font-size: 21px;
         font-weight: 800;
         margin-right: 6px;
     }
@@ -203,7 +203,27 @@
         border-color: #ff5a1f;
         color: #fff;
     }
+    .btn-style{
+        margin-top: 32px;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 26px;
+        display: inline-block;
+        border-radius: 5px;
+        color: #ff9913;
+        padding: 6px 30px 6px 30px;
+        font-family: var(
+        --primary-font);
+        background: transparent;
+        border: 1px solid #ff9913;
+        transition: all .5s;
+    }
 
+    .btn-style:hover{
+        color: #ffffff;
+        background: #ff9913;
+    }
     @media (max-width: 991px) {
         .car-listing-section {
             padding-top: 20px;
@@ -306,7 +326,7 @@
                                 </div>
 
                                 <div class="mb_20">
-                                    <button type="submit" class="theme-btn btn-style-one w-100" style="border-radius:10px;">
+                                    <button type="submit" class="btn-style w-100" style="border-radius:10px;">
                                         <span>Search Cars</span>
                                     </button>
                                 </div>

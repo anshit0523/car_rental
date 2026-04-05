@@ -118,7 +118,7 @@
     font-weight: 500;
     margin-bottom: 25px;
     border-radius: 50px;
-    color: rgb(255, 44, 59);
+    color: #ff9913;
     opacity: 0;
     text-transform: uppercase;
     font-family: var(--secondary-font);
@@ -178,7 +178,7 @@
     content: "";
     z-index: -1;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0);
 }
 
 .oul_nav_none .owl-nav {
@@ -485,7 +485,7 @@ p.why-chooseus-text {
     align-items: center;
     justify-content: center;
     transform: scale(0);
-    background-color: rgba(255, 44, 59, 0.6);
+    background-color: #ff9913;
 }
 .gallery-image-block .lightbox-image img {
     width: auto;
@@ -1181,7 +1181,7 @@ p.single-featured-car-text {
     justify-content: space-between;
     gap: 10px;
     border-radius: 10px;
-    background: rgb(255, 44, 59);
+    background: #ff9913;
 }
 .subscribe-inner h3 {
     font-size: 36px;
@@ -1255,7 +1255,7 @@ p.single-featured-car-text {
     font-weight: 500;
     margin-bottom: 25px;
     border-radius: 50px;
-    color: rgb(255, 44, 59);
+    color: #ff9913;
     opacity: 0;
     text-transform: uppercase;
     font-family: var(--secondary-font);
@@ -1456,7 +1456,7 @@ p.single-featured-car-text {
     font-weight: 500;
     margin-bottom: 25px;
     border-radius: 50px;
-    color: rgb(255, 44, 59);
+    color: #ff9913;
     opacity: 0;
     text-transform: uppercase;
     font-family: var(--secondary-font);
@@ -1536,7 +1536,7 @@ p.single-featured-car-text {
     width: 9px;
     height: 9px;
     opacity: 0.3;
-    background: rgb(255, 44, 59);
+    background: #ff9913;
     border-radius: 50px;
 }
 .owl_dots_one .owl-dots .owl-dot.active {
@@ -1759,7 +1759,7 @@ p.single-featured-car-text {
     font-weight: 500;
     margin-bottom: 25px;
     border-radius: 50px;
-    color: rgb(255, 44, 59);
+    color: #ff9913;
     opacity: 0;
     text-transform: uppercase;
     font-family: var(--secondary-font);
@@ -2206,7 +2206,7 @@ p.single-featured-car-text {
     border-radius: 10px;
     transform: scale(0);
     transition: all 500ms ease 0s;
-    background: rgba(255, 44, 59, 0.6);
+    background: #ff9913;
 }
 .gallery-block-one .inner-box .view-btn .lightbox-image {
     display: inline-block;
@@ -2398,7 +2398,7 @@ p.single-featured-car-text {
 }
 .order-summary .bill-history li.deu-amount span {
     font-size: 28px;
-    color: rgb(255, 44, 59);
+    color: #ff9913;
     line-height: 28px;
     font-family: var(--primary-font);
 }
