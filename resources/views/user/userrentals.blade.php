@@ -31,8 +31,8 @@
 
                     <a href="{{ route('user.rentals.upcoming') }}"
                         class="px-6 py-4 font-medium border-b-2 transition
-                       {{ request()->routeIs('user.rentals.upcoming') ? 'text-orange-500 border-orange-500' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
-                        Upcoming
+                       {{ request()->routeIs('user.rentals.upcoming') ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-gray-700 border-transparent' }}">
+                        Reserved
                     </a>
 
                     <a href="{{ route('user.rentals.completed') }}"

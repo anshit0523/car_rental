@@ -1,52 +1,24 @@
-// public/js/sidebar.js
+document.addEventListener('DOMContentLoaded', function () {
+    const pickupDate = document.getElementById('pickup_date');
+    const returnDate = document.getElementById('return_date');
 
-document.addEventListener('DOMContentLoaded', function() {
-    const toggleBtn = document.getElementById('toggleSidebar');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
+    if (!pickupDate || !returnDate) return;
 
-    if (!toggleBtn || !sidebar) return;
+    const today = new Date().toISOString().split('T')[0];
 
-    // Toggle sidebar visibility
-    toggleBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        sidebar.classList.toggle('-translate-x-full');
-        overlay?.classList.toggle('hidden');
-    });
+    pickupDate.min = today;
 
-    // Close sidebar when clicking overlay
-    overlay?.addEventListener('click', function() {
-        sidebar.classList.add('-translate-x-full');
-        overlay.classList.add('hidden');
-    });
+    if (!pickupDate.value) {
+        returnDate.min = today;
+    } else {
+        returnDate.min = pickupDate.value;
+    }
 
-    // Close sidebar when clicking a link
-    const navLinks = sidebar.querySelectorAll('a');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (window.innerWidth < 1024) { // lg breakpoint
-                sidebar.classList.add('-translate-x-full');
-                overlay?.classList.add('hidden');
-            }
-        });
-    });
+    pickupDate.addEventListener('change', function () {
+        returnDate.min = this.value || today;
 
-    // Handle window resize
-    window.addEventListener('resize', function() {
-        if (window.innerWidth >= 1024) { // lg breakpoint
-            sidebar.classList.remove('-translate-x-full');
-            overlay?.classList.add('hidden');
-        } else {
-            sidebar.classList.add('-translate-x-full');
+        if (returnDate.value && returnDate.value < returnDate.min) {
+            returnDate.value = '';
         }
     });
-
-    // Prevent body scroll when sidebar is open on mobile
-    const preventScroll = function(e) {
-        if (!sidebar.classList.contains('-translate-x-full')) {
-            e.preventDefault();
-        }
-    };
-
-    document.body.addEventListener('touchmove', preventScroll, false);
 });

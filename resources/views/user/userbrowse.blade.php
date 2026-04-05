@@ -1,220 +1,552 @@
 @extends('layouts.userlayout')
 
-@section('content')
-<div class="flex h-screen bg-gray-100">
-    <!-- Sidebar -->
-   
+@section('custom-styles')
+<style>
+    .car-listing-section {
+        padding-top: 30px;
+    }
 
-    <!-- Main Content -->
-    <div class="flex-1 overflow-auto flex flex-col">
-        <!-- Header -->
-        <div class="bg-white shadow-sm border-b border-gray-200 p-1">
-            <!-- Search Section -->
-            <div class="bg-gray-50 p-3 rounded-lg">
-                <form action="{{ route('user.search') }}" method="POST" class="grid grid-cols-5 gap-3">
-                    @csrf
-                    
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Pick-up Date</label>
-                        <input type="date" name="pickup_date" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" value="{{ request('pickup_date') }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Return Date</label>
-                        <input type="date" name="return_date" class="w-full border border-gray-300 rounded px-2 py-2 text-xs" value="{{ request('return_date') }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Time</label>
-                        <select name="time" class="w-full border border-gray-300 rounded px-2 py-2 text-xs">
-                            <option value="">Select Time</option>
-                            <option value="10:00" @selected(request('time') == '10:00')>10:00 AM</option>
-                            <option value="11:00" @selected(request('time') == '11:00')>11:00 AM</option>
-                            <option value="12:00" @selected(request('time') == '12:00')>12:00 PM</option>
-                        </select>
-                    </div>
-                    <div class="flex items-end">
-                        <button type="submit" class="w-full bg-[#ff4d00] text-white rounded py-2 font-semibold hover:bg-orange-500 text-xs flex items-center justify-center space-x-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                            <span>Search</span>
-                        </button>
-                    </div>
-                    <div class="flex items-center space-x-4 pl-8 border-l border-gray-300">
-                    <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                    </div>
-                    <div class="hidden sm:block ">
-                        <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-gray-500">Customer</p>
+    .car-sidebar .sidebar-widget {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        margin-bottom: 24px;
+    }
+
+    .car-sidebar .widget-title h4 {
+        font-size: 22px;
+        line-height: 30px;
+        margin-bottom: 18px;
+    }
+
+    .car-sidebar .form-control {
+        height: 54px;
+        border-radius: 10px;
+        font-size: 16px;
+        border: 1px solid #dcdcdc;
+        box-shadow: none;
+    }
+
+    .car-sidebar label {
+        font-size: 15px;
+        font-weight: 600;
+        color: #111;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .car-sidebar input[type="range"] {
+        accent-color: #7a3b26;
+    }
+
+    .item-shorting {
+        margin-bottom: 35px;
+    }
+
+    .item-shorting .left-column h3 {
+        font-size: 34px;
+        line-height: 42px;
+        margin-bottom: 8px;
+    }
+
+    .item-shorting .left-column p {
+        font-size: 17px;
+        color: #555;
+    }
+
+    .item-shorting .form-select {
+        min-width: 250px;
+        height: 50px;
+        border-radius: 10px;
+        border: 1px solid #dcdcdc;
+        box-shadow: none;
+    }
+
+    .empty-state-box {
+        background: #fff;
+        border-radius: 18px;
+        padding: 80px 40px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,.04);
+        max-width: 760px;
+        margin: 40px auto 0;
+    }
+
+    .empty-state-box h4 {
+        font-size: 28px;
+        line-height: 38px;
+        margin-bottom: 12px;
+    }
+
+    .empty-state-box p {
+        font-size: 17px;
+        color: #666;
+    }
+
+    .filter-check-list li {
+        margin-bottom: 14px;
+    }
+
+    .filter-check-list label {
+        margin-bottom: 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: #444;
+    }
+
+    /* 2 cards per row showcase style */
+    .car-two-grid-card {
+        position: relative;
+        height: 100%;
+        margin-bottom: 30px;
+    }
+
+    .car-two-grid-image-wrap {
+        position: relative;
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .car-two-grid-image {
+        width: 100%;
+        height: 320px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .car-two-grid-price {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        background: #f8f8f8;
+        border-radius: 18px;
+        padding: 16px 26px;
+        font-size: 20px;
+        font-weight: 500;
+        color: #334155;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .car-two-grid-price span {
+        color: #ff5a1f;
+        font-size: 24px;
+        font-weight: 800;
+        margin-right: 6px;
+    }
+
+    .car-two-grid-content {
+        position: relative;
+        width: calc(100% - 48px);
+        margin: -58px auto 0;
+        background: #f8f8f8;
+        border-radius: 18px;
+        padding: 28px 34px 36px;
+        box-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+        z-index: 2;
+        min-height: 300px;
+    }
+
+    .car-two-grid-title {
+        font-size: 26px;
+        line-height: 1.2;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 28px;
+    }
+
+    .car-two-grid-title a {
+        text-decoration: none;
+        color: #0f172a;
+    }
+
+    .car-two-grid-info {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 30px 0;
+    }
+
+    .car-two-grid-info li {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 18px;
+        color: #0f172a;
+        margin-bottom: 18px;
+    }
+
+    .car-two-grid-info li i {
+        color: #ff5a1f;
+        font-size: 20px;
+        width: 22px;
+        text-align: center;
+    }
+
+    .car-two-grid-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 68px;
+        border: 2px solid #374151;
+        border-radius: 18px;
+        background: transparent;
+        color: #0f172a;
+        font-size: 20px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .car-two-grid-btn:hover {
+        background: #ff5a1f;
+        border-color: #ff5a1f;
+        color: #fff;
+    }
+
+    @media (max-width: 991px) {
+        .car-listing-section {
+            padding-top: 20px;
+        }
+
+        .item-shorting .left-column h3 {
+            font-size: 28px;
+            line-height: 36px;
+        }
+
+        .item-shorting .form-select {
+            min-width: 100%;
+        }
+
+        .car-two-grid-image {
+            height: 260px;
+        }
+
+        .car-two-grid-content {
+            width: calc(100% - 24px);
+            margin-top: -40px;
+            padding: 22px 22px 26px;
+            min-height: auto;
+        }
+
+        .car-two-grid-title {
+            font-size: 22px;
+        }
+
+        .car-two-grid-info li {
+            font-size: 16px;
+        }
+
+        .car-two-grid-btn {
+            height: 58px;
+            font-size: 18px;
+        }
+    }
+</style>
+@endsection
+
+@section('content')
+@php
+    $hasFilters =
+        request()->filled('location') ||
+        request()->filled('min_price') ||
+        request()->filled('max_price') ||
+        request()->filled('brand_id') ||
+        request()->filled('fuel_type_id') ||
+        request()->filled('transmission_id') ||
+        request()->filled('min_seats');
+@endphp
+
+<section class="car-listing-section pb_100">
+    <div class="container">
+        <div class="row clearfix">
+
+            <!-- Filter Sidebar -->
+            <div class="col-lg-3 col-md-12 col-sm-12 sidebar-side">
+                <div class="car-sidebar">
+                    <div class="sidebar-widget search-widget">
+                        <div class="widget-title">
+                            <h4>Filter Cars</h4>
+                        </div>
+
+                        <div class="widget-content">
+                            <form action="{{ route('user.search') }}" method="GET" id="filterForm">
+                                <input type="hidden" name="sort_by" value="{{ request('sort_by', 'price_low') }}">
+
+                                <div class="mb_25">
+                                    <label>Pick-up Date</label>
+                                    <input
+                                        type="date"
+                                        name="pickup_date"
+                                        min="{{ now()->format('Y-m-d') }}"
+                                        value="{{ request('pickup_date') }}"
+                                        class="form-control"
+                                    >
+                                </div>
+
+                                <div class="mb_25">
+                                    <label>Return Date</label>
+                                    <input
+                                        type="date"
+                                        name="return_date"
+                                        min="{{ now()->format('Y-m-d') }}"
+                                        value="{{ request('return_date') }}"
+                                        class="form-control"
+                                    >
+                                </div>
+
+                                <div class="mb_25">
+                                    <label>Time</label>
+                                    <input
+                                        type="time"
+                                        name="time"
+                                        value="{{ request('time') }}"
+                                        class="form-control"
+                                    >
+                                </div>
+
+                                <div class="mb_20">
+                                    <button type="submit" class="theme-btn btn-style-one w-100" style="border-radius:10px;">
+                                        <span>Search Cars</span>
+                                    </button>
+                                </div>
+
+                                <div class="mt_30">
+                                    <div class="widget-title">
+                                        <h4>Price Range</h4>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        name="max_price"
+                                        min="0"
+                                        max="8000"
+                                        value="{{ request('max_price', 8000) }}"
+                                        class="w-100"
+                                        onchange="document.getElementById('filterForm').submit()"
+                                    >
+                                    <div class="d-flex justify-content-between mt_10">
+                                        <span>₱0</span>
+                                        <span>₱{{ request('max_price', 8000) }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="mt_30">
+                                    <div class="widget-title">
+                                        <h4>Brand</h4>
+                                    </div>
+                                    <ul class="filter-check-list clearfix">
+                                        @foreach($brands as $brand)
+                                            <li>
+                                                <label class="d-flex align-items-center" style="gap:10px; cursor:pointer;">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="brand_id[]"
+                                                        value="{{ $brand->id }}"
+                                                        @checked(in_array($brand->id, (array) request('brand_id', [])))
+                                                        onchange="document.getElementById('filterForm').submit()"
+                                                    >
+                                                    <span>{{ $brand->name }}</span>
+                                                </label>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+
+                                <div class="mt_30">
+                                    <div class="widget-title">
+                                        <h4>Fuel Type</h4>
+                                    </div>
+                                    <ul class="filter-check-list clearfix">
+                                        @foreach($fuelTypes as $fuelType)
+                                            <li>
+                                                <label class="d-flex align-items-center" style="gap:10px; cursor:pointer;">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="fuel_type_id[]"
+                                                        value="{{ $fuelType->id }}"
+                                                        @checked(in_array($fuelType->id, (array) request('fuel_type_id', [])))
+                                                        onchange="document.getElementById('filterForm').submit()"
+                                                    >
+                                                    <span>{{ $fuelType->type }}</span>
+                                                </label>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+
+                                <div class="mt_30">
+                                    <div class="widget-title">
+                                        <h4>Transmission</h4>
+                                    </div>
+                                    <ul class="filter-check-list clearfix">
+                                        @foreach($transmissions as $transmission)
+                                            <li>
+                                                <label class="d-flex align-items-center" style="gap:10px; cursor:pointer;">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="transmission_id[]"
+                                                        value="{{ $transmission->id }}"
+                                                        @checked(in_array($transmission->id, (array) request('transmission_id', [])))
+                                                        onchange="document.getElementById('filterForm').submit()"
+                                                    >
+                                                    <span>{{ $transmission->type }}</span>
+                                                </label>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+
+                                <div class="mt_30">
+                                    <a href="{{ route('user.browse') }}" class="theme-btn btn-style-three w-100 d-block text-center" style="border-radius:10px;">
+                                        <span>Clear All Filters</span>
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-                </form>
             </div>
-        </div>
 
-            <!-- Content Area -->
-            <div class="flex-1 p-4 lg:p-6 overflow-y-auto">
-                <div class="flex flex-col lg:flex-row gap-6">
-                    <!-- Main Content -->
-                    <div class="flex-1">
-                        <!-- Title and Sort -->
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-                            <div>
-                                <h2 class="text-2xl font-bold text-gray-900">Available Cars</h2>
-                                <p class="text-gray-600 text-sm">{{ $totalCount }} cars found</p>
-                            </div>
-                            <form action="{{ route('user.browse') }}" method="GET" class="w-full sm:w-auto">
-                                <select name="sort_by" onchange="this.form.submit()"
-                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold">
-                                    <option value="price_low" @selected(request('sort_by') == 'price_low')>Sort by: Price (Low to High)</option>
-                                    <option value="price_high" @selected(request('sort_by') == 'price_high')>Price (High to Low)</option>
-                                    <option value="newest" @selected(request('sort_by') == 'newest')>Newest</option>
+            <!-- Content Side -->
+            <div class="col-lg-9 col-md-12 col-sm-12 content-side">
+                <div class="car-list-content">
+
+                    <div class="item-shorting d-flex justify-content-between align-items-center flex-wrap" style="gap:15px;">
+                        <div class="left-column">
+                            <h3>Available Cars</h3>
+                            <p>{{ $cars->total() }} cars found</p>
+                        </div>
+
+                        <div class="right-column">
+                            <form action="{{ route(request()->filled('pickup_date') && request()->filled('return_date') ? 'user.search' : 'user.browse') }}"
+                                  method="GET">
+                                <input type="hidden" name="pickup_date" value="{{ request('pickup_date') }}">
+                                <input type="hidden" name="return_date" value="{{ request('return_date') }}">
+                                <input type="hidden" name="time" value="{{ request('time') }}">
+
+                                @foreach((array) request('brand_id', []) as $brandId)
+                                    <input type="hidden" name="brand_id[]" value="{{ $brandId }}">
+                                @endforeach
+
+                                @foreach((array) request('fuel_type_id', []) as $fuelTypeId)
+                                    <input type="hidden" name="fuel_type_id[]" value="{{ $fuelTypeId }}">
+                                @endforeach
+
+                                @foreach((array) request('transmission_id', []) as $transmissionId)
+                                    <input type="hidden" name="transmission_id[]" value="{{ $transmissionId }}">
+                                @endforeach
+
+                                <input type="hidden" name="min_price" value="{{ request('min_price') }}">
+                                <input type="hidden" name="max_price" value="{{ request('max_price') }}">
+                                <input type="hidden" name="min_seats" value="{{ request('min_seats') }}">
+
+                                <select name="sort_by" onchange="this.form.submit()" class="form-select">
+                                    <option value="price_low" @selected(request('sort_by', 'price_low') == 'price_low')>
+                                        Price (Low to High)
+                                    </option>
+                                    <option value="price_high" @selected(request('sort_by') == 'price_high')>
+                                        Price (High to Low)
+                                    </option>
+                                    <option value="newest" @selected(request('sort_by') == 'newest')>
+                                        Newest
+                                    </option>
                                 </select>
                             </form>
                         </div>
+                    </div>
 
-                        <!-- Cars Grid -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8">
-                            @forelse($cars as $car)
-                                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                                    <!-- Car Image -->
-                                    <div class="h-48 bg-gray-300 flex items-center justify-center overflow-hidden">
+                    <div class="row clearfix">
+                        @forelse($cars as $car)
+                            <div class="col-lg-6 col-md-6 col-sm-12 car-block">
+                                <div class="car-two-grid-card">
+                                    <div class="car-two-grid-image-wrap">
                                         @if($car->images && count(json_decode($car->images)) > 0)
                                             @php
                                                 $images = json_decode($car->images);
                                                 $firstImage = $images[0];
                                             @endphp
-                                            <img src="{{ asset('storage/' . $firstImage) }}" alt="{{ $car->model }}"
-                                                class="w-full h-full object-cover">
+                                            <img
+                                                src="{{ asset('storage/' . $firstImage) }}"
+                                                alt="{{ $car->model }}"
+                                                class="car-two-grid-image"
+                                                onerror="this.onerror=null;this.src='{{ asset('images/no-car-image.png') }}';"
+                                            >
                                         @else
-                                            <div class="flex flex-col items-center justify-center text-white">
-                                                <i class="fas fa-image text-4xl mb-2"></i>
-                                                <p class="text-sm">No Image</p>
+                                            <div class="car-two-grid-image d-flex align-items-center justify-content-center" style="background:#e5e7eb; color:#64748b;">
+                                                No Image
                                             </div>
                                         @endif
+
+                                        <div class="car-two-grid-price">
+                                            <span>₱{{ number_format($car->price_per_day, 0) }}</span> / Day
+                                        </div>
                                     </div>
 
-                                    <!-- Car Details -->
-                                    <div class="p-4">
-                                        <h3 class="text-lg font-bold text-gray-900 mb-3">
-                                            {{ $car->brand->name ?? 'N/A' }} {{ $car->model }}
-                                        </h3>
-
-                                        <div class="flex flex-wrap gap-2 text-sm text-gray-600 mb-4">
-                                            <span>🧑‍🤝‍🧑 {{ $car->seats }} Seats</span>
-                                            <span>⚙️ {{ $car->transmission?->type ?? 'Manual' }}</span>
-                                            <span>⛽ {{ $car->fuelType?->type ?? 'Petrol' }}</span>
-                                        </div>
-
-                                        <div class="flex items-center justify-between">
-                                            <div>
-                                                <p class="text-2xl font-bold text-gray-900">
-                                                    &#8369;{{ number_format($car->price_per_day) }}
-                                                </p>
-                                                <p class="text-gray-600 text-sm">/day</p>
-                                            </div>
+                                    <div class="car-two-grid-content">
+                                        <h3 class="car-two-grid-title">
                                             <a href="{{ route('user.car-detail', [
                                                 'id' => $car->id,
                                                 'pickup_date' => request('pickup_date'),
                                                 'return_date' => request('return_date'),
-                                                'time' => request('time')
-                                            ]) }}"
-                                                class="px-4 py-2 bg-[#ff4d00] text-white rounded-lg hover:bg-orange-500 font-semibold text-sm transition">
-                                                Rent Now
+                                                'pickup_time' => request('time'),
+                                                'return_time' => request('time')
+                                            ]) }}">
+                                                {{ $car->brand->name ?? 'N/A' }} {{ $car->model }}
                                             </a>
-                                        </div>
+                                        </h3>
+
+                                        <ul class="car-two-grid-info">
+                                            <li>
+                                                <i class="fas fa-car-side"></i>
+                                                <span>Doors: {{ $car->doors ?? '2' }}</span>
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-cogs"></i>
+                                                <span>Transmission: {{ $car->transmission?->type ?? 'Manual' }}</span>
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-user"></i>
+                                                <span>Passengers: {{ $car->seats ?? '0' }}</span>
+                                            </li>
+                                        </ul>
+
+                                        <a href="{{ route('user.car-detail', [
+                                            'id' => $car->id,
+                                            'pickup_date' => request('pickup_date'),
+                                            'return_date' => request('return_date'),
+                                            'pickup_time' => request('time'),
+                                            'return_time' => request('time')
+                                        ]) }}" class="car-two-grid-btn">
+                                            Rent Now
+                                        </a>
                                     </div>
                                 </div>
-                            @empty
-                                <div class="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-12">
-                                    <p class="text-gray-600 text-lg">No cars available matching your criteria</p>
+                            </div>
+                        @empty
+                            <div class="col-lg-12 col-md-12 col-sm-12">
+                                <div class="empty-state-box">
+                                    @if(!request()->filled('pickup_date') && !$hasFilters)
+                                        <h4>Search or apply filters to find available cars</h4>
+                                        <p>Select pickup and return dates or choose your preferred filters.</p>
+                                    @else
+                                        <h4>No cars available matching your criteria</h4>
+                                        <p>Try changing the dates or clearing some filters.</p>
+                                    @endif
                                 </div>
-                            @endforelse
-                        </div>
-
-                        <!-- Pagination -->
-                        <div class="flex items-center justify-center">
-                            {{ $cars->links() }}
-                        </div>
+                            </div>
+                        @endforelse
                     </div>
 
-                    <!-- Filters Sidebar (Right) -->
-                    <div class="w-full lg:w-64 bg-white rounded-lg shadow-md p-4 lg:p-6 h-fit">
-                        <h3 class="text-lg font-bold text-gray-900 mb-6">Filters</h3>
-
-                        <form action="{{ route('user.browse') }}" method="GET" id="filterForm" class="space-y-6">
-                            <!-- Price Range -->
-                            <div>
-                                <h4 class="font-semibold text-gray-900 mb-3">Price Range</h4>
-                                <input type="range" name="max_price" min="0" max="8000"
-                                    value="{{ request('max_price', 8000) }}" class="w-full cursor-pointer"
-                                    onchange="document.getElementById('filterForm').submit()">
-                                <div class="flex items-center justify-between text-sm text-gray-600 mt-2">
-                                    <span>₱0</span>
-                                    <span>₱{{ request('max_price', 8000) }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Brand -->
-                            <div>
-                                <h4 class="font-semibold text-gray-900 mb-3">Brand</h4>
-                                <div class="space-y-2 max-h-48 overflow-y-auto">
-                                    @foreach($brands as $brand)
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" name="brand_id[]" value="{{ $brand->id }}"
-                                                class="w-4 h-4 rounded cursor-pointer"
-                                                @checked(in_array($brand->id, (array) request('brand_id', [])))
-                                                onchange="document.getElementById('filterForm').submit()">
-                                            <span class="ml-3 text-gray-700">{{ $brand->name }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            <!-- Fuel Type -->
-                            <div>
-                                <h4 class="font-semibold text-gray-900 mb-3">Fuel Type</h4>
-                                <div class="space-y-2">
-                                    @foreach($fuelTypes as $fuelType)
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" name="fuel_type_id[]" value="{{ $fuelType->id }}"
-                                                class="w-4 h-4 rounded cursor-pointer"
-                                                @checked(in_array($fuelType->id, (array) request('fuel_type_id', [])))
-                                                onchange="document.getElementById('filterForm').submit()">
-                                            <span class="ml-3 text-gray-700">{{ $fuelType->type }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            <!-- Transmission -->
-                            <div>
-                                <h4 class="font-semibold text-gray-900 mb-3">Transmission</h4>
-                                <div class="space-y-2">
-                                    @foreach($transmissions as $transmission)
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" name="transmission_id[]" value="{{ $transmission->id }}"
-                                                class="w-4 h-4 rounded cursor-pointer"
-                                                @checked(in_array($transmission->id, (array) request('transmission_id', [])))
-                                                onchange="document.getElementById('filterForm').submit()">
-                                            <span class="ml-3 text-gray-700">{{ $transmission->type }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            <!-- Clear Filters -->
-                            <a href="{{ route('user.browse') }}"
-                                class="w-full px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition font-semibold text-center block">
-                                Clear All Filters
-                            </a>
-                        </form>
+                    <div class="pagination-wrapper centred pt_30">
+                        {{ $cars->links() }}
                     </div>
+
                 </div>
             </div>
+
         </div>
-        </div>
-   
+    </div>
+</section>
 @endsection
 
 @section('scripts')

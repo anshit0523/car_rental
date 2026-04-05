@@ -464,6 +464,7 @@
                                 {{ $car->brand->name ?? '' }} {{ $car->model }}
                             </h3>
 
+                            
                         </div>
 
                         <ul class="popular-showcase-info">

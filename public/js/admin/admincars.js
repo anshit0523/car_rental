@@ -7,16 +7,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const modalTitle = document.getElementById('modalTitle');
     const submitBtnText = document.getElementById('submitBtnText');
 
-    // Delete Modal
     const deleteModal = document.getElementById('deleteModal');
     const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
     const deleteCancelBtn = document.getElementById('deleteCancelBtn');
     let deleteForm = null;
 
-    // Form fields
     const carId = document.getElementById('carId');
     const methodField = document.getElementById('methodField');
     const brandId = document.getElementById('brandId');
+    const carTypeId = document.getElementById('carTypeId');
     const modelInput = document.getElementById('modelInput');
     const transmissionId = document.getElementById('transmissionId');
     const fuelTypeId = document.getElementById('fuelTypeId');
@@ -26,22 +25,33 @@ document.addEventListener('DOMContentLoaded', function () {
     const trackerId = document.getElementById('trackerId');
     const activeCheckbox = document.getElementById('activeCheckbox');
 
-    // Routes
-    const storeRoute = addCarForm.getAttribute('data-store-route') || '/admin/cars';
-    const updateRoute = addCarForm.getAttribute('data-update-route') || '/admin/cars/:id';
+    const storeRoute = addCarForm?.getAttribute('data-store-route') || '/admin/cars';
 
-    // Open Add Car Modal
-    addCarBtn.addEventListener('click', () => {
-        resetForm();
-        modal.classList.remove('hidden');
-        modalTitle.textContent = 'Add New Car';
-        submitBtnText.textContent = 'Add Car';
-    });
+    if (addCarBtn) {
+        addCarBtn.addEventListener('click', () => {
+            resetForm();
+            modal.classList.remove('hidden');
+            modalTitle.textContent = 'Add New Car';
+            submitBtnText.textContent = 'Add Car';
+        });
+    }
 
-    // Open Edit Car Modal
     document.querySelectorAll('.editCarBtn').forEach(btn => {
         btn.addEventListener('click', function () {
-            const car = JSON.parse(this.dataset.car);
+            const car = {
+                id: this.dataset.id || '',
+                brand_id: this.dataset.brandId || '',
+                car_type_id: this.dataset.carTypeId || '',
+                model: this.dataset.model || '',
+                transmission_id: this.dataset.transmissionId || '',
+                fuel_type_id: this.dataset.fuelTypeId || '',
+                seats: this.dataset.seats || 4,
+                price_per_day: this.dataset.pricePerDay || '',
+                description: this.dataset.description || '',
+                active: this.dataset.active || '0',
+                tracker_id: this.dataset.trackerId || ''
+            };
+
             populateForm(car);
             modal.classList.remove('hidden');
             modalTitle.textContent = 'Edit Car';
@@ -49,9 +59,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Close Add/Edit Modal
-    closeModal.addEventListener('click', closeMainModal);
-    cancelBtn.addEventListener('click', closeMainModal);
+    if (closeModal) {
+        closeModal.addEventListener('click', closeMainModal);
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeMainModal);
+    }
 
     window.addEventListener('click', (e) => {
         if (e.target === modal) {
@@ -64,41 +78,50 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function closeMainModal() {
-        modal.classList.add('hidden');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
     }
 
     function closeDeleteModal() {
-        deleteModal.classList.add('hidden');
+        if (deleteModal) {
+            deleteModal.classList.add('hidden');
+        }
         deleteForm = null;
     }
 
-    // Delete functionality
     document.querySelectorAll('.deleteCarBtn').forEach(btn => {
         btn.addEventListener('click', function (e) {
             e.preventDefault();
             const formId = this.getAttribute('data-form-id');
             deleteForm = document.getElementById(formId);
-            deleteModal.classList.remove('hidden');
+
+            if (deleteModal) {
+                deleteModal.classList.remove('hidden');
+            }
         });
     });
 
-    // Confirm delete
-    deleteConfirmBtn.addEventListener('click', function () {
-        if (deleteForm) {
-            deleteForm.submit();
-        }
-    });
+    if (deleteConfirmBtn) {
+        deleteConfirmBtn.addEventListener('click', function () {
+            if (deleteForm) {
+                deleteForm.submit();
+            }
+        });
+    }
 
-    // Cancel delete
-    deleteCancelBtn.addEventListener('click', function () {
-        closeDeleteModal();
-    });
+    if (deleteCancelBtn) {
+        deleteCancelBtn.addEventListener('click', function () {
+            closeDeleteModal();
+        });
+    }
 
-    // Populate form for editing
     function populateForm(car) {
         carId.value = car.id || '';
         methodField.value = 'PUT';
+
         brandId.value = car.brand_id || '';
+        carTypeId.value = car.car_type_id || '';
         modelInput.value = car.model || '';
         transmissionId.value = car.transmission_id || '';
         fuelTypeId.value = car.fuel_type_id || '';
@@ -106,19 +129,29 @@ document.addEventListener('DOMContentLoaded', function () {
         priceInput.value = car.price_per_day || '';
         descriptionInput.value = car.description || '';
         trackerId.value = car.tracker_id || '';
-        activeCheckbox.checked = Number(car.active) === 1 || car.active === true;
 
-        addCarForm.action = updateRoute.replace(':id', car.id);
+        activeCheckbox.checked =
+            Number(car.active) === 1 ||
+            car.active === true ||
+            car.active === '1';
+
+        addCarForm.action = `/admin/cars/${car.id}`;
     }
 
-    // Reset form for adding
     function resetForm() {
         addCarForm.reset();
         carId.value = '';
         methodField.value = 'POST';
         addCarForm.action = storeRoute;
 
+        brandId.value = '';
+        carTypeId.value = '';
+        transmissionId.value = '';
+        fuelTypeId.value = '';
+        modelInput.value = '';
         seatsInput.value = 4;
+        priceInput.value = '';
+        descriptionInput.value = '';
         trackerId.value = '';
         activeCheckbox.checked = true;
     }

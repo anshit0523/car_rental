@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Car;
 use App\Models\Brand;
 use App\Models\Tracker;
+use App\Models\CarType;
 use App\Models\FuelType;
 use App\Models\Transmission;
 use Illuminate\Http\Request;
@@ -12,20 +13,44 @@ use Illuminate\Support\Facades\Storage;
 
 class CarsController extends Controller
 {
+
+
+public function cars()
+{
+    $brands = Brand::all();
+    $carTypes = CarType::all();  
+    $transmissions = Transmission::all();
+    $fuelTypes = FuelType::all();
+    $trackers = Tracker::orderBy('imei')->get();
+
+    $cars = Car::with(['brand', 'carType', 'transmission', 'fuelType', 'tracker'])
+        ->withCount('bookings')
+        ->paginate(9);
+
+    return view('admin.admincars', compact(
+        'brands',
+        'carTypes',      
+        'transmissions',
+        'fuelTypes',
+        'trackers',
+        'cars'
+    ));
+}
     public function create()
     {
         $brands = Brand::all();
+        $carTypes = CarType::all();
         $transmissions = Transmission::all();
         $fuelTypes = FuelType::all();
-
         $trackers = Tracker::orderBy('imei')->get();
 
-        $cars = Car::with(['brand', 'transmission', 'fuelType', 'tracker'])
+        $cars = Car::with(['brand', 'carType', 'transmission', 'fuelType', 'tracker'])
             ->withCount('bookings')
             ->paginate(15);
 
         return view('admin.cars', compact(
             'brands',
+            'carTypes',
             'transmissions',
             'fuelTypes',
             'trackers',
@@ -37,6 +62,7 @@ class CarsController extends Controller
     {
         $validated = $request->validate([
             'brand_id' => 'required|exists:brands,id',
+            'car_type_id' => 'required|exists:car_types,id',
             'transmission_id' => 'required|exists:transmissions,id',
             'fuel_type_id' => 'required|exists:fuel_types,id',
             'model' => 'required|string|max:255',
@@ -82,6 +108,7 @@ class CarsController extends Controller
 
         $validated = $request->validate([
             'brand_id' => 'required|exists:brands,id',
+            'car_type_id' => 'required|exists:car_types,id',
             'transmission_id' => 'required|exists:transmissions,id',
             'fuel_type_id' => 'required|exists:fuel_types,id',
             'model' => 'required|string|max:255',

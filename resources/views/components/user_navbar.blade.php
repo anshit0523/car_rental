@@ -1,85 +1,74 @@
+<header style="background:#ffffff; border-bottom:1px solid #ececec; box-shadow:0 4px 18px rgba(0,0,0,0.04); position:sticky; top:0; z-index:999;">
+    <div class="container">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:24px; min-height:84px;">
 
-@php
-    $baseLinkClass = 'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition block';
-@endphp
+            <!-- Logo -->
+            <div style="flex-shrink:0;">
+                <a href="{{ route('user.browse') }}"
+                   style="font-size:32px; font-weight:700; color:#111; font-family:'Outfit', sans-serif; text-decoration:none;">
+                    Car Rental
+                </a>
+            </div>
 
-<nav class="fixed lg:relative z-40 top-0 left-0 right-0 bg-white shadow-md border-b border-gray-200 lg:hidden">
-    <div class="flex items-center justify-between p-4">
-        <h1 class="font-bold text-[#ff4d00]">Eze Car Rental</h1>
-        <button id="toggleSidebar" 
-            class="p-2 hover:bg-gray-100 rounded-lg transition"
-            aria-label="Toggle sidebar">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-        </button>
+            <!-- Center Nav -->
+            <nav style="flex:1; display:flex; justify-content:center;">
+                <ul style="display:flex; align-items:center; gap:34px; margin:0; padding:0; list-style:none;">
+                    <li>
+                        <a href="{{ route('user.browse') }}"
+                           style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.browse') || request()->routeIs('user.search') ? 'color:#ff2c3b; font-weight:700;' : 'color:#222; font-weight:500;' }}">
+                            Browse Cars
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('user.rentals.index') }}"
+                           style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.rentals.*') ? 'color:#ff2c3b; font-weight:700;' : 'color:#222; font-weight:500;' }}">
+                            My Rentals
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('user.payments') }}"
+                           style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.payments') ? 'color:#ff2c3b; font-weight:700;' : 'color:#222; font-weight:500;' }}">
+                            Payments
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('user.profile') }}"
+                           style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.profile') ? 'color:#ff2c3b; font-weight:700;' : 'color:#222; font-weight:500;' }}">
+                            Profile
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Right User Area -->
+            <div style="display:flex; align-items:center; gap:14px; flex-shrink:0;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="width:44px; height:44px; border-radius:50%; background:#ff2c3b; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px;">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+
+                    <div>
+                        <div style="font-size:15px; font-weight:600; color:#111; line-height:1.2;">
+                            {{ auth()->user()->name }}
+                        </div>
+                        <div style="font-size:13px; color:#777; line-height:1.2;">
+                            Customer
+                        </div>
+                    </div>
+                </div>
+
+                <form action="{{ route('logout') }}" method="POST" style="margin:0;">
+                    @csrf
+                    <button type="submit"
+                            style="background:#ff2c3b; color:#fff; border:none; border-radius:10px; padding:12px 22px; font-size:15px; font-weight:600; line-height:1; cursor:pointer;">
+                        Logout
+                    </button>
+                </form>
+            </div>
+
+        </div>
     </div>
-</nav>
-
-<!-- Mobile Navigation Sidebar -->
-<aside id="sidebar"
-    class="fixed lg:relative z-50 w-56 h-screen bg-white shadow-md transition-all duration-300 flex flex-col -translate-x-full lg:translate-x-0 top-0 left-0 pt-20 lg:pt-0">
-    
-    <!-- Logo Section (Hidden on mobile, shown on desktop) -->
-    <div class="hidden lg:flex p-5 items-center justify-between border-b border-white">
-        <h1 class="font-bold text-lg text-[#ff4d00]">Eze Car Rental</h1>
-    </div>
-
-    <!-- Navigation Menu -->
-    <nav class="flex-1 p-3 space-y-2 overflow-y-auto">
-        <a href="{{ route('user.dashboard') }}"
-            class="{{ $baseLinkClass }} {{ request()->routeIs('user.dashboard') ? 'bg-[#ff4d00] text-white' : 'text-black hover:bg-[#fc9e4e]' }}">
-            <span class="text-lg flex-shrink-0">📊</span>
-            <span class="menu-label">Dashboard</span>
-        </a>
-
-        <a href="{{ route('user.rentals.index') }}"
-            class="{{ $baseLinkClass }} {{ request()->routeIs('user.rentals') ? 'bg-[#ff4d00] text-white' : 'text-black hover:bg-[#fc9e4e]' }}">
-            <span class="text-lg flex-shrink-0">🚗</span>
-            <span class="menu-label">My Rentals</span>
-        </a>
-
-        <a href="{{ route('user.browse') }}"
-            class="{{ $baseLinkClass }} {{ request()->routeIs('user.browse') ? 'bg-[#ff4d00] text-white' : 'text-black hover:bg-[#fc9e4e]' }}">
-            <span class="text-lg flex-shrink-0">🔍</span>
-            <span class="menu-label">Browse Cars</span>
-        </a>
-
-
-        <a href="{{ route('user.payments') }}"
-             class="{{ $baseLinkClass }} {{ request()->routeIs('user.payments') ? 'bg-[#ff4d00] text-white' : 'text-black hover:bg-[#fc9e4e]' }}">
-            <span class="text-lg flex-shrink-0">💳</span>
-            <span class="menu-label">Payments</span>
-        </a>
-
-        <a href="{{ route('user.profile') }}"
-            class="{{ $baseLinkClass }} {{ request()->routeIs('user.profile') ? 'bg-[#ff4d00] text-white' : 'text-black hover:bg-[#fc9e4e]' }}">
-            <span class="text-lg flex-shrink-0">👤</span>
-            <span class="menu-label">Profile</span>
-        </a>
-
-       
-    </nav>
-
-    <!-- Logout Section -->
-    <div class="p-3 border-t border-white">
-        <form action="{{ route('logout') }}" method="POST">
-            @csrf
-            <button type="submit"
-                class="{{ $baseLinkClass }} text-black hover:bg-gray-500">
-             <svg class="w-[22px] h-[22px] text-gray-800 dark:text-black" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"/>
-</svg>
-
-                <span class="menu-label">Logout</span>
-            </button>
-        </form>
-    </div>
-</aside>
-
-<!-- Overlay for mobile -->
-<div id="sidebarOverlay"
-  class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
-
-
-<script src="{{ asset('js/sidebar.js') }}"></script>
+</header>

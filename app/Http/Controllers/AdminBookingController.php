@@ -54,7 +54,7 @@ public function updateStatus(Request $request, Booking $booking)
 
     $allowedTransitions = [
         'Pending' => ['Cancelled'],
-        'Reserved' => ['Cancelled'],
+        'Confirmed' => ['Cancelled'],
         'Return' => ['Checkup', 'Damage', 'Needs Repair', 'Completed'],
         'Active' => [],
         'Completed' => [],
