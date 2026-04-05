@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const userForm = document.getElementById('userForm');
     const formMethod = document.getElementById('formMethod');
 
-    // ========== FUNCTION: COMBINED FILTER ==========
     function filterTable() {
         const searchValue = userSearch.value.toLowerCase().trim();
         const roleValue = roleFilter.value.toLowerCase().trim();
@@ -16,12 +15,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const email = row.cells[1].innerText.toLowerCase();
             const roleBadge = row.cells[2].innerText.toLowerCase();
 
-            const matchesSearch =
-                name.includes(searchValue) ||
-                email.includes(searchValue);
-
-            const matchesRole =
-                roleValue === '' || roleBadge.includes(roleValue);
+            const matchesSearch = name.includes(searchValue) || email.includes(searchValue);
+            const matchesRole = roleValue === '' || roleBadge.includes(roleValue);
 
             row.style.display = (matchesSearch && matchesRole) ? '' : 'none';
         });
@@ -35,10 +30,15 @@ document.addEventListener('DOMContentLoaded', function () {
         roleFilter.addEventListener('change', filterTable);
     }
 
-    // ========== OPEN ADD MODAL ==========
     window.openAddModal = function () {
         document.getElementById('modalTitle').innerText = 'Add User';
+        userForm.action = userForm.dataset.storeRoute;
+        formMethod.value = 'POST';
+        showModal();
+    };
 
+    window.resetAndOpenAddModal = function () {
+        document.getElementById('modalTitle').innerText = 'Add User';
         userForm.action = userForm.dataset.storeRoute;
         formMethod.value = 'POST';
 
@@ -51,7 +51,6 @@ document.addEventListener('DOMContentLoaded', function () {
         showModal();
     };
 
-    // ========== OPEN EDIT MODAL ==========
     window.openEditModal = function (user) {
         document.getElementById('modalTitle').innerText = 'Edit User';
 
@@ -66,7 +65,6 @@ document.addEventListener('DOMContentLoaded', function () {
         showModal();
     };
 
-    // ========== MODAL SHOW ==========
     function showModal() {
         const modal = document.getElementById('userModal');
         const modalContent = document.getElementById('modalContent');
@@ -80,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 10);
     }
 
-    // ========== MODAL CLOSE ==========
     window.closeModal = function () {
         const modal = document.getElementById('userModal');
         const modalContent = document.getElementById('modalContent');
@@ -94,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     };
 
-    // ========== SUCCESS MODAL ==========
     window.showSuccess = function (message) {
         const modal = document.getElementById('successModal');
         const content = document.getElementById('successContent');
@@ -127,7 +123,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     };
 
-    // ========== DELETE MODAL ==========
     window.openDeleteModal = function (id) {
         const modal = document.getElementById('deleteModal');
         const content = document.getElementById('deleteContent');
@@ -156,7 +151,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     };
 
-    // ========== ERROR MODAL ==========
     window.showError = function (message) {
         const modal = document.getElementById('errorModal');
         const content = document.getElementById('errorContent');
