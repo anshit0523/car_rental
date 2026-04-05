@@ -8,55 +8,82 @@ document.addEventListener("DOMContentLoaded", function () {
     const errorModal = document.getElementById("errorModal");
     const submitBtn = document.getElementById("submitPaymentBtn");
 
+    const gcashInput = document.getElementById("gcashInput");
+    const gcashPreview = document.getElementById("gcashPreview");
+    const gcashPreviewImg = document.getElementById("gcashPreviewImg");
+
+    const bankInput = document.getElementById("bankInput");
+    const bankPreview = document.getElementById("bankPreview");
+    const bankPreviewImg = document.getElementById("bankPreviewImg");
+
     let isSubmitting = false;
 
-    /* PAYMENT METHOD SELECT */
+    function hideAllPaymentSections() {
+        if (gcashSection) gcashSection.classList.add("hidden-panel");
+        if (bankSection) bankSection.classList.add("hidden-panel");
+    }
+
+    function clearActiveOptions() {
+        paymentOptions.forEach(option => {
+            option.classList.remove("is-active");
+        });
+    }
+
+    function showModal(message) {
+        if (!errorModal) return;
+
+        const textEl = errorModal.querySelector(".error-modal-text");
+        if (textEl) textEl.textContent = message;
+
+        errorModal.style.display = "flex";
+    }
+
+    window.closeModal = function () {
+        if (!errorModal) return;
+        errorModal.style.display = "none";
+    };
+
     paymentOptions.forEach(option => {
-        option.addEventListener("click", () => {
-            const method = option.dataset.method;
+        option.addEventListener("click", function () {
+            const method = this.dataset.method;
 
-            gcashSection.classList.add("hidden");
-            bankSection.classList.add("hidden");
+            clearActiveOptions();
+            this.classList.add("is-active");
 
-            paymentOptions.forEach(o => {
-                o.classList.remove("border-blue-500", "bg-blue-50");
-            });
-
-            option.classList.add("border-blue-500", "bg-blue-50");
+            hideAllPaymentSections();
             paymentMethodInput.value = method;
 
-            if (method === "gcash") gcashSection.classList.remove("hidden");
-            if (method === "bank") bankSection.classList.remove("hidden");
+            if (method === "gcash" && gcashSection) {
+                gcashSection.classList.remove("hidden-panel");
+            }
+
+            if (method === "bank" && bankSection) {
+                bankSection.classList.remove("hidden-panel");
+            }
         });
     });
 
-    /* FORM VALIDATION + SUBMIT LOCK */
     if (form) {
         form.addEventListener("submit", function (e) {
             e.preventDefault();
 
-            if (isSubmitting) {
-                return;
-            }
+            if (isSubmitting) return;
 
-            const method = paymentMethodInput.value;
-            const gcashInput = document.querySelector('input[name="receipt_image"]');
-            const bankInput = document.querySelector('input[name="bank_receipt"]');
+            const method = paymentMethodInput ? paymentMethodInput.value : "";
+            const gcashFileCount = gcashInput?.files?.length || 0;
+            const bankFileCount = bankInput?.files?.length || 0;
 
-            const gcashFile = gcashInput?.files?.length || 0;
-            const bankFile = bankInput?.files?.length || 0;
-
-            if (method === "") {
+            if (!method) {
                 showModal("Please select a payment method.");
                 return;
             }
 
-            if (method === "gcash" && gcashFile === 0) {
+            if (method === "gcash" && gcashFileCount === 0) {
                 showModal("Please upload your GCash receipt.");
                 return;
             }
 
-            if (method === "bank" && bankFile === 0) {
+            if (method === "bank" && bankFileCount === 0) {
                 showModal("Please upload your bank transfer receipt.");
                 return;
             }
@@ -66,60 +93,37 @@ document.addEventListener("DOMContentLoaded", function () {
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.textContent = "Processing...";
-                submitBtn.classList.add("opacity-50", "cursor-not-allowed");
             }
 
             form.submit();
         });
     }
 
-    function showModal(message) {
-        const p = errorModal?.querySelector("p");
-        if (p) p.innerText = message;
-        errorModal?.classList.remove("hidden");
-    }
+    if (gcashInput && gcashPreview && gcashPreviewImg) {
+        gcashInput.addEventListener("change", function () {
+            const file = this.files && this.files[0];
+            if (!file) return;
 
-    window.closeModal = function () {
-        errorModal?.classList.add("hidden");
-    };
-
-    /* GCASH PREVIEW */
-    const gcashInput = document.getElementById("gcashInput");
-    const gcashPreview = document.getElementById("gcashPreview");
-    const gcashPreviewImg = document.getElementById("gcashPreviewImg");
-
-    gcashInput?.addEventListener("change", function () {
-        const file = this.files[0];
-
-        if (file) {
             const reader = new FileReader();
-
             reader.onload = function (e) {
                 gcashPreviewImg.src = e.target.result;
-                gcashPreview.classList.remove("hidden");
+                gcashPreview.style.display = "block";
             };
-
             reader.readAsDataURL(file);
-        }
-    });
+        });
+    }
 
-    /* BANK PREVIEW */
-    const bankInput = document.getElementById("bankInput");
-    const bankPreview = document.getElementById("bankPreview");
-    const bankPreviewImg = document.getElementById("bankPreviewImg");
+    if (bankInput && bankPreview && bankPreviewImg) {
+        bankInput.addEventListener("change", function () {
+            const file = this.files && this.files[0];
+            if (!file) return;
 
-    bankInput?.addEventListener("change", function () {
-        const file = this.files[0];
-
-        if (file) {
             const reader = new FileReader();
-
             reader.onload = function (e) {
                 bankPreviewImg.src = e.target.result;
-                bankPreview.classList.remove("hidden");
+                bankPreview.style.display = "block";
             };
-
             reader.readAsDataURL(file);
-        }
-    });
+        });
+    }
 });
