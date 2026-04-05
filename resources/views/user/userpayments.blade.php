@@ -1,34 +1,509 @@
 @extends('layouts.userlayout')
 
+@section('custom-styles')
+<style>
+    .payment-page {
+        min-height: 100vh;
+        background: #f8fafc;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .payment-shell {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px 18px 48px;
+    }
+
+    .payment-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .payment-back {
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #0f172a;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+    }
+
+    .payment-title {
+        margin: 0;
+        font-size: 30px;
+        line-height: 1.1;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+    }
+
+    .payment-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(320px, 420px);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .payment-card {
+        background: #ffffff;
+        border: 1px solid #eef2f7;
+        border-radius: 22px;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+        padding: 22px;
+    }
+
+    .payment-card-title {
+        margin: 0 0 14px;
+        font-size: 20px;
+        line-height: 1.2;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+    }
+
+    .payment-method-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .payment-option {
+        border: 1.5px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 18px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #fff;
+        transition: all 0.25s ease;
+    }
+
+    .payment-option:hover {
+        border-color: #fed7aa;
+        background: #fff7ed;
+    }
+
+    .payment-option.is-active {
+        border-color: #ff5a1f;
+        background: #fff7ed;
+        box-shadow: 0 10px 24px rgba(255, 90, 31, 0.10);
+    }
+
+    .payment-option-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .payment-option-label {
+        font-size: 15px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .payment-form {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .payment-panel {
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        padding: 20px;
+        background: #ffffff;
+    }
+
+    .payment-panel.hidden-panel {
+        display: none;
+    }
+
+    .payment-panel-title {
+        margin: 0 0 6px;
+        font-size: 18px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .payment-panel-subtitle {
+        margin: 0 0 18px;
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .payment-split {
+        display: grid;
+        grid-template-columns: 1fr 260px;
+        gap: 22px;
+        align-items: center;
+    }
+
+    .provider-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .provider-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        background: #dbeafe;
+        color: #2563eb;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+    }
+
+    .provider-name {
+        font-size: 15px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .divider-line {
+        height: 1px;
+        background: #e5e7eb;
+        margin: 14px 0 16px;
+    }
+
+    .upload-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .upload-subtitle {
+        font-size: 13px;
+        color: #64748b;
+        margin-bottom: 12px;
+    }
+
+    .upload-box {
+        border: 1.5px dashed #cbd5e1;
+        border-radius: 16px;
+        padding: 16px;
+        background: #f8fafc;
+        transition: all 0.25s ease;
+    }
+
+    .upload-box:hover {
+        border-color: #94a3b8;
+        background: #f1f5f9;
+    }
+
+    .upload-box label {
+        display: block;
+        cursor: pointer;
+    }
+
+    .upload-main {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .upload-help {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    .preview-box {
+        margin-top: 12px;
+        display: none;
+    }
+
+    .preview-box img {
+        width: 160px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    .payment-qr-wrap {
+        text-align: center;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        padding: 18px;
+    }
+
+    .payment-qr-wrap img {
+        width: 180px;
+        max-width: 100%;
+        margin: 0 auto 12px;
+        border-radius: 14px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        padding: 8px;
+        display: block;
+    }
+
+    .payment-qr-name {
+        font-size: 15px;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .payment-qr-number {
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .bank-details {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .bank-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+    .bank-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .bank-row span:first-child {
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .bank-row span:last-child {
+        color: #0f172a;
+        font-weight: 800;
+    }
+
+    .file-input {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid #dbe2ea;
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 13px;
+        background: #fff;
+    }
+
+    .submit-payment-btn {
+        width: 100%;
+        min-height: 48px;
+        border: none;
+        border-radius: 12px;
+        background: #2563eb;
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 800;
+        transition: all 0.25s ease;
+    }
+
+    .submit-payment-btn:hover {
+        background: #1d4ed8;
+    }
+
+    .submit-payment-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .summary-card {
+        position: sticky;
+        top: 110px;
+    }
+
+    .summary-title {
+        margin: 0 0 14px;
+        font-size: 20px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .summary-car {
+        display: flex;
+        gap: 14px;
+        margin-bottom: 18px;
+        align-items: center;
+    }
+
+    .summary-car img {
+        width: 84px;
+        height: 84px;
+        border-radius: 16px;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 1px solid #e5e7eb;
+    }
+
+    .summary-car-name {
+        font-size: 16px;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 6px;
+    }
+
+    .summary-car-meta {
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+
+    .summary-lines {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .summary-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 14px;
+        color: #475569;
+        font-weight: 600;
+    }
+
+    .summary-line.total {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 12px;
+        margin-top: 4px;
+        font-size: 18px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .error-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        padding: 16px;
+    }
+
+    .error-modal-box {
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+        padding: 26px 24px;
+        max-width: 360px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .error-modal-icon {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+
+    .error-modal-title {
+        font-size: 18px;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 8px;
+    }
+
+    .error-modal-text {
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.6;
+        margin-bottom: 18px;
+    }
+
+    .error-modal-btn {
+        min-height: 42px;
+        padding: 0 18px;
+        border: none;
+        border-radius: 10px;
+        background: #2563eb;
+        color: #ffffff;
+        font-weight: 800;
+    }
+
+    @media (max-width: 1100px) {
+        .payment-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-card {
+            position: static;
+        }
+    }
+
+    @media (max-width: 899px) {
+        .payment-shell {
+            padding: 18px 14px 40px;
+        }
+
+        .payment-title {
+            font-size: 28px;
+        }
+
+        .payment-method-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .payment-split {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-car {
+            align-items: flex-start;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
+<div class="payment-page">
+    <div class="payment-shell">
 
-    <div class="min-h-screen bg-gray-50">
+        <div class="payment-header">
+            <a href="{{ route('user.browse') }}" class="payment-back" aria-label="Back">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
 
-        <!-- HEADER -->
-        <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
-            <div class="px-4 sm:px-6 py-4 flex items-center">
-                <a href="{{ route('user.browse') }}" class="text-gray-700 hover:text-gray-900">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                </a>
-
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 ml-4">
-                    Payment
-                </h1>
-            </div>
+            <h1 class="payment-title">Payment</h1>
         </div>
 
         @php
-
             $rentalDays = max(
                 1,
-                \Carbon\Carbon::parse($booking->pickup_at)
-                    ->diffInDays(\Carbon\Carbon::parse($booking->return_at))
+                \Carbon\Carbon::parse($booking->pickup_at)->diffInDays(\Carbon\Carbon::parse($booking->return_at))
             );
 
             $rentalCost = $booking->car->price_per_day * $rentalDays;
-
             $pointsDiscount = (float) ($booking->discount_amount ?? 0);
 
             $total = $booking->final_total !== null
@@ -36,320 +511,201 @@
                 : max(0, $rentalCost - $pointsDiscount);
 
             $images = $booking->car->images ? json_decode($booking->car->images) : [];
-
         @endphp
 
+        <div class="payment-grid">
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+            <!-- Left -->
+            <div style="display:flex; flex-direction:column; gap:18px;">
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="payment-card">
+                    <h2 class="payment-card-title">Select Payment Method</h2>
 
-                <!-- LEFT SIDE -->
-                <div class="lg:col-span-8 space-y-6 order-2 lg:order-1">
+                    <div class="payment-method-grid">
+                        <label class="payment-option" data-method="gcash">
+                            <input type="radio" name="payment_method" class="hidden" hidden>
+                            <span class="payment-option-icon">💙</span>
+                            <span class="payment-option-label">GCash</span>
+                        </label>
 
-                    <!-- PAYMENT METHOD -->
-                    <div class="bg-white rounded-xl shadow-sm border p-6">
-
-                        <h2 class="text-lg font-bold mb-4">
-                            Select Payment Method
-                        </h2>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                            <label
-                                class="payment-option border-2 border-gray-200 rounded-lg p-4 flex items-center gap-3 cursor-pointer"
-                                data-method="gcash">
-
-                                <input type="radio" name="payment_method" class="hidden">
-
-                                <span class="text-xl">💙</span>
-
-                                <span class="font-semibold">
-                                    GCash
-                                </span>
-
-                            </label>
-
-
-                            <label
-                                class="payment-option border-2 border-gray-200 rounded-lg p-4 flex items-center gap-3 cursor-pointer"
-                                data-method="bank">
-
-                                <input type="radio" name="payment_method" class="hidden">
-
-                                <span class="text-xl">🏦</span>
-
-                                <span class="font-semibold">
-                                    Bank Transfer
-                                </span>
-
-                            </label>
-
-                        </div>
-
+                        <label class="payment-option" data-method="bank">
+                            <input type="radio" name="payment_method" class="hidden" hidden>
+                            <span class="payment-option-icon">🏦</span>
+                            <span class="payment-option-label">Bank Transfer</span>
+                        </label>
                     </div>
+                </div>
 
+                <form id="paymentForm" action="{{ route('user.payment.process') }}" method="POST" enctype="multipart/form-data" class="payment-form">
+                    @csrf
 
-                    <form id="paymentForm" action="{{ route('user.payment.process') }}" method="POST"
-                        enctype="multipart/form-data">
+                    <input type="hidden" name="booking_id" value="{{ $booking->id }}">
+                    <input type="hidden" name="payment_method" id="paymentMethod">
 
-                        @csrf
+                    <!-- GCASH -->
+                    <div id="gcashSection" class="payment-card payment-panel hidden-panel">
+                        <h3 class="payment-panel-title">GCash QR Payment</h3>
+                        <p class="payment-panel-subtitle">Scan the QR code using your GCash app and upload your payment screenshot.</p>
 
-                        <input type="hidden" name="booking_id" value="{{ $booking->id }}">
-                        <input type="hidden" name="payment_method" id="paymentMethod">
+                        <div class="payment-split">
+                            <div>
+                                <div class="provider-row">
+                                    <div class="provider-badge">G</div>
+                                    <div class="provider-name">Car Rental PH</div>
+                                </div>
 
-                        <!-- GCASH SECTION -->
+                                <div class="divider-line"></div>
 
-                        <div id="gcashSection" class="bg-white rounded-xl border border-gray-200 p-6 hidden">
+                                <div class="upload-title">Upload Payment Receipt</div>
+                                <div class="upload-subtitle">Upload a screenshot of your payment. JPG, PNG or JPEG only.</div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                <div class="upload-box">
+                                    <label>
+                                        <div class="upload-main">Upload Payment Screenshot</div>
+                                        <div class="upload-help">Tap to choose your receipt image</div>
 
-                                <!-- LEFT -->
-                                <div>
-
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <div
-                                            class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
-                                            G
-                                        </div>
-
-                                        <h3 class="text-lg font-semibold text-gray-900">
-                                            GCash QR Payment
-                                        </h3>
-                                    </div>
-
-                                    <p class="text-sm text-gray-500 mb-6">
-                                        Scan the QR code using your GCash app.
-                                    </p>
-
-                                    <div class="border-t border-gray-200 my-4"></div>
-
-                                    <div class="flex items-center gap-2 mb-6">
-                                        <span class="text-green-600 text-xl">🏦</span>
-
-                                        <span class="font-semibold text-gray-800">
-                                            Car Rental PH
-                                        </span>
-                                    </div>
-
-                                    <h4 class="font-semibold text-gray-800 mb-1">
-                                        Upload Payment Receipt
-                                    </h4>
-
-                                    <p class="text-sm text-gray-500 mb-4">
-                                        Upload a screenshot of your payment.
-                                    </p>
-
-
-                                    <label
-                                        class="border border-gray-300 rounded-lg p-4 flex items-center justify-between cursor-pointer hover:border-gray-400 transition">
-
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-800">
-                                                Upload Payment Screenshot
-                                            </p>
-
-                                            <p class="text-xs text-gray-500">
-                                                JPG, PNG or JPEG
-                                            </p>
-                                        </div>
-
-
-
-                                        <input type="file" id="gcashInput" name="receipt_image" accept="image/*"
-                                            class="hidden">
-
-                                        <div id="gcashPreview" class="mt-4 hidden">
-                                            <p class="text-sm text-gray-600 mb-2">Receipt Preview</p>
-
-                                            <img id="gcashPreviewImg" class="w-40 rounded-lg border shadow-sm">
-                                        </div>
-
+                                        <input type="file" id="gcashInput" name="receipt_image" accept="image/*" class="hidden" hidden>
                                     </label>
 
+                                    <div id="gcashPreview" class="preview-box">
+                                        <img id="gcashPreviewImg" alt="GCash receipt preview">
+                                    </div>
                                 </div>
-
-
-                                <!-- RIGHT -->
-                                <div class="text-center">
-
-                                    <img src="{{ $paymentSetting && $paymentSetting->gcash_qr_image ?
-        asset('storage/' . $paymentSetting->gcash_qr_image) : asset('images/no-image.png') }}"
-                                        class="w-44 sm:w-52 mx-auto mb-3 border rounded-lg p-2 bg-white">
-
-                                    <p class="font-semibold text-gray-800">
-                                        {{ $paymentSetting->gcash_account_name ?? 'N/A' }}
-                                    </p>
-
-                                    <p class="text-sm text-gray-500">
-                                        GCash Number: {{ $paymentSetting->gcash_number ?? 'N/A' }}
-                                    </p>
-
-                                </div>
-
                             </div>
 
+                            <div class="payment-qr-wrap">
+                                <img
+                                    src="{{ $paymentSetting && $paymentSetting->gcash_qr_image ? asset('storage/' . $paymentSetting->gcash_qr_image) : asset('images/no-image.png') }}"
+                                    alt="GCash QR"
+                                >
+
+                                <div class="payment-qr-name">
+                                    {{ $paymentSetting->gcash_account_name ?? 'N/A' }}
+                                </div>
+
+                                <div class="payment-qr-number">
+                                    GCash Number: {{ $paymentSetting->gcash_number ?? 'N/A' }}
+                                </div>
+                            </div>
                         </div>
-
-
-                        <!-- BANK SECTION -->
-
-                        <div id="bankSection" class="bg-white rounded-xl shadow-sm border p-6 hidden">
-
-                            <h3 class="text-lg font-bold mb-4">
-                                Bank Transfer
-                            </h3>
-
-                            <p class="text-gray-500 text-sm mb-4">
-                                Send payment to the bank account below.
-                            </p>
-
-                            <div class="bg-gray-50 rounded-lg p-5 mb-5">
-
-                                <div class="flex justify-between mb-3">
-                                    <span class="text-gray-500">Bank</span>
-                                    <span class="font-semibold">BDO</span>
-                                </div>
-
-                                <div class="flex justify-between mb-3">
-                                    <span class="text-gray-500">Account Name</span>
-                                    <span class="font-semibold">Car Rental PH</span>
-                                </div>
-
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Account Number</span>
-                                    <span class="font-semibold tracking-wider">
-                                        1234 5678 9012
-                                    </span>
-                                </div>
-
-                            </div>
-
-                            <label class="font-semibold mb-2 block">
-                                Upload Bank Receipt
-                            </label>
-
-                            <input type="file" name="bank_receipt" accept="image/*" id="bankInput"
-                                class="border rounded-lg px-4 py-2 w-full">
-
-                            <div id="bankPreview" class="mt-4 hidden">
-                                <p class="text-sm text-gray-600 mb-2">Receipt Preview</p>
-
-                                <img id="bankPreviewImg" class="w-40 rounded-lg border shadow-sm">
-                            </div>
-
-                            <p class="text-xs text-gray-500 mt-2">
-                                Upload screenshot after sending bank transfer.
-                            </p>
-
-                        </div>
-
-
-                        <button type="submit" id="submitPaymentBtn"
-                            class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                            Submit Payment Proof
-                        </button>
-
-                    </form>
-
-                </div>
-
-
-                <!-- RIGHT SIDE SUMMARY -->
-
-                <div class="lg:col-span-4 order-1 lg:order-2">
-
-                    <div class="bg-white rounded-xl shadow-sm border p-6 lg:sticky lg:top-24">
-
-                        <h2 class="text-lg font-bold mb-4">
-                            Booking Summary
-                        </h2>
-
-                        <div class="flex gap-4 mb-5">
-
-                            @if($images && count($images) > 0)
-
-                                <img src="{{ asset('storage/' . $images[0]) }}" class="w-20 h-20 rounded-lg object-cover">
-
-                            @endif
-
-                            <div>
-
-                                <p class="font-semibold">
-                                    {{ $booking->car->brand->name ?? 'N/A' }}
-                                    {{ $booking->car->model }}
-                                </p>
-
-                                <p class="text-sm text-gray-500">
-                                    {{ \Carbon\Carbon::parse($booking->pickup_at)->format('M d') }}
-                                    -
-                                    {{ \Carbon\Carbon::parse($booking->return_at)->format('M d, Y') }}
-                                </p>
-
-                                <p class="text-sm text-gray-500">
-                                    {{ $rentalDays }} days rental
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                        <div class="border-t pt-4 space-y-2 text-sm">
-
-                            <div class="flex justify-between">
-                                <span>Rental</span>
-                                <span>₱{{ number_format($rentalCost, 0) }}</span>
-                            </div>
-
-                            <div class="flex justify-between text-gray-500">
-                                <span>Discount Points</span>
-                                <span>-₱{{ number_format($pointsDiscount, 2) }}</span>
-                            </div>
-
-                            <div class="border-t pt-3 flex justify-between font-bold text-lg">
-                                <span>Total</span>
-                                <span>₱{{ number_format($total, 2) }}</span>
-                            </div>
-
-                        </div>
-
-
-
                     </div>
 
-                </div>
+                    <!-- BANK -->
+                    <div id="bankSection" class="payment-card payment-panel hidden-panel">
+                        <h3 class="payment-panel-title">Bank Transfer</h3>
+                        <p class="payment-panel-subtitle">Send payment to the bank account below and upload your receipt after payment.</p>
 
-                <!-- ERROR MODAL -->
-                <div id="errorModal"
-                    class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50">
-                    <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+                        <div class="bank-details">
+                            <div class="bank-row">
+                                <span>Bank</span>
+                                <span>BDO</span>
+                            </div>
 
-                        <div class="text-red-500 text-4xl mb-3">⚠️</div>
+                            <div class="bank-row">
+                                <span>Account Name</span>
+                                <span>Car Rental PH</span>
+                            </div>
 
-                        <h3 class="text-lg font-bold mb-2">
-                            Upload Required
-                        </h3>
+                            <div class="bank-row">
+                                <span>Account Number</span>
+                                <span>1234 5678 9012</span>
+                            </div>
+                        </div>
 
-                        <p class="text-gray-600 text-sm mb-5">
-                            Please upload your payment receipt before submitting.
-                        </p>
+                        <div class="upload-title">Upload Bank Receipt</div>
+                        <input type="file" name="bank_receipt" accept="image/*" id="bankInput" class="file-input">
 
-                        <button onclick="closeModal()"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold">
-                            OK
-                        </button>
+                        <div id="bankPreview" class="preview-box">
+                            <img id="bankPreviewImg" alt="Bank receipt preview">
+                        </div>
 
+                        <div class="upload-subtitle" style="margin-top:10px;">
+                            Upload screenshot after sending bank transfer.
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitPaymentBtn" class="submit-payment-btn">
+                        Submit Payment Proof
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right -->
+            <div class="summary-card">
+                <div class="payment-card">
+                    <h2 class="summary-title">Booking Summary</h2>
+
+                    <div class="summary-car">
+                        @if($images && count($images) > 0)
+                            <img
+                                src="{{ asset('storage/' . $images[0]) }}"
+                                alt="{{ $booking->car->model }}"
+                                onerror="this.onerror=null;this.src='{{ asset('images/no-car-image.png') }}';"
+                            >
+                        @else
+                            <img
+                                src="{{ asset('images/no-car-image.png') }}"
+                                alt="No image"
+                            >
+                        @endif
+
+                        <div>
+                            <div class="summary-car-name">
+                                {{ $booking->car->brand->name ?? 'N/A' }} {{ $booking->car->model }}
+                            </div>
+
+                            <div class="summary-car-meta">
+                                {{ \Carbon\Carbon::parse($booking->pickup_at)->format('M d') }}
+                                -
+                                {{ \Carbon\Carbon::parse($booking->return_at)->format('M d, Y') }}
+                            </div>
+
+                            <div class="summary-car-meta">
+                                {{ $rentalDays }} days rental
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="summary-lines">
+                        <div class="summary-line">
+                            <span>Rental</span>
+                            <span>₱{{ number_format($rentalCost, 0) }}</span>
+                        </div>
+
+                        <div class="summary-line" style="color:#64748b;">
+                            <span>Discount Points</span>
+                            <span>-₱{{ number_format($pointsDiscount, 2) }}</span>
+                        </div>
+
+                        <div class="summary-line total">
+                            <span>Total</span>
+                            <span>₱{{ number_format($total, 2) }}</span>
+                        </div>
                     </div>
                 </div>
-
             </div>
 
         </div>
 
+        <!-- Error Modal -->
+        <div id="errorModal" class="error-modal">
+            <div class="error-modal-box">
+                <div class="error-modal-icon">⚠️</div>
+                <div class="error-modal-title">Upload Required</div>
+                <div class="error-modal-text">
+                    Please upload your payment receipt before submitting.
+                </div>
+
+                <button onclick="closeModal()" class="error-modal-btn">
+                    OK
+                </button>
+            </div>
+        </div>
+
     </div>
-
-
-
+</div>
 @endsection
 
+@section('scripts')
 <script src="{{ asset('js/user/userpayment.js') }}"></script>
+@endsection
