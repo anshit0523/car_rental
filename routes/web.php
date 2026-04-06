@@ -13,6 +13,7 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LiveMapController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\ReturnIssueController;
 use App\Http\Controllers\Staff\StaffBookingController;
 use App\Http\Controllers\Staff\StaffCalendarController;
 use App\Http\Controllers\Staff\StaffDashboardController;
@@ -109,6 +110,10 @@ Route::middleware(['auth', 'user'])
         Route::get('/history', [UserDashboardController::class, 'history'])->name('history');
         Route::get('/profile', [UserDashboardController::class, 'profile'])->name('profile');
         Route::get('/settings', [UserDashboardController::class, 'settings'])->name('settings');
+
+     Route::get('/return-issues/{returnIssue}', [ReturnIssueController::class, 'show'])
+            ->name('return-issues.show');
+
     });
 
 
@@ -177,6 +182,16 @@ Route::middleware(['auth', 'admin'])
 
         Route::get('/trackers/create', [AdminTrackerController::class, 'create'])->name('trackers.create');
         Route::post('/trackers', [AdminTrackerController::class, 'store'])->name('trackers.store');
+
+  
+
+
+    Route::get('/bookings/{booking}/return-issue/create', [ReturnIssueController::class, 'create'])
+            ->name('return-issues.create');
+
+        Route::post('/bookings/{booking}/return-issue', [ReturnIssueController::class, 'store'])
+            ->name('return-issues.store');
+;
     });
 
 

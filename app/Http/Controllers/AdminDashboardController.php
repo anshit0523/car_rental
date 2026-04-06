@@ -127,8 +127,6 @@ class AdminDashboardController extends Controller
 
     
 
-
-
     public function users()
     {
         $users = User::with('role')->paginate(15);

@@ -75,4 +75,10 @@ public function serviceType()
 {
     return $this->belongsTo(ServiceType::class);
 }
+
+public function returnIssues()
+{
+    return $this->hasMany(ReturnIssue::class);
+}
+
 }
