@@ -4,7 +4,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const userForm = document.getElementById('userForm');
     const formMethod = document.getElementById('formMethod');
 
+<<<<<<< HEAD
     // ========== FUNCTION: COMBINED FILTER ==========
+=======
+>>>>>>> template-ui
     function filterTable() {
         const searchValue = userSearch.value.toLowerCase().trim();
         const roleValue = roleFilter.value.toLowerCase().trim();
@@ -16,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const email = row.cells[1].innerText.toLowerCase();
             const roleBadge = row.cells[2].innerText.toLowerCase();
 
+<<<<<<< HEAD
             const matchesSearch =
                 name.includes(searchValue) ||
                 email.includes(searchValue);
@@ -39,6 +43,32 @@ document.addEventListener('DOMContentLoaded', function () {
     window.openAddModal = function () {
         document.getElementById('modalTitle').innerText = 'Add User';
 
+=======
+            const matchesSearch = name.includes(searchValue) || email.includes(searchValue);
+            const matchesRole = roleValue === '' || roleBadge.includes(roleValue);
+
+            row.style.display = (matchesSearch && matchesRole) ? '' : 'none';
+        });
+    }
+
+    if (userSearch) {
+        userSearch.addEventListener('keyup', filterTable);
+    }
+
+    if (roleFilter) {
+        roleFilter.addEventListener('change', filterTable);
+    }
+
+    window.openAddModal = function () {
+        document.getElementById('modalTitle').innerText = 'Add User';
+        userForm.action = userForm.dataset.storeRoute;
+        formMethod.value = 'POST';
+        showModal();
+    };
+
+    window.resetAndOpenAddModal = function () {
+        document.getElementById('modalTitle').innerText = 'Add User';
+>>>>>>> template-ui
         userForm.action = userForm.dataset.storeRoute;
         formMethod.value = 'POST';
 
@@ -51,7 +81,10 @@ document.addEventListener('DOMContentLoaded', function () {
         showModal();
     };
 
+<<<<<<< HEAD
     // ========== OPEN EDIT MODAL ==========
+=======
+>>>>>>> template-ui
     window.openEditModal = function (user) {
         document.getElementById('modalTitle').innerText = 'Edit User';
 
@@ -66,7 +99,10 @@ document.addEventListener('DOMContentLoaded', function () {
         showModal();
     };
 
+<<<<<<< HEAD
     // ========== MODAL SHOW ==========
+=======
+>>>>>>> template-ui
     function showModal() {
         const modal = document.getElementById('userModal');
         const modalContent = document.getElementById('modalContent');
@@ -80,7 +116,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 10);
     }
 
+<<<<<<< HEAD
     // ========== MODAL CLOSE ==========
+=======
+>>>>>>> template-ui
     window.closeModal = function () {
         const modal = document.getElementById('userModal');
         const modalContent = document.getElementById('modalContent');
@@ -94,7 +133,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     };
 
+<<<<<<< HEAD
     // ========== SUCCESS MODAL ==========
+=======
+>>>>>>> template-ui
     window.showSuccess = function (message) {
         const modal = document.getElementById('successModal');
         const content = document.getElementById('successContent');
@@ -127,13 +169,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     };
 
+<<<<<<< HEAD
     // ========== DELETE MODAL ==========
+=======
+>>>>>>> template-ui
     window.openDeleteModal = function (id) {
         const modal = document.getElementById('deleteModal');
         const content = document.getElementById('deleteContent');
         const deleteForm = document.getElementById('deleteForm');
 
+<<<<<<< HEAD
         deleteForm.action = /admin/users/${id};
+=======
+        deleteForm.action = `/admin/users/${id}`;
+>>>>>>> template-ui
         modal.classList.remove('hidden');
 
         setTimeout(() => {
@@ -156,7 +205,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     };
 
+<<<<<<< HEAD
     // ========== ERROR MODAL ==========
+=======
+>>>>>>> template-ui
     window.showError = function (message) {
         const modal = document.getElementById('errorModal');
         const content = document.getElementById('errorContent');

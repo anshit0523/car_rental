@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Brand;
 use App\Models\Car;
 use App\Models\FuelType;
+use App\Models\Status;
 use App\Models\Transmission;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class UserCarBrowseController extends Controller
@@ -71,8 +73,8 @@ class UserCarBrowseController extends Controller
     public function search(Request $request)
     {
         $validated = $request->validate([
-           'pickup_date' => 'required|date|after_or_equal:today',
-           'return_date' => 'required|date|after:pickup_date',
+            'pickup_date' => 'required|date|after_or_equal:today',
+            'return_date' => 'required|date|after:pickup_date',
             'time' => 'nullable|date_format:H:i',
         ]);
 
@@ -102,6 +104,28 @@ class UserCarBrowseController extends Controller
         ]);
     }
 
+    private function blockingStatusIds(): array
+    {
+        return Status::whereIn('name', ['Reserved', 'Active', 'Pending', 'Confirmed'])
+            ->pluck('id')
+            ->toArray();
+    }
+
+    private function applyAvailabilityFilter(Builder $query, array $validated): void
+    {
+        $pickup = Carbon::parse($validated['pickup_date'])->startOfDay();
+        $return = Carbon::parse($validated['return_date'])->endOfDay();
+
+        $statusIds = $this->blockingStatusIds();
+
+        $query->whereDoesntHave('bookings', function ($bookingQuery) use ($pickup, $return, $statusIds) {
+            $bookingQuery
+                ->whereIn('status_id', $statusIds)
+                ->where('pickup_at', '<', $return)
+                ->where('return_at', '>', $pickup);
+        });
+    }
+
     private function hasBrowseFilters(Request $request): bool
     {
         return $request->filled('location') ||
@@ -121,22 +145,6 @@ class UserCarBrowseController extends Controller
             'price_low' => $query->orderBy('price_per_day'),
             default => $query->orderBy('price_per_day'),
         };
-    }
-
-    private function applyAvailabilityFilter(Builder $query, array $validated): void
-    {
-        $pickupDate = $validated['pickup_date'];
-        $returnDate = $validated['return_date'];
-
-        $query->whereDoesntHave('bookings', function ($bookingQuery) use ($pickupDate, $returnDate) {
-            $bookingQuery
-                ->where(function ($overlapQuery) use ($pickupDate, $returnDate) {
-                    $overlapQuery
-                        ->where('pickup_at', '<', $returnDate)
-                        ->where('return_at', '>', $pickupDate);
-                })
-                ->whereIn('status_id', [1, 2]);
-        });
     }
 
     private function getBrands()
