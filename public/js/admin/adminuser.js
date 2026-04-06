@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const content = document.getElementById('deleteContent');
         const deleteForm = document.getElementById('deleteForm');
 
-        deleteForm.action = `/admin/users/${id}`;
+        deleteForm.action = /admin/users/${id};
         modal.classList.remove('hidden');
 
         setTimeout(() => {
