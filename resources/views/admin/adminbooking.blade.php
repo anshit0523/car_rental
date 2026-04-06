@@ -137,7 +137,7 @@
                                                 class="text-rose-600 hover:text-rose-800"
                                                 title="Create return issue"
                                             >
-                                                <i class="fas fa-file-circle-plus"></i>
+                                               
                                             </a>
                                         @endif
                                     </td>

@@ -19,6 +19,7 @@ use App\Http\Controllers\Staff\StaffCalendarController;
 use App\Http\Controllers\Staff\StaffDashboardController;
 use App\Http\Controllers\Staff\StaffMapController;
 use App\Http\Controllers\Staff\StaffPaymentController;
+use App\Http\Controllers\Staff\StaffReturnIssueController;
 use App\Http\Controllers\UserBookingController;
 use App\Http\Controllers\UserCarBrowseController;
 use App\Http\Controllers\UserDashboardController;
@@ -215,8 +216,11 @@ Route::middleware(['auth', 'staff'])
         Route::get('/live/positions', [StaffMapController::class, 'positions'])->name('live.positions');
         Route::get('/replay', [StaffMapController::class, 'replayPage'])->name('replay');
         Route::get('/replay/history', [StaffMapController::class, 'history'])->name('replay.history');
+Route::get('/bookings/{booking}/return-issue/create', [StaffReturnIssueController::class, 'create'])
+    ->name('return-issues.create');
 
-
+Route::post('/bookings/{booking}/return-issue', [StaffReturnIssueController::class, 'store'])
+    ->name('return-issues.store');
 
 
     });

@@ -106,9 +106,20 @@
                                             class="text-amber-600 hover:text-amber-800 editBookingBtn"
                                             data-booking-id="{{ $booking->id }}"
                                             data-status-name="{{ trim($booking->status->name ?? '') }}"
+                                            type="button"
                                         >
                                             <i class="fas fa-edit"></i>
                                         </button>
+
+                                        @if(($booking->status->name ?? '') === 'Return')
+                                            <a
+                                                href="{{ route('staff.return-issues.create', $booking->id) }}"
+                                                class="text-rose-600 hover:text-rose-800"
+                                                title="Create return issue"
+                                            >
+                                                <i class="fas fa-file-circle-plus"></i>
+                                            </a>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
@@ -143,7 +154,12 @@
                             id="statusDropdown"
                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
                         ></select>
+
                         <p id="statusHelpText" class="text-sm text-gray-500 mt-2 hidden"></p>
+
+                        <p class="text-sm text-gray-500 mt-2">
+                            Damage, Needs Repair, and Checkup will open a detailed issue form.
+                        </p>
                     </div>
 
                     <div id="adminMessageWrapper" class="mb-4 hidden">
@@ -155,9 +171,13 @@
                             name="admin_message"
                             id="adminMessage"
                             rows="4"
-                            placeholder="Example: The car was returned with low fuel level."
+                            placeholder="Example: Your return inspection has been completed."
                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
                         ></textarea>
+
+                        <p class="text-sm text-gray-500 mt-2">
+                            Use this for simple updates only. Damage, repair, and checkup statuses will open a detailed issue form.
+                        </p>
                     </div>
 
                     <div class="flex justify-end gap-2 mt-6">
