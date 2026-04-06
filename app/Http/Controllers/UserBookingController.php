@@ -42,7 +42,6 @@ public function store(Request $request)
         'service_type_id' => 'required|exists:service_types,id',
         'service_location' => 'nullable|string|max:255',
         'phone' => 'required|string|max:30',
-        'points_to_use' => 'nullable|integer|min:0',
     ]);
 
     $user = auth()->user();
@@ -74,27 +73,13 @@ public function store(Request $request)
 
         $pendingStatus = Status::firstOrCreate(['name' => 'Pending']);
 
-        $POINTS_PER_PESO = 10;
-        $pointsRequested = (int) ($validated['points_to_use'] ?? 0);
-
         $booking = DB::transaction(function () use (
             $user,
             $validated,
             $pickupDateTime,
             $returnDateTime,
-            $pendingStatus,
-            $POINTS_PER_PESO,
-            $pointsRequested
+            $pendingStatus
         ) {
-            // Lock user row for safe points balance update
-            $userRow = DB::table('users')
-                ->where('id', $user->id)
-                ->lockForUpdate()
-                ->first();
-
-            $balanceBefore = (int) $userRow->points_balance;
-
-            // Re-check availability INSIDE transaction
             $existingBooking = Booking::where('car_id', $validated['car_id'])
                 ->whereIn('status_id', [1, 2, 6])
                 ->where(function ($query) use ($pickupDateTime, $returnDateTime) {
@@ -108,52 +93,19 @@ public function store(Request $request)
                 throw new \RuntimeException('This car is not available for the selected dates.');
             }
 
-            $pointsUsed = min($pointsRequested, $balanceBefore);
-            $discountAmount = $pointsUsed / $POINTS_PER_PESO;
-
             $totalPrice = (float) $validated['total_price'];
-            $finalTotal = max(0, $totalPrice - $discountAmount);
 
-            $balanceAfter = $balanceBefore - $pointsUsed;
-
-            DB::table('users')->where('id', $user->id)->update([
-                'points_balance' => $balanceAfter,
-                'updated_at' => now(),
-            ]);
-
-            $booking = Booking::create([
+            return Booking::create([
                 'car_id' => $validated['car_id'],
                 'user_id' => $user->id,
                 'pickup_at' => $pickupDateTime,
                 'return_at' => $returnDateTime,
                 'total_price' => $totalPrice,
-                'final_total' => $finalTotal,
-                'points_used' => $pointsUsed,
-                'discount_amount' => $discountAmount,
+                'final_total' => $totalPrice,
                 'status_id' => $pendingStatus->id,
                 'service_type_id' => $validated['service_type_id'],
                 'service_location' => $validated['service_location'] ?? null,
             ]);
-
-            if ($pointsUsed > 0) {
-                $redeemTypeId = (int) DB::table('points_transaction_types')
-                    ->where('name', 'redeem')
-                    ->value('id');
-
-                DB::table('points_transactions')->insert([
-                    'user_id' => $user->id,
-                    'booking_id' => $booking->id,
-                    'points_id' => $redeemTypeId,
-                    'points_change' => -$pointsUsed,
-                    'balance_before' => $balanceBefore,
-                    'balance_after' => $balanceAfter,
-                    'note' => 'Redeemed points for booking',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
-            return $booking;
         });
 
         if ($request->wantsJson()) {
@@ -167,7 +119,6 @@ public function store(Request $request)
         return redirect()
             ->route('user.payments', ['booking_id' => $booking->id])
             ->with('success', 'Booking created successfully!');
-
     } catch (\RuntimeException $e) {
         if ($request->wantsJson()) {
             return response()->json([
@@ -180,7 +131,6 @@ public function store(Request $request)
         return back()
             ->withErrors(['booking' => $e->getMessage()])
             ->withInput();
-
     } catch (\Exception $e) {
         \Log::error('Booking error: ' . $e->getMessage());
 
@@ -197,7 +147,6 @@ public function store(Request $request)
             ->withInput();
     }
 }
-
     public function confirmation($id)
     {
         $booking = Booking::with(['car', 'user', 'payments', 'receipts'])->findOrFail($id);
