@@ -123,6 +123,8 @@ Route::middleware(['auth', 'admin'])
         Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/create/{car}', [AdminBookingController::class, 'create'])->name('bookings.create');
         Route::post('/bookings', [AdminBookingController::class, 'store'])->name('bookings.store');
+         Route::get('/bookings/{booking}/json', [AdminBookingController::class, 'showJson'])
+        ->name('admin.bookings.showJson');
 
         Route::put('/bookings/{booking}/update-status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
         Route::post('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');

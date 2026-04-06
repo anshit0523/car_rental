@@ -10,9 +10,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusHelpText = document.getElementById('statusHelpText');
     const saveStatusBtn = document.getElementById('saveStatusBtn');
 
-   
     const adminMessageWrapper = document.getElementById('adminMessageWrapper');
     const adminMessage = document.getElementById('adminMessage');
+
+    const viewModal = document.getElementById('viewModal');
+    const closeViewModalBtn = document.getElementById('closeViewModal');
 
     let typingTimer;
 
@@ -46,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!statusDropdown || !adminMessageWrapper) return;
 
         const selectedText = statusDropdown.options[statusDropdown.selectedIndex]?.text?.trim() || '';
-
         const showFor = ['Completed', 'Checkup', 'Damage', 'Needs Repair'];
 
         if (showFor.includes(selectedText)) {
@@ -92,7 +93,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 statusHelpText.textContent = '';
                 statusHelpText.classList.add('hidden');
 
-                // new
                 toggleAdminMessageField();
             } else {
                 statusDropdown.disabled = true;
@@ -105,7 +105,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 statusHelpText.textContent = `No manual action available for ${currentStatusName}.`;
                 statusHelpText.classList.remove('hidden');
 
-                // new
                 if (adminMessageWrapper) adminMessageWrapper.classList.add('hidden');
                 if (adminMessage) adminMessage.value = '';
             }
@@ -134,7 +133,6 @@ document.addEventListener('DOMContentLoaded', function () {
         statusHelpText.textContent = '';
         statusHelpText.classList.add('hidden');
 
-        // new
         if (adminMessageWrapper) adminMessageWrapper.classList.add('hidden');
         if (adminMessage) adminMessage.value = '';
     }
@@ -147,6 +145,89 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.addEventListener('click', e => {
             if (e.target === modal) {
                 closeModal();
+            }
+        });
+    }
+
+    document.querySelectorAll('.viewBookingBtn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const bookingId = btn.getAttribute('data-booking-id');
+            const serviceLocationWrapper = document.getElementById('viewServiceLocationWrapper');
+
+            viewModal.classList.remove('hidden');
+            viewModal.classList.add('flex');
+
+            document.getElementById('viewBookingId').textContent = '';
+            document.getElementById('viewUserName').textContent = '';
+            document.getElementById('viewUserEmail').textContent = '';
+            document.getElementById('viewUserPhone').textContent = '';
+            document.getElementById('viewServiceType').textContent = '';
+            document.getElementById('viewServiceLocation').textContent = '';
+
+            if (serviceLocationWrapper) {
+                serviceLocationWrapper.classList.remove('hidden');
+            }
+
+            try {
+                const response = await fetch(`/admin/bookings/${bookingId}/json`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to load booking details.');
+                }
+
+                document.getElementById('viewBookingId').textContent = data.id ?? '-';
+                document.getElementById('viewUserName').textContent = data.user?.name ?? '-';
+                document.getElementById('viewUserEmail').textContent = data.user?.email ?? '-';
+                document.getElementById('viewUserPhone').textContent = data.user?.phone ?? '-';
+
+                const serviceType = data.service_type ?? '-';
+                document.getElementById('viewServiceType').textContent = serviceType;
+                document.getElementById('viewServiceLocation').textContent = data.service_location ?? '-';
+
+                if (serviceLocationWrapper) {
+                    if (serviceType.toLowerCase() === 'pickup') {
+                        serviceLocationWrapper.classList.add('hidden');
+                    } else {
+                        serviceLocationWrapper.classList.remove('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+
+                document.getElementById('viewBookingId').textContent = 'Error';
+                document.getElementById('viewUserName').textContent = '-';
+                document.getElementById('viewUserEmail').textContent = '-';
+                document.getElementById('viewUserPhone').textContent = '-';
+                document.getElementById('viewServiceType').textContent = '-';
+                document.getElementById('viewServiceLocation').textContent = '-';
+
+                if (serviceLocationWrapper) {
+                    serviceLocationWrapper.classList.remove('hidden');
+                }
+            }
+        });
+    });
+
+    function closeViewModal() {
+        if (!viewModal) return;
+        viewModal.classList.add('hidden');
+        viewModal.classList.remove('flex');
+    }
+
+    if (closeViewModalBtn) {
+        closeViewModalBtn.addEventListener('click', closeViewModal);
+    }
+
+    if (viewModal) {
+        viewModal.addEventListener('click', e => {
+            if (e.target === viewModal) {
+                closeViewModal();
             }
         });
     }

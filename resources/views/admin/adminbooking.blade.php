@@ -114,9 +114,12 @@
                                     </td>
 
                                     <td class="px-6 py-4 text-sm space-x-2">
-                                        <button class="text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
+                                    <button
+    class="text-blue-600 hover:text-blue-800 viewBookingBtn"
+    data-booking-id="{{ $booking->id }}"
+>
+    <i class="fas fa-eye"></i>
+</button>
 
 <button
     class="text-amber-600 hover:text-amber-800 editBookingBtn"
@@ -206,6 +209,30 @@
         </div>
     </div>
 </div>
+
+
+
+<div id="viewModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50"> 
+    <div class="bg-white w-full max-w-lg rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">Booking Details</h2>
+            <button type="button" id="closeViewModal" class="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+        </div>
+
+        <div class="space-y-3 text-sm text-gray-700">
+            <p><strong>Booking ID:</strong> <span id="viewBookingId">-</span></p>
+            <p><strong>User:</strong> <span id="viewUserName">-</span></p>
+            <p><strong>Email:</strong> <span id="viewUserEmail">-</span></p>
+            <p><strong>Phone:</strong> <span id="viewUserPhone">-</span></p>
+            <p><strong>Service Type:</strong> <span id="viewServiceType">-</span></p>
+
+            <p id="viewServiceLocationWrapper">
+                <strong>Service Location:</strong> <span id="viewServiceLocation">-</span>
+            </p>
+        </div> 
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
