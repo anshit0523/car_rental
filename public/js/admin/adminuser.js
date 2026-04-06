@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const userForm = document.getElementById('userForm');
     const formMethod = document.getElementById('formMethod');
 
+    // ========== FUNCTION: COMBINED FILTER ==========
     function filterTable() {
         const searchValue = userSearch.value.toLowerCase().trim();
         const roleValue = roleFilter.value.toLowerCase().trim();
@@ -128,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const content = document.getElementById('deleteContent');
         const deleteForm = document.getElementById('deleteForm');
 
-        deleteForm.action = /admin/users/${id};
+        deleteForm.action = `/admin/users/${id}`;
         modal.classList.remove('hidden');
 
         setTimeout(() => {

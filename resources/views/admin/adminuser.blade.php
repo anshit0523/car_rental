@@ -64,11 +64,21 @@
                                                     <i class="fas fa-shield-alt"></i> Admin
                                                 </span>
                                             @elseif($user->role->name === 'Staff')
+<<<<<<< HEAD
+                                                <span
+                                                    class="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 flex items-center gap-1 w-fit">
+                                                    <i class="fas fa-briefcase"></i> Staff
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 flex items-center gap-1 w-fit">
+=======
                                                 <span class="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 flex items-center gap-1 w-fit">
                                                     <i class="fas fa-briefcase"></i> Staff
                                                 </span>
                                             @else
                                                 <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 flex items-center gap-1 w-fit">
+>>>>>>> template-ui
                                                     <i class="fas fa-user"></i> Customer
                                                 </span>
                                             @endif
@@ -138,10 +148,17 @@
                             class="border p-2 w-full mb-4">
 
                         <select id="role" name="role_id" class="border p-2 w-full mb-4">
+<<<<<<< HEAD
+                            <option value="" disabled selected>Select Role</option>
+                            <option value="1">Admin</option>
+                            <option value="2">Customer</option>
+                            <option value="3">Staff</option>
+=======
                             <option value="" disabled {{ old('role_id') ? '' : 'selected' }}>Select Role</option>
                             <option value="1" {{ old('role_id') == '1' ? 'selected' : '' }}>Admin</option>
                             <option value="2" {{ old('role_id') == '2' ? 'selected' : '' }}>Customer</option>
                             <option value="3" {{ old('role_id') == '3' ? 'selected' : '' }}>Staff</option>
+>>>>>>> template-ui
                         </select>
 
                         <div class="flex justify-end">
