@@ -93,41 +93,53 @@
                                     </td>
 
                                     <td class="px-6 py-4 text-sm">
-                                       @php $statusName = $booking->status->name ?? 'Unknown'; @endphp
+                                        @php $statusName = $booking->status->name ?? 'Unknown'; @endphp
 
-<span class="px-3 py-1 rounded-full text-xs font-medium
-    @switch($statusName)
-        @case('Pending') bg-gray-100 text-gray-800 @break
-        @case('Reserved') bg-yellow-100 text-yellow-800 @break
-        @case('Active') bg-blue-100 text-blue-800 @break
-        @case('Return') bg-orange-100 text-orange-800 @break
-        @case('Completed') bg-green-100 text-green-800 @break
-        @case('Cancelled') bg-red-100 text-red-800 @break
-        @case('Checkup') bg-purple-100 text-purple-800 @break
-        @case('Damage') bg-rose-100 text-rose-800 @break
-        @case('Needs Repair') bg-amber-100 text-amber-800 @break
-        @case('Failed') bg-gray-300 text-gray-800 @break
-        @default bg-gray-100 text-gray-800
-    @endswitch">
-    {{ $statusName }}
-</span>
+                                        <span class="px-3 py-1 rounded-full text-xs font-medium
+                                            @switch($statusName)
+                                                @case('Pending') bg-gray-100 text-gray-800 @break
+                                                @case('Reserved') bg-yellow-100 text-yellow-800 @break
+                                                @case('Active') bg-blue-100 text-blue-800 @break
+                                                @case('Return') bg-orange-100 text-orange-800 @break
+                                                @case('Completed') bg-green-100 text-green-800 @break
+                                                @case('Cancelled') bg-red-100 text-red-800 @break
+                                                @case('Checkup') bg-purple-100 text-purple-800 @break
+                                                @case('Damage') bg-rose-100 text-rose-800 @break
+                                                @case('Needs Repair') bg-amber-100 text-amber-800 @break
+                                                @case('Failed') bg-gray-300 text-gray-800 @break
+                                                @default bg-gray-100 text-gray-800
+                                            @endswitch">
+                                            {{ $statusName }}
+                                        </span>
                                     </td>
 
                                     <td class="px-6 py-4 text-sm space-x-2">
-                                    <button
-    class="text-blue-600 hover:text-blue-800 viewBookingBtn"
-    data-booking-id="{{ $booking->id }}"
->
-    <i class="fas fa-eye"></i>
-</button>
+                                        <button
+                                            class="text-blue-600 hover:text-blue-800 viewBookingBtn"
+                                            data-booking-id="{{ $booking->id }}"
+                                            type="button"
+                                        >
+                                            <i class="fas fa-eye"></i>
+                                        </button>
 
-<button
-    class="text-amber-600 hover:text-amber-800 editBookingBtn"
-    data-booking-id="{{ $booking->id }}"
-    data-status-name="{{ trim($booking->status->name ?? '') }}"
->
-    <i class="fas fa-edit"></i>
-</button>
+                                        <button
+                                            class="text-amber-600 hover:text-amber-800 editBookingBtn"
+                                            data-booking-id="{{ $booking->id }}"
+                                            data-status-name="{{ trim($booking->status->name ?? '') }}"
+                                            type="button"
+                                        >
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+
+                                        @if(($booking->status->name ?? '') === 'Return')
+                                            <a
+                                                href="{{ route('admin.return-issues.create', $booking->id) }}"
+                                                class="text-rose-600 hover:text-rose-800"
+                                                title="Create return issue"
+                                            >
+                                               
+                                            </a>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
@@ -157,62 +169,64 @@
                     @csrf
                     @method('PUT')
 
-          <div class="mb-4">
-    <label class="block text-gray-700 font-medium mb-1">Select Status</label>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-medium mb-1">Select Status</label>
 
-    <select
-        name="status_id"
-        id="statusDropdown"
-        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-    ></select>
+                        <select
+                            name="status_id"
+                            id="statusDropdown"
+                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        ></select>
 
-    <p id="statusHelpText" class="text-sm text-gray-500 mt-2 hidden"></p>
-</div>
+                        <p id="statusHelpText" class="text-sm text-gray-500 mt-2 hidden"></p>
 
-<div id="adminMessageWrapper" class="mb-4 hidden">
-    <label for="adminMessage" class="block text-gray-700 font-medium mb-1">
-        Optional Message to User
-    </label>
+                        <p class="text-sm text-gray-500 mt-2">
+                            Damage, Needs Repair, and Checkup will open a detailed issue form.
+                        </p>
+                    </div>
 
-    <textarea
-        name="admin_message"
-        id="adminMessage"
-        rows="4"
-        placeholder="Example: The car was returned with low fuel level."
-        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-    ></textarea>
+                    <div id="adminMessageWrapper" class="mb-4 hidden">
+                        <label for="adminMessage" class="block text-gray-700 font-medium mb-1">
+                            Optional Message to User
+                        </label>
 
-    <p class="text-sm text-gray-500 mt-2">
-        Add a note for damages, low fuel, or return concerns.
-    </p>
-</div>
+                        <textarea
+                            name="admin_message"
+                            id="adminMessage"
+                            rows="4"
+                            placeholder="Example: Your return inspection has been completed."
+                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        ></textarea>
 
-             <div class="flex justify-end gap-2 mt-6">
-    <button
-        type="button"
-        id="closeModal"
-        class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
-    >
-        Cancel
-    </button>
+                        <p class="text-sm text-gray-500 mt-2">
+                            Use this for simple updates only. Damage, repair, and checkup statuses will open a detailed issue form.
+                        </p>
+                    </div>
 
-    <button
-        type="submit"
-        id="saveStatusBtn"
-        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-    >
-        Save Changes
-    </button>
-</div>
+                    <div class="flex justify-end gap-2 mt-6">
+                        <button
+                            type="button"
+                            id="closeModal"
+                            class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            id="saveStatusBtn"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                        >
+                            Save Changes
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-
-
-<div id="viewModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50"> 
+<div id="viewModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
     <div class="bg-white w-full max-w-lg rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-bold text-gray-800">Booking Details</h2>
@@ -229,14 +243,12 @@
             <p id="viewServiceLocationWrapper">
                 <strong>Service Location:</strong> <span id="viewServiceLocation">-</span>
             </p>
-        </div> 
+        </div>
     </div>
 </div>
-
 @endsection
 
 @section('scripts')
-
 <script>
     window.bookingStatusMap = @json($statuses->pluck('id', 'name'));
 </script>

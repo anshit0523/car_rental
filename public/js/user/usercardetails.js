@@ -1,4 +1,3 @@
-
 (function () {
   const cfg = window.BOOKING_CFG || {};
   const dailyRate = Number(cfg.dailyRate || 0);
@@ -6,11 +5,8 @@
   const taxRate = Number(cfg.taxRate || 0);
   const discountRate = Number(cfg.discountRate || 0);
   const unavailableUrl = cfg.unavailableUrl || "";
-  const availablePoints = Number(cfg.availablePoints || 0);
 
   let unavailableSet = new Set();
-  let pointsDiscountPeso = 0;
-  const POINTS_PER_PESO = 10;
   let isSubmitting = false;
 
   function ymd(date) {
@@ -22,13 +18,6 @@
 
   function money(n) {
     return "₱" + Number(n).toFixed(2);
-  }
-
-  function clampPoints(val) {
-    const n = Number(val);
-    if (isNaN(n) || n < 0) return 0;
-    if (n > availablePoints) return availablePoints;
-    return Math.floor(n);
   }
 
   function calculateBaseTotal() {
@@ -46,40 +35,26 @@
     const taxes = subtotalWithInsurance * taxRate;
     const subtotalBeforeDiscount = subtotalWithInsurance + taxes;
     const discount = subtotalBeforeDiscount * discountRate;
-    const baseTotal = subtotalBeforeDiscount - discount;
+    const total = subtotalBeforeDiscount - discount;
 
     const elDays = document.getElementById("rental-days");
     const elSubtotal = document.getElementById("subtotal");
-    const elDiscount = document.getElementById("discount");
 
     if (elDays) elDays.textContent = days;
     if (elSubtotal) elSubtotal.textContent = money(subtotal);
-    if (elDiscount) elDiscount.textContent = "-" + money(discount);
 
-    return baseTotal;
+    return total;
   }
 
   function renderTotals() {
-    const baseTotal = calculateBaseTotal();
-    if (baseTotal === null) return;
-
-    const finalTotal = Math.max(0, baseTotal - pointsDiscountPeso);
+    const total = calculateBaseTotal();
+    if (total === null) return;
 
     const elTotal = document.getElementById("total-price");
     const elTotalInput = document.getElementById("total-price-input");
 
-    if (elTotal) elTotal.textContent = money(finalTotal);
-    if (elTotalInput) elTotalInput.value = baseTotal.toFixed(2);
-
-    const pointsDiscountDisplay = document.getElementById("points-discount-display");
-    if (pointsDiscountDisplay) {
-      pointsDiscountDisplay.textContent = "-" + money(pointsDiscountPeso);
-    }
-
-    const pointsDiscountHidden = document.getElementById("points_discount_amount");
-    if (pointsDiscountHidden) {
-      pointsDiscountHidden.value = pointsDiscountPeso.toFixed(2);
-    }
+    if (elTotal) elTotal.textContent = money(total);
+    if (elTotalInput) elTotalInput.value = total.toFixed(2);
   }
 
   function initDatePicker() {
@@ -165,7 +140,7 @@
     const sync = () => {
       const ok = checkbox.checked;
       btn.disabled = isSubmitting || !ok;
-      if (err) err.classList.toggle("hidden", ok);
+      if (err) err.style.display = ok ? "none" : "block";
     };
 
     checkbox.addEventListener("change", sync);
@@ -205,11 +180,11 @@
     const err = document.getElementById("agreeError");
 
     if (agree && !agree.checked) {
-      if (err) err.classList.remove("hidden");
+      if (err) err.style.display = "block";
       alert("Please agree to the Rental Terms & Conditions to continue.");
       return;
     } else {
-      if (err) err.classList.add("hidden");
+      if (err) err.style.display = "none";
     }
 
     const pickup = document.getElementById("pickup_date")?.value;
@@ -247,50 +222,6 @@
     form.addEventListener("submit", handleBookingSubmit);
   }
 
-  function initPointsRedeem() {
-    const pointsInput = document.getElementById("points_to_use");
-    const applyBtn = document.getElementById("applyPointsBtn");
-    const err = document.getElementById("pointsError");
-
-    const pointsValueText = document.getElementById("pointsValueText");
-    const remainingPointsText = document.getElementById("remainingPointsText");
-
-    if (!pointsInput || !applyBtn) return;
-
-    function setError(message) {
-      if (!err) return;
-      err.textContent = message;
-      err.classList.toggle("hidden", !message);
-    }
-
-    function applyPoints() {
-      setError("");
-
-      const pts = clampPoints(pointsInput.value);
-      pointsInput.value = pts;
-
-      const discountPeso = pts / POINTS_PER_PESO;
-      const remaining = availablePoints - pts;
-
-      pointsDiscountPeso = discountPeso;
-
-      if (pointsValueText) {
-        pointsValueText.classList.toggle("hidden", pts === 0);
-        pointsValueText.textContent = `${pts} points = ${money(discountPeso)} discount`;
-      }
-
-      if (remainingPointsText) {
-        remainingPointsText.classList.toggle("hidden", pts === 0);
-        remainingPointsText.textContent = `Remaining Points: ${remaining}`;
-      }
-
-      renderTotals();
-    }
-
-    applyBtn.addEventListener("click", applyPoints);
-    pointsInput.addEventListener("change", applyPoints);
-  }
-
   function initSidebarToggle() {
     const toggleBtn = document.getElementById("toggleSidebar");
     const sidebar = document.getElementById("sidebar");
@@ -324,7 +255,6 @@
     initAgreeTerms();
     initServiceTypeToggle();
     initBookingFormSubmit();
-    initPointsRedeem();
 
     loadUnavailableDates();
     renderTotals();
