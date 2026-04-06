@@ -44,6 +44,24 @@ class UserRentalController extends Controller
     ]);
 }
 
+public function failed()
+{
+    $failedStatus = \App\Models\Status::where('name', 'Failed')->firstOrFail();
+
+    $bookings = \App\Models\Booking::with([
+            'car.brand',
+            'car.fuelType',
+            'car.transmission',
+            'photoReceipt',
+        ])
+        ->where('user_id', auth()->id())
+        ->where('status_id', $failedStatus->id)
+        ->latest()
+        ->paginate(10);
+
+    return view('user.userrentals', compact('bookings'));
+}
+
     private function listByStatus(string $statusName)
     {
         $bookings = Booking::where('user_id', auth()->id())

@@ -290,16 +290,16 @@ class AdminPaymentController extends Controller
         }
 
         // Send notification
-        Notification::create([
-            'user_id' => $booking->user_id,
-            'booking_id' => $booking->id,
-            'title' => 'Payment Rejected',
-            'message' => 'Your payment receipt was rejected. Reason: ' . $request->admin_note,
-            'type' => 'payment',
-            'link' => route('user.rentals.pending', $booking->id)
-        ]);
+       Notification::create([
+    'user_id' => $booking->user_id,
+    'booking_id' => $booking->id,
+    'title' => 'Payment Rejected',
+    'message' => 'Your payment receipt was rejected. Reason: ' . $request->admin_note,
+    'type' => 'payment',
+    'link' => route('user.rentals.failed')
+]);
 
-        return back()->with('error', 'Payment rejected.');
+        return back()->with('success', 'Payment rejected and receipt marked as rejected.');
     }
 
     /**

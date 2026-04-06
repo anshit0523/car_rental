@@ -12,6 +12,7 @@
             <div class="bg-gray-50 rounded-lg p-4">
                 <p><strong>User:</strong> {{ $booking->user->name ?? 'N/A' }}</p>
                 <p><strong>Status:</strong> {{ $booking->status->name ?? 'N/A' }}</p>
+                <p><strong>Selected Update:</strong> {{ $prefillStatus ?? 'N/A' }}</p>
             </div>
 
             <div class="bg-gray-50 rounded-lg p-4">
@@ -23,16 +24,19 @@
         <form action="{{ route('admin.return-issues.store', $booking->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
 
+            <input type="hidden" name="status_name" value="{{ $prefillStatus ?? '' }}">
+
             <div class="mb-4">
                 <label class="block font-medium text-gray-700 mb-2">Issue Type</label>
                 <select name="issue_type" class="w-full border rounded-lg px-4 py-2">
                     <option value="">Select issue type</option>
-                    <option value="damage">Damage</option>
-                    <option value="low_fuel">Low Fuel</option>
-                    <option value="missing_item">Missing Item</option>
-                    <option value="dirty">Dirty Interior/Exterior</option>
-                    <option value="late_return">Late Return</option>
-                    <option value="checkup">Checkup</option>
+                    <option value="damage" {{ old('issue_type', ($prefillStatus ?? '') === 'Damage' ? 'damage' : '') === 'damage' ? 'selected' : '' }}>Damage</option>
+                    <option value="low_fuel" {{ old('issue_type') === 'low_fuel' ? 'selected' : '' }}>Low Fuel</option>
+                    <option value="missing_item" {{ old('issue_type') === 'missing_item' ? 'selected' : '' }}>Missing Item</option>
+                    <option value="dirty" {{ old('issue_type') === 'dirty' ? 'selected' : '' }}>Dirty Interior/Exterior</option>
+                    <option value="late_return" {{ old('issue_type') === 'late_return' ? 'selected' : '' }}>Late Return</option>
+                    <option value="checkup" {{ old('issue_type', ($prefillStatus ?? '') === 'Checkup' ? 'checkup' : '') === 'checkup' ? 'selected' : '' }}>Checkup</option>
+                    <option value="needs_repair" {{ old('issue_type', ($prefillStatus ?? '') === 'Needs Repair' ? 'needs_repair' : '') === 'needs_repair' ? 'selected' : '' }}>Needs Repair</option>
                 </select>
                 @error('issue_type') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
             </div>

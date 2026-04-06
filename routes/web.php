@@ -81,7 +81,8 @@ Route::middleware(['auth', 'user'])
         Route::get('/cancelled', [UserRentalController::class, 'cancelled'])->name('rentals.cancelled');
         Route::post('/user/booking/{booking}/cancel', [UserRentalController::class, 'cancel'])->name('user.booking.cancel');
         Route::post('/booking/{booking}/cancel', [UserBookingController::class, 'cancel'])->name('booking.cancel');
-
+     Route::get('/rentals/failed', [UserRentalController::class, 'failed'])
+            ->name('rentals.failed');
         Route::get('/payments', [UserBookingController::class, 'showPayment'])->name('payments');
 
 
