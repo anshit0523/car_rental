@@ -145,10 +145,11 @@
 
     .rental-price {
         text-align: right;
+        display: block;
     }
 
     .rental-price strong {
-        display: block;
+        /* display: block; */
         font-size: 22px;
         line-height: 1;
         font-weight: 800;
@@ -462,7 +463,8 @@
 
                                     <div class="rental-price">
                                         <strong>₱{{ number_format($booking->car->price_per_day) }}</strong>
-                                        <span>/day</span>
+                                        <span> /day</span>
+                                        
                                         <div class="rental-status">
                                             {{ $booking->status->name ?? 'Booking' }}
                                         </div>

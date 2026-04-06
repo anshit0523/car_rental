@@ -36,6 +36,7 @@
                             <option value="">All Roles</option>
                             <option value="admin">Admin</option>
                             <option value="user">User</option>
+                            <option value="staff">Staff</option>
                         </select>
 
                     </div>
@@ -72,10 +73,15 @@
                                                     class="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 flex items-center gap-1 w-fit">
                                                     <i class="fas fa-shield-alt"></i> Admin
                                                 </span>
+                                            @elseif($user->role->name === 'Staff')
+                                                <span
+                                                    class="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 flex items-center gap-1 w-fit">
+                                                    <i class="fas fa-briefcase"></i> Staff
+                                                </span>
                                             @else
                                                 <span
                                                     class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 flex items-center gap-1 w-fit">
-                                                    <i class="fas fa-user"></i> User
+                                                    <i class="fas fa-user"></i> Customer
                                                 </span>
                                             @endif
                                         </td>
@@ -137,7 +143,9 @@
 
                     <h2 id="modalTitle" class="text-2xl font-bold mb-4">Add User</h2>
 
-                    <form id="userForm" method="POST">
+                    <form id="userForm" method="POST" action="{{ route('admin.users.store') }}"
+                        data-store-route="{{ route('admin.users.store') }}"
+                        data-update-route="{{ route('admin.users.update', ':id') }}">
                         @csrf
                         <input type="hidden" id="formMethod" name="_method" value="POST">
 
@@ -149,7 +157,8 @@
                         <select id="role" name="role_id" class="border p-2 w-full mb-4">
                             <option value="" disabled selected>Select Role</option>
                             <option value="1">Admin</option>
-                            <option value="2">User</option>
+                            <option value="2">Customer</option>
+                            <option value="3">Staff</option>
                         </select>
 
                         <div class="flex justify-end">
