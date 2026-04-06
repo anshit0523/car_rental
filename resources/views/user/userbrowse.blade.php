@@ -262,6 +262,13 @@
             font-size: 18px;
         }
     }
+
+    .pagination-wrapper svg {
+    max-width: 16px !important;
+    max-height: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+}
 </style>
 @endsection
 
@@ -557,7 +564,7 @@
                         @endforelse
                     </div>
 
-                    <div class="pagination-wrapper centred pt_30">
+                    <div class="pagination-wrapper centred pt_10">
                         {{ $cars->links() }}
                     </div>
 

@@ -2,6 +2,73 @@
 
 @section('custom-styles')
 <style>
+
+    /* Legend */
+.fp-legend{
+  display:flex;
+  flex-direction:row !important;
+  justify-content:center;
+  align-items:center;
+  gap:14px;
+  width:100%;
+  padding:10px 12px;
+  border-bottom:1px solid #e5e7eb;
+  font-size:12px;
+  background:#fff;
+  white-space:nowrap;
+  flex-wrap:nowrap;
+  text-align:center;
+}
+
+.fp-legend .item{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  white-space:nowrap;
+  flex:0 0 auto;
+  color:#010102;
+  font-weight:500;
+}
+
+.fp-legend .dot{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  display:inline-block;
+}
+
+.fp-legend .dot.red{
+  background:#ef4444;
+}
+
+.fp-legend .dot.green{
+  background:#22c55e;
+}
+
+/* Calendar day dots */
+.flatpickr-day{
+  position:relative;
+}
+
+.red-dot,
+.green-dot{
+  position:absolute;
+  bottom:2px;
+  left:50%;
+  transform:translateX(-50%);
+  width:7px;
+  height:7px;
+  border-radius:50%;
+}
+
+.red-dot{
+  background:#ef4444;
+}
+
+.green-dot{
+  background:#22c55e;
+}
+
     .car-details-page {
         min-height: 100vh;
         background: #f8fafc;
