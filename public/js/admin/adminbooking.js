@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const viewModal = document.getElementById('viewModal');
     const closeViewModalBtn = document.getElementById('closeViewModal');
 
+    
+
     let typingTimer;
 
     if (searchInput) {
@@ -231,4 +233,24 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    const issueStatuses = ['Checkup', 'Damage', 'Needs Repair'];
+
+updateForm.addEventListener('submit', function (e) {
+    if (!statusDropdown) return;
+
+    const selectedText = statusDropdown.options[statusDropdown.selectedIndex]?.text?.trim() || '';
+    const action = updateForm.action || '';
+    const bookingIdMatch = action.match(/\/admin\/bookings\/(\d+)\/update-status/);
+
+    if (!bookingIdMatch) return;
+
+    const bookingId = bookingIdMatch[1];
+
+    if (issueStatuses.includes(selectedText)) {
+        e.preventDefault();
+        window.location.href = `/admin/bookings/${bookingId}/return-issue/create?status=${encodeURIComponent(selectedText)}`;
+    }
+});
+
 });

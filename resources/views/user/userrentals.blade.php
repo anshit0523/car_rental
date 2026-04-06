@@ -187,8 +187,8 @@
     }
 
     .rental-meta-card {
-        background: #f8fafc;
-        border: 1px solid #e5e7eb;
+        
+        
         border-radius: 12px;
         padding: 10px 12px;
         display: flex;
@@ -277,6 +277,30 @@
         background: #e5e7eb;
         color: #94a3b8;
         cursor: not-allowed;
+    }
+
+    .rental-alert-box {
+        margin-top: 14px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+    }
+
+    .rental-alert-title {
+        margin: 0 0 6px;
+        font-size: 12px;
+        font-weight: 800;
+        color: #b91c1c;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+
+    .rental-alert-text {
+        margin: 0;
+        font-size: 14px;
+        color: #7f1d1d;
+        font-weight: 500;
     }
 
     .empty-rentals {
@@ -427,6 +451,11 @@
                    class="rentals-tab {{ request()->routeIs('user.rentals.cancelled') ? 'is-active' : '' }}">
                     Cancelled
                 </a>
+
+                <a href="{{ route('user.rentals.failed') }}"
+                   class="rentals-tab {{ request()->routeIs('user.rentals.failed') ? 'is-active' : '' }}">
+                    Failed
+                </a>
             </div>
         </div>
 
@@ -463,8 +492,7 @@
 
                                     <div class="rental-price">
                                         <strong>₱{{ number_format($booking->car->price_per_day) }}</strong>
-                                        <span> /day</span>
-                                        
+                                        <span>/day</span>
                                         <div class="rental-status">
                                             {{ $booking->status->name ?? 'Booking' }}
                                         </div>
@@ -503,10 +531,19 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                @if(($booking->status->name ?? '') === 'Failed' && $booking->photoReceipt?->admin_note)
+                                    <div class="rental-alert-box">
+                                        <p class="rental-alert-title">Payment Rejection Reason</p>
+                                        <p class="rental-alert-text">
+                                            {{ $booking->photoReceipt->admin_note }}
+                                        </p>
+                                    </div>
+                                @endif
                             </div>
 
                             <div class="rental-actions">
-                                @if ($booking->status->name !== 'Cancelled' && $booking->pickup_at && $booking->pickup_at > now()->addHours(24))
+                                @if(($booking->status->name ?? '') !== 'Cancelled' && ($booking->status->name ?? '') !== 'Failed' && $booking->pickup_at && $booking->pickup_at > now()->addHours(24))
                                     <form action="{{ route('user.booking.cancel', $booking->id) }}"
                                           method="POST"
                                           class="inline"
@@ -522,10 +559,10 @@
                                     </button>
                                 @endif
 
-                                @if($booking->status_id == 17)
+                                @if(($booking->status->name ?? '') === 'Failed')
                                     <a href="{{ route('user.payments', ['booking_id' => $booking->id]) }}"
                                        class="rental-btn">
-                                        Upload Receipt
+                                        Upload New Receipt
                                     </a>
                                 @endif
                             </div>
@@ -550,8 +587,4 @@
         </div>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-    <script src="{{ asset('js/user/userdashboard.js') }}"></script>
 @endsection

@@ -474,13 +474,8 @@
         font-weight: 800;
     }
 
-    .points-box {
-        border: 1px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 16px;
-        margin-top: 18px;
-        background: #f8fafc;
-    }
+ 
+    
 
     .points-box h4 {
         margin: 0 0 4px;
@@ -906,10 +901,7 @@
                                 <strong id="subtotal">₱0.00</strong>
                             </div>
 
-                            <div class="summary-row discount">
-                                <span>Points Discount</span>
-                                <strong id="pointsValueText">-₱0.00</strong>
-                            </div>
+                           
                         </div>
 
                         <div class="total-box">
@@ -922,36 +914,7 @@
                             $availablePoints = (int) (auth()->user()->points_balance ?? 0);
                         @endphp
 
-                        <div class="points-box">
-                            <h4>Discount Points</h4>
-                            <p>You have <strong>{{ $availablePoints }}</strong> points available.</p>
-
-                            <div class="points-row">
-                                <input
-                                    type="number"
-                                    id="points_to_use"
-                                    name="points_to_use"
-                                    min="0"
-                                    max="{{ $availablePoints }}"
-                                    value="{{ old('points_to_use', 0) }}"
-                                    class="form-input"
-                                    placeholder="0"
-                                >
-
-                                <button type="button" id="applyPointsBtn" class="points-btn">
-                                    Apply
-                                </button>
-                            </div>
-
-                            <p id="pointsError" class="inline-message error" style="display:none;"></p>
-
-                            <div style="margin-top:10px;">
-                                <p id="pointsValueText" class="inline-message success" style="display:none;"></p>
-                                <p id="remainingPointsText" class="inline-message" style="display:none;color:#475569;"></p>
-                            </div>
-
-                            <input type="hidden" id="points_discount_amount" name="points_discount_amount" value="0">
-                        </div>
+                       
 
                         <div class="agree-wrap">
                             <label class="agree-label">
