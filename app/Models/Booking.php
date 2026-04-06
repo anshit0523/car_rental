@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\ServiceType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
@@ -70,4 +71,8 @@ public function notifications()
     return $this->hasMany(Notification::class);
 }
 
+public function serviceType()
+{
+    return $this->belongsTo(ServiceType::class);
+}
 }

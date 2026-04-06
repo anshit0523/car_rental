@@ -35,7 +35,7 @@ class AdminBookingController extends Controller
             $query->where('status_id', $request->status_id);
         }
 
-        $bookings = $query->latest()->paginate(10);
+        $bookings = $query->latest()->paginate(10)->onEachSide(1);
         $statuses = Status::all();
 
         return view('admin.adminbooking', compact('bookings', 'statuses'));
@@ -211,22 +211,31 @@ public function calendar(Request $request)
  public function showJson(Booking $booking): JsonResponse
 {
     try {
-        $booking->load('user:id,name,email', 'car:id,model,brand_id', 'car.brand:id,name', 'status:id,name');
+        $booking->load([
+            'user:id,name,email,phone',
+            'car:id,model,brand_id',
+            'car.brand:id,name',
+            'status:id,name',
+            'serviceType:id,name',
+        ]);
 
         return response()->json([
             'success' => true,
             'id' => $booking->id,
-            'status' => $booking->status->name,
+            'status' => $booking->status->name ?? 'N/A',
             'pickup_at' => $booking->pickup_at?->format('M d, Y h:i A') ?? 'N/A',
             'return_at' => $booking->return_at?->format('M d, Y h:i A') ?? 'N/A',
             'total_price' => number_format($booking->total_price ?? 0, 2),
+            'service_type' => $booking->serviceType->name ?? 'N/A',
+            'service_location' => $booking->service_location ?? 'N/A',
             'user' => [
-                'id' => $booking->user->id,
-                'name' => $booking->user->name,
-                'email' => $booking->user->email,
+                'id' => $booking->user->id ?? null,
+                'name' => $booking->user->name ?? 'N/A',
+                'email' => $booking->user->email ?? 'N/A',
+                'phone' => $booking->user->phone ?? 'N/A',
             ],
             'car' => [
-                'name' => ($booking->car->brand->name ?? 'Unknown') . ' ' . $booking->car->model,
+                'name' => ($booking->car->brand->name ?? 'Unknown') . ' ' . ($booking->car->model ?? ''),
             ],
         ]);
     } catch (\Exception $e) {
