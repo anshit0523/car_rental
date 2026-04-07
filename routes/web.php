@@ -173,7 +173,7 @@ Route::middleware(['auth', 'admin'])
 
         // adminPaymentSettings routes
         Route::get('/payment-settings', [AdminPaymentSettingController::class, 'edit'])->name('payment-settings.edit');
-        Route::post('/payment-settings', [AdminPaymentSettingController::class, 'update'])->name('payment-settings.update');
+        Route::put('/payment-settings', [AdminPaymentSettingController::class, 'update'])->name('payment-settings.update');
 
         //map route
         Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');

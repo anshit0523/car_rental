@@ -667,18 +667,11 @@
                     </div>
 
                     <div class="summary-lines">
-                        <div class="summary-line">
-                            <span>Rental</span>
-                            <span>₱{{ number_format($rentalCost, 0) }}</span>
-                        </div>
-
-                        <div class="summary-line" style="color:#64748b;">
-                            <span>Discount Points</span>
-                            <span>-₱{{ number_format($pointsDiscount, 2) }}</span>
-                        </div>
+                      
+                        
 
                         <div class="summary-line total">
-                            <span>Total</span>
+                            <span>Total :</span>
                             <span>₱{{ number_format($total, 2) }}</span>
                         </div>
                     </div>
