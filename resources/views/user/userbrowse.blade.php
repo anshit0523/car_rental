@@ -37,7 +37,7 @@
     }
 
     .car-sidebar input[type="range"] {
-        accent-color: #7a3b26;
+        accent-color: #ff5a1f;
     }
 
     .item-shorting {
@@ -313,7 +313,7 @@
                                 </div>
 
                                 <div class="mb_20">
-                                    <button type="submit" class="theme-btn btn-style-one w-100" style="border-radius:10px;">
+                                    <button type="submit" class="theme-btn btn-style-one w-100" style="border-radius:10px; margin-top: 30px;">
                                         <span>Search Cars</span>
                                     </button>
                                 </div>
@@ -420,7 +420,7 @@
 
                     <div class="item-shorting d-flex justify-content-between align-items-center flex-wrap" style="gap:15px;">
                         <div class="left-column">
-                            <h3>Available Cars</h3>
+                            <h4>Available Cars</h4>
                             <p>{{ $cars->total() }} cars found</p>
                         </div>
 
