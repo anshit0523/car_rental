@@ -35,7 +35,6 @@ class DatabaseSeeder extends Seeder
         RoleSeeder::class,
         PaymentMethodsSeeder::class,
         PaymentStatusesSeeder::class,
-         PaymentSettingsSeeder::class,
          CarTypeSeeder::class,
     ]);
 
