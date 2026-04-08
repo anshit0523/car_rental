@@ -24,7 +24,7 @@
                         alt="Logo" 
                         style="height:60px; width:auto; display:block;">
 
-                    <span style="font-size:24px; font-weight:700; color:#111; font-family:'Outfit', sans-serif;">
+                    <span style="font-size:30px; font-weight:700; color:#111; font-family:'Outfit', sans-serif;">
                         Eze Car Rental
                     </span>
 
