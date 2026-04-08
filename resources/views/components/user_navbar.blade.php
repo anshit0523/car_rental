@@ -18,9 +18,16 @@
         <div style="display:flex; align-items:center; justify-content:space-between; gap:24px; min-height:84px; flex-wrap:wrap;">
             <!-- Logo -->
             <div style="flex-shrink:0;">
-                <a href="{{ route('user.browse') }}"
-                   style="font-size:32px; font-weight:700; color:#111; font-family:'Outfit', sans-serif; text-decoration:none;">
-                    Eze Car Rental
+                 <a href="{{ route('user.browse') }}" style="display:flex; align-items:center; gap:12px; text-decoration:none;">
+                    
+                    <img src="{{ asset('storage/cars/ezelogo.png') }}" 
+                        alt="Logo" 
+                        style="height:60px; width:auto; display:block;">
+
+                    <span style="font-size:24px; font-weight:700; color:#111; font-family:'Outfit', sans-serif;">
+                        Eze Car Rental
+                    </span>
+
                 </a>
             </div>
 
