@@ -74,7 +74,7 @@
       background: #ffffff;
       border-color: #ff4d00;
       box-shadow: 0 0 0 .2rem rgba(255, 77, 0, .2);
-      color: #fff;
+      color: #000000;
     }
 
     .btn-auth {
@@ -118,7 +118,7 @@
 
       <!-- LOGO -->
       <div class="auth-logo">
-        <img src="{{ asset('storage/logo/header pic.png') }}" alt="Logo">
+        <img src="{{ asset('storage/cars/ezelogo.png') }}" alt="Logo">
       </div>
 
       <h2 class="auth-title">Create Your Account</h2>

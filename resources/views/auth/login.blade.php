@@ -53,7 +53,7 @@
         .form-control {
             background-color: #ffffff;
             border: 1px solid #ffffff;
-            color: #fff;
+            color: #000000;
             border-radius: 10px;
             padding: 12px 15px;
         }
@@ -104,7 +104,7 @@
 
             <div class="auth-logo">
                 
-                <img src="{{ asset('storage/logo/header pic.png') }}" alt="Logo" style="height: 100px;">
+                <img src="{{ asset('storage/cars/ezelogo.png') }}" alt="Logo" style="height: 100px;">
 
             </div>
 
