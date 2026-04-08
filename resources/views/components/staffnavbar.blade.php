@@ -1,7 +1,7 @@
-    <div class="fixed lg:relative top-0 left-0 z-50 h-screen w-64 bg-gray-900 text-white p-6 overflow-y-auto lg:block hidden">
+    <div class="fixed lg:relative top-0 left-0 z-50 h-screen w-64 bg-[#ff5a1f] text-white p-6 overflow-y-auto lg:block hidden">
         <div class="mb-8 flex items-center gap-2 text-xl font-bold">
             <i class="fas fa-car"></i>
-            <span>Car Rental</span>
+            <span>Eze Car Rental</span>
         </div>
 
         @php
