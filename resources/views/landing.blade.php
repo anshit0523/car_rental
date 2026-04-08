@@ -35,7 +35,7 @@
         .hero-overlay {
             background:
                 linear-gradient(to right, rgba(0,0,0,.72), rgba(0,0,0,.45)),
-                url("{{ asset('storage/bg/toyota bg.png') }}") center/cover no-repeat;
+                url("{{ asset('storage/cars/toyota-bg.png') }}") center/cover no-repeat;
         }
 
         .glass {
@@ -298,7 +298,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between py-4">
                 <a href="#" class="flex items-center">
-                    <img src="{{ asset('storage/logo/header pic.png') }}" alt="Logo" class="h-16 md:h-20 w-auto object-contain">
+                    <img src="{{ asset('storage/cars/ezelogo.png') }}" alt="Logo" class="h-16 md:h-20 w-auto object-contain">
                 </a>
 
                 <div class="flex items-center gap-3">
@@ -543,28 +543,28 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div class="brand-box bg-white rounded-3xl p-6 text-center shadow-sm">
                     <div class="h-24 flex items-center justify-center mb-4">
-                        <img class="max-h-20 object-contain" src="{{ asset('storage/logo/toyota1.png') }}" alt="Toyota">
+                        <img class="max-h-20 object-contain" src="{{ asset('storage/cars/toyota.png') }}" alt="Toyota">
                     </div>
                     <h5 class="font-semibold text-slate-900">Toyota</h5>
                 </div>
 
                 <div class="brand-box bg-white rounded-3xl p-6 text-center shadow-sm">
                     <div class="h-24 flex items-center justify-center mb-4">
-                        <img class="max-h-20 object-contain" src="{{ asset('storage/logo/fordlogo.png') }}" alt="Ford">
+                        <img class="max-h-20 object-contain" src="{{ asset('storage/cars/ford.png') }}" alt="Ford">
                     </div>
                     <h5 class="font-semibold text-slate-900">Ford</h5>
                 </div>
 
                 <div class="brand-box bg-white rounded-3xl p-6 text-center shadow-sm">
                     <div class="h-24 flex items-center justify-center mb-4">
-                        <img class="max-h-20 object-contain" src="{{ asset('storage/logo/mishubishi.png') }}" alt="Mitsubishi">
+                        <img class="max-h-20 object-contain" src="{{ asset('storage/cars/mitsubishi.png') }}" alt="Mitsubishi">
                     </div>
                     <h5 class="font-semibold text-slate-900">Mitsubishi</h5>
                 </div>
 
                 <div class="brand-box bg-white rounded-3xl p-6 text-center shadow-sm">
                     <div class="h-24 flex items-center justify-center mb-4">
-                        <img class="max-h-20 object-contain" src="{{ asset('storage/logo/nissanlogo.png') }}" alt="Nissan">
+                        <img class="max-h-20 object-contain" src="{{ asset('storage/cars/Nissan.png') }}" alt="Nissan">
                     </div>
                     <h5 class="font-semibold text-slate-900">Nissan</h5>
                 </div>
@@ -575,7 +575,7 @@
     <!-- CTA -->
     <section class="relative py-24">
         <div class="absolute inset-0 bg-cover bg-center"
-             style="background-image: linear-gradient(rgba(0,0,0,.78), rgba(0,0,0,.78)), url('{{ asset('storage/bg/toyota bg.png') }}');">
+             style="background-image: linear-gradient(rgba(0,0,0,.78), rgba(0,0,0,.78)), url('{{ asset('storage/cars/dgte.jpg') }}');">
         </div>
 
         <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
@@ -595,7 +595,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid md:grid-cols-3 gap-10">
                 <div>
-                    <img src="{{ asset('storage/logo/header pic.png') }}" alt="Logo" class="h-16 w-auto mb-4">
+                    <img src="{{ asset('storage/cars/ezelogo.png') }}" alt="Logo" class="h-16 w-auto mb-4">
                     <p class="text-white/70">
                         Dumaguete EZE Car Rental provides clean, reliable, and affordable vehicles for locals and travelers.
                     </p>

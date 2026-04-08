@@ -39,7 +39,6 @@
                             <thead>
                                 <tr class="bg-gray-50 border-b border-gray-200">
                                     <th class="px-6 py-4 text-left">
-                                        <input type="checkbox" class="w-4 h-4 rounded">
                                     </th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Photo</th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
@@ -54,7 +53,6 @@
                                 @forelse($cars as $car)
                                     <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
                                         <td class="px-6 py-4">
-                                            <input type="checkbox" class="w-4 h-4 rounded">
                                         </td>
 
                                         <td class="px-6 py-4">
