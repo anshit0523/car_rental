@@ -267,7 +267,7 @@
                 <!-- Profile Information -->
                 <div class="profile-card">
                     <div class="profile-card-head">
-                        <h2>Profile Information</h2>
+                        <h4>Profile Information</h4>
                         <p>Update your name and contact number.</p>
                     </div>
 
@@ -325,7 +325,7 @@
                 <!-- Security -->
                 <div class="profile-card">
                     <div class="profile-card-head">
-                        <h2>Security</h2>
+                        <h4>Security</h4>
                         <p>Change your password to keep your account secure.</p>
                     </div>
 

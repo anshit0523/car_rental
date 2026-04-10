@@ -421,7 +421,7 @@
     <div class="rentals-shell">
 
         <div class="rentals-header">
-            <h1>My Rentals</h1>
+            <h4>My Rentals</h4>
         </div>
 
         <div class="rentals-tabs-wrap">
