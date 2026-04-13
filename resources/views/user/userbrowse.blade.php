@@ -261,7 +261,8 @@
         request()->filled('brand_id') ||
         request()->filled('fuel_type_id') ||
         request()->filled('transmission_id') ||
-        request()->filled('min_seats');
+        request()->filled('min_seats')|| 
+        request()->filled('car_type_id');
 @endphp
 
 <section class="car-listing-section pb_100">
@@ -380,6 +381,28 @@
                                         @endforeach
                                     </ul>
                                 </div>
+                                <div class="mt_30">
+    <div class="widget-title">
+        <h4>Car Type</h4>
+    </div>
+    <ul class="filter-check-list clearfix">
+        @foreach($carTypes as $carType)
+            <li>
+                <label class="d-flex align-items-center" style="gap:10px; cursor:pointer;">
+                    <input
+                        type="checkbox"
+                        name="car_type_id[]"
+                        value="{{ $carType->id }}"
+                        @checked(in_array($carType->id, (array) request('car_type_id', [])))
+                        onchange="document.getElementById('filterForm').submit()"
+                    >
+                    <span>{{ $carType->name }}</span>
+                </label>
+            </li>
+        @endforeach
+    </ul>
+</div>
+                                
 
                                 <div class="mt_30">
                                     <div class="widget-title">
@@ -442,6 +465,10 @@
                                 @foreach((array) request('transmission_id', []) as $transmissionId)
                                     <input type="hidden" name="transmission_id[]" value="{{ $transmissionId }}">
                                 @endforeach
+
+                                @foreach((array) request('car_type_id', []) as $carTypeId)
+                                  <input type="hidden" name="car_type_id[]" value="{{ $carTypeId }}">
+                                 @endforeach
 
                                 <input type="hidden" name="min_price" value="{{ request('min_price') }}">
                                 <input type="hidden" name="max_price" value="{{ request('max_price') }}">

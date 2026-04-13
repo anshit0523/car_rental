@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Brand;
 use App\Models\Car;
 use App\Models\FuelType;
+use App\Models\CarType;
 use App\Models\Status;
 use App\Models\Transmission;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,6 +28,7 @@ class UserCarBrowseController extends Controller
                 ->filterFuelType($request->fuel_type_id)
                 ->filterTransmission($request->transmission_id)
                 ->filterSeats($request->min_seats)
+                ->filterCarType($request->car_type_id)
             : Car::query()->whereRaw('1 = 0');
 
         if ($hasFilters) {
@@ -43,6 +45,7 @@ class UserCarBrowseController extends Controller
             'fuelTypes' => $this->getFuelTypes(),
             'transmissions' => $this->getTransmissions(),
             'totalCount' => Car::active()->count(),
+            'carTypes' => $this->getCarTypes(),
         ]);
     }
 
@@ -85,7 +88,8 @@ class UserCarBrowseController extends Controller
             ->filterBrand($request->brand_id)
             ->filterFuelType($request->fuel_type_id)
             ->filterTransmission($request->transmission_id)
-            ->filterSeats($request->min_seats);
+            ->filterSeats($request->min_seats)
+            ->filterCarType($request->car_type_id);
 
         $this->applyAvailabilityFilter($query, $validated);
         $this->applySorting($query, $request->get('sort_by', 'price_low'));
@@ -101,6 +105,7 @@ class UserCarBrowseController extends Controller
             'transmissions' => $this->getTransmissions(),
             'totalCount' => $cars->total(),
             'searchParams' => $validated,
+            'carTypes' => $this->getCarTypes(),
         ]);
     }
 
@@ -134,7 +139,8 @@ class UserCarBrowseController extends Controller
             $request->filled('brand_id') ||
             $request->filled('fuel_type_id') ||
             $request->filled('transmission_id') ||
-            $request->filled('min_seats');
+            $request->filled('min_seats')||
+             $request->filled('car_type_id');
     }
 
     private function applySorting(Builder $query, string $sortBy): void
@@ -161,4 +167,9 @@ class UserCarBrowseController extends Controller
     {
         return Transmission::all();
     }
+
+    private function getCarTypes()
+{
+    return CarType::all();
+}
 }

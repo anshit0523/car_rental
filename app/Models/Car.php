@@ -122,4 +122,11 @@ public function scopeFilterSeats(Builder $query, $minSeats): Builder
 
     return $query;
 }
+
+public function scopeFilterCarType(Builder $query, $carTypeIds): Builder
+{
+    return filled($carTypeIds)
+        ? $query->whereIn('car_type_id', (array) $carTypeIds)
+        : $query;
+}
 }

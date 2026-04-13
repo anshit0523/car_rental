@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
 
 class CarType extends Model
 {
@@ -17,4 +18,5 @@ class CarType extends Model
     {
         return $this->hasMany(Car::class);
     }
+
 }

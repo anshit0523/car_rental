@@ -347,7 +347,7 @@
 
                     <div class="grid sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-white/80 text-sm mb-2">Pickup Location</label>
+                            <label class="block text-white/80 text-sm mb-2">Delivery Location</label>
                             <input type="text" placeholder="Dumaguete City"
                                    class="w-full rounded-xl bg-white px-4 py-3 text-slate-800 outline-none">
                         </div>

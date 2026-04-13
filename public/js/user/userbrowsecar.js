@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── Check current URL params ──────────────────────────────────────────────
     const params     = new URLSearchParams(window.location.search);
     const hasFilters = ['pickup_date','return_date','time','max_price',
-                        'brand_id[]','fuel_type_id[]','transmission_id[]','sort_by']
+                        'brand_id[]','fuel_type_id[]','transmission_id[]','car_type_id[]','sort_by']
                         .some(k => params.has(k));
 
     if (hasFilters) {
