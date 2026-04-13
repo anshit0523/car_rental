@@ -427,9 +427,11 @@
                                 </div>
 
                                 <div class="mt_30">
-                                    <a href="{{ route('user.browse') }}" class="theme-btn btn-style-three w-100 d-block text-center" style="border-radius:10px;">
-                                        <span>Clear All Filters</span>
-                                    </a>
+                                    <a href="{{ route('user.browse') }}?clear=1" 
+   class="theme-btn btn-style-three w-100 d-block text-center"
+   style="border-radius:10px;">
+    <span>Clear All Filters</span>
+</a>
                                 </div>
                             </form>
                         </div>

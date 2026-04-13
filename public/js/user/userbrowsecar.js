@@ -2,18 +2,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const STORE_KEY  = 'browseCarFilters';
     const filterForm = document.getElementById('filterForm');
 
+    // ── Clear flag — wipe sessionStorage and redirect cleanly ────────────────
+    const params = new URLSearchParams(window.location.search);
+  if (params.get('clear') === '1') {
+    sessionStorage.removeItem(STORE_KEY);
+    window.location.replace(window.location.pathname);
+    return;
+}
+
     // ── Clear saved filters on logout ─────────────────────────────────────────
     const logoutBtn = document.querySelector('form[action*="logout"] button');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function () {
-            sessionStorage.removeItem(STORE_KEY);
-        });
-    }
-
-    // ── Clear All Filters ─────────────────────────────────────────────────────
-    const clearBtn = document.querySelector('a[href*="browse"]');
-    if (clearBtn) {
-        clearBtn.addEventListener('click', function () {
             sessionStorage.removeItem(STORE_KEY);
         });
     }
@@ -51,15 +51,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ── Check current URL params ──────────────────────────────────────────────
-    const params     = new URLSearchParams(window.location.search);
     const hasFilters = ['pickup_date','return_date','time','max_price',
-                        'brand_id[]','fuel_type_id[]','transmission_id[]','car_type_id[]','sort_by']
+                        'brand_id[]','fuel_type_id[]','transmission_id[]',
+                        'car_type_id[]','sort_by']
                         .some(k => params.has(k));
 
     if (hasFilters) {
-        // Save current URL filters to sessionStorage
         saveFiltersFromParams(params);
-        // Restore visual state of inputs from URL
         restoreInputsFromParams(params);
         return;
     }
@@ -74,12 +72,13 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    // Restore inputs then submit once (use a flag to prevent loop)
     restoreInputsFromData(data);
 
     if (filterForm && !filterForm.dataset.autoSubmitted) {
         filterForm.dataset.autoSubmitted = '1';
-        filterForm.submit();
+        setTimeout(function () {
+            filterForm.submit();
+        }, 100);
     }
 });
 
@@ -106,7 +105,6 @@ function restoreInputsFromParams(params) {
             if (input.type === 'range') updatePriceLabel(input);
         }
     });
-    // sort_by hidden field
     const hiddenSort = document.querySelector('#filterForm input[name="sort_by"]');
     if (hiddenSort && params.has('sort_by')) hiddenSort.value = params.get('sort_by');
 }
@@ -114,7 +112,6 @@ function restoreInputsFromParams(params) {
 // ── Restore input visuals from saved JSON data ────────────────────────────────
 function restoreInputsFromData(data) {
     Object.entries(data).forEach(function ([key, value]) {
-        // Checkboxes
         const cleanKey = key.replace('[]', '');
         const checkboxes = document.querySelectorAll(`#filterForm input[name="${cleanKey}[]"]`);
         if (checkboxes.length) {
@@ -125,7 +122,6 @@ function restoreInputsFromData(data) {
             return;
         }
 
-        // Text / date / time / range inputs
         const input = document.querySelector(`#filterForm input[name="${key}"]`);
         if (input) {
             input.value = value;

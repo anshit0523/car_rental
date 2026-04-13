@@ -18,7 +18,7 @@ class AuthController extends Controller
             if ($user->role_id == 1) {
                 return redirect()->route('admin.dashboard');
             } elseif ($user->role_id == 2) {
-                return redirect()->route('user.dashboard');
+                return redirect()->route('user.browse');
             }
             
             return redirect('/');
@@ -91,7 +91,7 @@ public function register(Request $request)
         ]);
 
         Auth::login($user);
-        return redirect()->route('user.dashboard');
+        return redirect()->route('user.browse');
     }
 
     public function logout(Request $request)

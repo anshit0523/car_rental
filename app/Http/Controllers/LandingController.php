@@ -11,9 +11,12 @@ public function index()
     {
         // Show available cars only
         $cars = Car::where('active', true)->take(6)->get();
-        return view('landing', compact('cars'));
+        $carTypes = \App\Models\CarType::all();
+        return view('landing', compact('cars', 'carTypes'));
     }
 
+
+    
 
     //api method to get featured cars for the landing page
     public function apiLandingCars()
