@@ -1,24 +1,142 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const pickupDate = document.getElementById('pickup_date');
-    const returnDate = document.getElementById('return_date');
+    const STORE_KEY  = 'browseCarFilters';
+    const filterForm = document.getElementById('filterForm');
 
-    if (!pickupDate || !returnDate) return;
-
-    const today = new Date().toISOString().split('T')[0];
-
-    pickupDate.min = today;
-
-    if (!pickupDate.value) {
-        returnDate.min = today;
-    } else {
-        returnDate.min = pickupDate.value;
+    // ── Clear saved filters on logout ─────────────────────────────────────────
+    const logoutBtn = document.querySelector('form[action*="logout"] button');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+            sessionStorage.removeItem(STORE_KEY);
+        });
     }
 
-    pickupDate.addEventListener('change', function () {
-        returnDate.min = this.value || today;
+    // ── Clear All Filters ─────────────────────────────────────────────────────
+    const clearBtn = document.querySelector('a[href*="browse"]');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            sessionStorage.removeItem(STORE_KEY);
+        });
+    }
 
-        if (returnDate.value && returnDate.value < returnDate.min) {
-            returnDate.value = '';
+    // ── Date validation ───────────────────────────────────────────────────────
+    const pickupDate = document.querySelector('input[name="pickup_date"]');
+    const returnDate = document.querySelector('input[name="return_date"]');
+    if (pickupDate && returnDate) {
+        const today = new Date().toISOString().split('T')[0];
+        pickupDate.min = today;
+        returnDate.min = pickupDate.value || today;
+        pickupDate.addEventListener('change', function () {
+            returnDate.min = this.value || today;
+            if (returnDate.value && returnDate.value < returnDate.min) {
+                returnDate.value = '';
+            }
+        });
+    }
+
+    // ── Sort dropdown sync ────────────────────────────────────────────────────
+    const sortSelect   = document.querySelector('select[name="sort_by"]');
+    const hiddenSortBy = document.querySelector('#filterForm input[name="sort_by"]');
+    if (sortSelect && hiddenSortBy) {
+        sortSelect.addEventListener('change', function () {
+            hiddenSortBy.value = this.value;
+        });
+    }
+
+    // ── Price label live update ───────────────────────────────────────────────
+    const priceRange = document.querySelector('input[name="max_price"]');
+    if (priceRange) {
+        priceRange.addEventListener('input', function () {
+            updatePriceLabel(this);
+        });
+    }
+
+    // ── Check current URL params ──────────────────────────────────────────────
+    const params     = new URLSearchParams(window.location.search);
+    const hasFilters = ['pickup_date','return_date','time','max_price',
+                        'brand_id[]','fuel_type_id[]','transmission_id[]','sort_by']
+                        .some(k => params.has(k));
+
+    if (hasFilters) {
+        // Save current URL filters to sessionStorage
+        saveFiltersFromParams(params);
+        // Restore visual state of inputs from URL
+        restoreInputsFromParams(params);
+        return;
+    }
+
+    // ── No URL params — try restoring from sessionStorage ────────────────────
+    const saved = sessionStorage.getItem(STORE_KEY);
+    if (!saved) return;
+
+    let data;
+    try { data = JSON.parse(saved); } catch (e) {
+        sessionStorage.removeItem(STORE_KEY);
+        return;
+    }
+
+    // Restore inputs then submit once (use a flag to prevent loop)
+    restoreInputsFromData(data);
+
+    if (filterForm && !filterForm.dataset.autoSubmitted) {
+        filterForm.dataset.autoSubmitted = '1';
+        filterForm.submit();
+    }
+});
+
+// ── Save filter values from URL params into sessionStorage ────────────────────
+function saveFiltersFromParams(params) {
+    const data = {};
+    params.forEach(function (value, key) {
+        if (data[key]) {
+            data[key] = [].concat(data[key], value);
+        } else {
+            data[key] = value;
         }
     });
-});
+    sessionStorage.setItem('browseCarFilters', JSON.stringify(data));
+}
+
+// ── Restore input visuals from URL params ─────────────────────────────────────
+function restoreInputsFromParams(params) {
+    const fields = ['pickup_date', 'return_date', 'time', 'max_price'];
+    fields.forEach(function (name) {
+        const input = document.querySelector(`#filterForm input[name="${name}"]`);
+        if (input && params.has(name)) {
+            input.value = params.get(name);
+            if (input.type === 'range') updatePriceLabel(input);
+        }
+    });
+    // sort_by hidden field
+    const hiddenSort = document.querySelector('#filterForm input[name="sort_by"]');
+    if (hiddenSort && params.has('sort_by')) hiddenSort.value = params.get('sort_by');
+}
+
+// ── Restore input visuals from saved JSON data ────────────────────────────────
+function restoreInputsFromData(data) {
+    Object.entries(data).forEach(function ([key, value]) {
+        // Checkboxes
+        const cleanKey = key.replace('[]', '');
+        const checkboxes = document.querySelectorAll(`#filterForm input[name="${cleanKey}[]"]`);
+        if (checkboxes.length) {
+            const values = [].concat(value).map(String);
+            checkboxes.forEach(function (cb) {
+                cb.checked = values.includes(cb.value);
+            });
+            return;
+        }
+
+        // Text / date / time / range inputs
+        const input = document.querySelector(`#filterForm input[name="${key}"]`);
+        if (input) {
+            input.value = value;
+            if (input.type === 'range') updatePriceLabel(input);
+        }
+    });
+}
+
+function updatePriceLabel(slider) {
+    const labels = slider.closest('.mt_30')?.querySelectorAll('span');
+    if (labels && labels.length >= 2) {
+        labels[1].textContent = '₱' + Number(slider.value).toLocaleString();
+    }
+}
