@@ -137,7 +137,7 @@
                     </div>
                 </div>
 
-                <form action="{{ route('logout') }}" method="POST" style="margin:0;">
+                <form action="{{ route('logout') }}?clear=1" method="POST" style="margin:0;">
                     @csrf
                     <button type="submit"
                             style="background:#ff2c3b; color:#fff; border:none; border-radius:10px; padding:12px 22px; font-size:15px; font-weight:600; line-height:1; cursor:pointer;">
