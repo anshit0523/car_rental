@@ -66,11 +66,12 @@ class AuthController extends Controller
         }
         
         return redirect('/');
-    } 
-
-    return back()
-        ->withInput($request->only('email'))
-        ->with('loginError', 'Invalid email or password. Please try again.'); 
+    }  
+        return back()
+    ->withInput($request->only('email'))
+    ->withErrors([
+        'email' => 'Invalid email or password. Please try again.'
+    ]);
 }
 
 public function register(Request $request)
