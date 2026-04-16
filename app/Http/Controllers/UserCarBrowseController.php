@@ -22,7 +22,6 @@ class UserCarBrowseController extends Controller
         $query = $hasFilters
             ? Car::query()
                 ->active()
-                ->filterLocation($request->location)
                 ->filterPrice($request->min_price, $request->max_price)
                 ->filterBrand($request->brand_id)
                 ->filterFuelType($request->fuel_type_id)
@@ -83,7 +82,6 @@ class UserCarBrowseController extends Controller
 
         $query = Car::query()
             ->active()
-            ->filterLocation($request->location)
             ->filterPrice($request->min_price, $request->max_price)
             ->filterBrand($request->brand_id)
             ->filterFuelType($request->fuel_type_id)
@@ -133,14 +131,15 @@ class UserCarBrowseController extends Controller
 
     private function hasBrowseFilters(Request $request): bool
     {
-        return $request->filled('location') ||
-            $request->filled('min_price') ||
+        return $request->filled('min_price') ||
             $request->filled('max_price') ||
             $request->filled('brand_id') ||
             $request->filled('fuel_type_id') ||
             $request->filled('transmission_id') ||
-            $request->filled('min_seats')||
-             $request->filled('car_type_id');
+            $request->filled('min_seats') ||
+            $request->filled('car_type_id') ||
+            $request->filled('pickup_date') ||
+            $request->filled('return_date');
     }
 
     private function applySorting(Builder $query, string $sortBy): void
@@ -169,7 +168,7 @@ class UserCarBrowseController extends Controller
     }
 
     private function getCarTypes()
-{
-    return CarType::all();
-}
+    {
+        return CarType::all();
+    }
 }

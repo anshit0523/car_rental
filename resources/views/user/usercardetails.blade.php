@@ -698,7 +698,7 @@
                 <div class="car-header-card section-card" style="margin-top:18px;">
                     <div>
                         <h1 class="car-title">{{ $car->brand->name ?? 'N/A' }} {{ $car->model }}</h1>
-                        <p class="car-subtitle">Downtown Location</p>
+                        <p class="car-subtitle">Mangnao Dumaguete City</p>
                     </div>
 
                     <div class="car-price-box">
