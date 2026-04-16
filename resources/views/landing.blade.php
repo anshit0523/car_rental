@@ -288,7 +288,6 @@
             font-size: 14px;
             line-height: 1.6;
         }
-
     </style>
 </head>
 
@@ -304,15 +303,22 @@
                 </a>
 
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('login') }}"
+                    <a href="{{ route('admin.login') }}"
                         class="rounded-full border border-white/40 px-5 py-2 text-sm md:text-base text-white hover:bg-white hover:text-slate-900 transition">
-                        Login
+                        Admin/Staff Login
                     </a>
+
+                    <a href="{{ route('login') }}"
+                        class="rounded-full border border-orange-400 bg-white/10 px-5 py-2 text-sm md:text-base text-white hover:bg-white hover:text-slate-900 transition">
+                        Customer Login
+                    </a>
+
                     <a href="{{ route('register') }}"
                         class="rounded-full bg-brand-orange px-5 py-2 text-sm md:text-base text-white hover:opacity-90 transition">
                         Register
                     </a>
                 </div>
+
             </div>
         </div>
     </header>
@@ -379,11 +385,11 @@
                         </div>
                     </div>
 
-                    <button type="button" onclick="saveAndRedirect()" 
-                    class="mt-6 block w-full rounded-xl bg-brand-orange px-5 py-3 text-center text-white font-semibold hover:opacity-90 transition" >
-    Search Available Cars
-</button>
-                    
+                    <button type="button" onclick="saveAndRedirect()"
+                        class="mt-6 block w-full rounded-xl bg-brand-orange px-5 py-3 text-center text-white font-semibold hover:opacity-90 transition">
+                        Search Available Cars
+                    </button>
+
                 </div>
             </div>
         </div>
@@ -611,13 +617,17 @@
                 </div>
 
                 <div>
+
                     <h4 class="font-bold text-lg mb-4">Quick Links</h4>
                     <ul class="space-y-2 text-white/70">
                         <li><a href="#" class="hover:text-orange-400">Home</a></li>
                         <li><a href="#available-cars" class="hover:text-orange-400">Available Cars</a></li>
-                        <li><a href="{{ route('login') }}" class="hover:text-orange-400">Login</a></li>
+                        <li><a href="{{ route('login') }}" class="hover:text-orange-400">Customer Login</a></li>
                         <li><a href="{{ route('register') }}" class="hover:text-orange-400">Register</a></li>
+                        <li><a href="{{ route('admin.login') }}" class="hover:text-orange-400">Admin/Staff Login</a>
+                        </li>
                     </ul>
+
                 </div>
 
                 <div>
@@ -647,20 +657,17 @@ function saveAndRedirect() {
     const pickupDate = document.getElementById('pickup_date').value;
     const returnDate = document.getElementById('return_date').value;
     const carTypeId = document.getElementById('car_type_id').value;
-    const location = document.getElementById('service_location').value;
 
     const params = new URLSearchParams();
 
     if (pickupDate) params.append('pickup_date', pickupDate);
     if (returnDate) params.append('return_date', returnDate);
-    if (location) params.append('location', location);
     if (carTypeId) params.append('car_type_id[]', carTypeId);
 
-    if (pickupDate || returnDate || location || carTypeId) {
+    if (pickupDate || returnDate || carTypeId) {
         sessionStorage.setItem('browseCarFilters', JSON.stringify({
             pickup_date: pickupDate,
             return_date: returnDate,
-            location: location,
             'car_type_id[]': carTypeId
         }));
     }
