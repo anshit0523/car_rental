@@ -289,7 +289,6 @@
             line-height: 1.6;
         }
 
-        }
     </style>
 </head>
 
@@ -334,7 +333,7 @@
                     </p>
 
                     <div class="flex flex-wrap gap-4">
-                        <a href="{{ route('register') }}"
+                        <a href="{{ route('user.browse') }}"
                             class="rounded-full bg-brand-orange px-7 py-3 text-white font-semibold hover:opacity-90 transition">
                             Book Now
                         </a>
@@ -489,7 +488,7 @@
                                 </li>
                             </ul>
 
-                            <a href="{{ route('login') }}" class="popular-showcase-btn">
+                            <a href="{{ route('user.cardetail', $car->id) }}" class="popular-showcase-btn">
                                 Rent Now
                             </a>
                         </div>
@@ -592,9 +591,9 @@
             <p class="text-white/80 text-lg mb-8">Reserve your car today and enjoy a smooth ride around Dumaguete and
                 beyond.</p>
 
-            <a href="{{ route('register') }}"
+            <a href="{{ route('user.browse') }}"
                 class="inline-block rounded-full bg-brand-orange px-8 py-4 text-white font-semibold hover:opacity-90 transition">
-                Create an Account
+                Browse Cars
             </a>
         </div>
     </section>
@@ -645,22 +644,31 @@
 
 <script>
 function saveAndRedirect() {
+    const pickupDate = document.getElementById('pickup_date').value;
+    const returnDate = document.getElementById('return_date').value;
     const carTypeId = document.getElementById('car_type_id').value;
+    const location = document.getElementById('service_location').value;
 
-    const data = {
-        pickup_date: document.getElementById('pickup_date').value,
-        return_date: document.getElementById('return_date').value,
-    };
+    const params = new URLSearchParams();
 
-    // car_type_id[] is how the browse filter form expects it (array checkbox style)
-    if (carTypeId) {
-        data['car_type_id[]'] = carTypeId;
+    if (pickupDate) params.append('pickup_date', pickupDate);
+    if (returnDate) params.append('return_date', returnDate);
+    if (location) params.append('location', location);
+    if (carTypeId) params.append('car_type_id[]', carTypeId);
+
+    if (pickupDate || returnDate || location || carTypeId) {
+        sessionStorage.setItem('browseCarFilters', JSON.stringify({
+            pickup_date: pickupDate,
+            return_date: returnDate,
+            location: location,
+            'car_type_id[]': carTypeId
+        }));
     }
 
-    if (data.pickup_date || data.return_date || carTypeId) {
-        sessionStorage.setItem('browseCarFilters', JSON.stringify(data));
+    if (pickupDate && returnDate) {
+        window.location.href = "{{ route('user.search') }}" + '?' + params.toString();
+    } else {
+        window.location.href = "{{ route('user.browse') }}" + (params.toString() ? '?' + params.toString() : '');
     }
-
-    window.location.href = "{{ route('login') }}";
 }
 </script>

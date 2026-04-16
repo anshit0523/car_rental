@@ -698,7 +698,7 @@
                 <div class="car-header-card section-card" style="margin-top:18px;">
                     <div>
                         <h1 class="car-title">{{ $car->brand->name ?? 'N/A' }} {{ $car->model }}</h1>
-                        <p class="car-subtitle">Downtown Location</p>
+                        <p class="car-subtitle">Mangnao Dumaguete City</p>
                     </div>
 
                     <div class="car-price-box">
@@ -873,7 +873,7 @@
                                 <div class="helper-text">This will be saved to your profile.</div>
                             </div>
 
-                            <div id="locationWrap" class="form-group-block full">
+                            <div id="locationWrap" class="form-group-block full" style="display:none;">
                                 <label class="form-label">Pickup / Delivery Location</label>
                                 <input id="service_location"
                                        type="text"
