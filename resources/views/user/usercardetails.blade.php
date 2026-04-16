@@ -474,9 +474,6 @@
         font-weight: 800;
     }
 
- 
-    
-
     .points-box h4 {
         margin: 0 0 4px;
         font-size: 15px;
@@ -594,6 +591,12 @@
 
     .inline-message.success {
         color: #16a34a;
+    }
+
+    #termsSection.terms-highlight {
+        border: 2px solid #dc2626;
+        box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
+        transition: all 0.25s ease;
     }
 
     @media (max-width: 1100px) {
@@ -754,7 +757,7 @@
                     </div>
                 </div>
 
-                <div class="section-card">
+                <div class="section-card" id="termsSection">
                     <h3 class="section-title">Rental Terms & Conditions</h3>
 
                     @php
@@ -778,6 +781,19 @@
                                 <div class="term-text">{{ $t }}</div>
                             </div>
                         @endforeach
+                    </div>
+
+                    <div class="agree-wrap">
+                        <label class="agree-label">
+                            <input type="checkbox" id="agree_terms">
+                            <span>
+                                I agree to the <strong>Rental Terms & Conditions</strong>.
+                            </span>
+                        </label>
+
+                        <p id="agreeError" class="inline-message error" style="display:none;">
+                            Please agree to the Rental Terms & Conditions to continue.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -900,8 +916,6 @@
                                 <span>Subtotal</span>
                                 <strong id="subtotal">₱0.00</strong>
                             </div>
-
-                           
                         </div>
 
                         <div class="total-box">
@@ -914,22 +928,7 @@
                             $availablePoints = (int) (auth()->user()->points_balance ?? 0);
                         @endphp
 
-                       
-
-                        <div class="agree-wrap">
-                            <label class="agree-label">
-                                <input type="checkbox" id="agree_terms">
-                                <span>
-                                    I agree to the <strong>Rental Terms & Conditions</strong>.
-                                </span>
-                            </label>
-
-                            <p id="agreeError" class="inline-message error" style="display:none;">
-                                Please agree to the Rental Terms & Conditions to continue.
-                            </p>
-                        </div>
-
-                        <button type="submit" id="confirmBtn" disabled class="primary-book-btn">
+                        <button type="submit" id="confirmBtn" class="primary-book-btn">
                             Confirm Booking
                         </button>
 
