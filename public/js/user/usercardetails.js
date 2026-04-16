@@ -100,6 +100,15 @@
 
       onDayCreate: (dObj, dStr, fp, dayElem) => {
         const key = ymd(dayElem.dateObj);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const cellDate = new Date(dayElem.dateObj);
+        cellDate.setHours(0, 0, 0, 0);
+
+        if (cellDate < today) return;
+
         const dot = document.createElement("span");
         dot.className = unavailableSet.has(key) ? "red-dot" : "green-dot";
         dayElem.appendChild(dot);
