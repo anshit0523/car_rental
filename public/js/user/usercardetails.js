@@ -178,6 +178,24 @@
     sync();
   }
 
+  function initPickupReturnTimeSync() {
+    const pickupTime = document.querySelector('input[name="pickup_time"]');
+    const returnTime = document.querySelector('input[name="return_time"]');
+
+    if (!pickupTime || !returnTime) return;
+
+    const syncReturnTime = () => {
+      returnTime.value = pickupTime.value;
+    };
+
+    pickupTime.addEventListener("change", syncReturnTime);
+    pickupTime.addEventListener("input", syncReturnTime);
+
+    if (pickupTime.value && !returnTime.value) {
+      returnTime.value = pickupTime.value;
+    }
+  }
+
   function handleBookingSubmit(e) {
     e.preventDefault();
 
@@ -263,6 +281,7 @@
     initSidebarToggle();
     initAgreeTerms();
     initServiceTypeToggle();
+    initPickupReturnTimeSync();
     initBookingFormSubmit();
 
     loadUnavailableDates();
