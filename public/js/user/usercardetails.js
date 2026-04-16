@@ -142,14 +142,16 @@
 
   function initAgreeTerms() {
     const checkbox = document.getElementById("agree_terms");
-    const btn = document.getElementById("confirmBtn");
     const err = document.getElementById("agreeError");
-    if (!checkbox || !btn) return;
+    const termsSection = document.getElementById("termsSection");
+
+    if (!checkbox) return;
 
     const sync = () => {
-      const ok = checkbox.checked;
-      btn.disabled = isSubmitting || !ok;
-      if (err) err.style.display = ok ? "none" : "block";
+      if (checkbox.checked) {
+        if (err) err.style.display = "none";
+        if (termsSection) termsSection.classList.remove("terms-highlight");
+      }
     };
 
     checkbox.addEventListener("change", sync);
@@ -208,13 +210,27 @@
     const submitBtn = document.getElementById("confirmBtn");
     const agree = document.getElementById("agree_terms");
     const err = document.getElementById("agreeError");
+    const termsSection = document.getElementById("termsSection");
 
     if (agree && !agree.checked) {
       if (err) err.style.display = "block";
-      alert("Please agree to the Rental Terms & Conditions to continue.");
+
+      if (termsSection) {
+        termsSection.classList.add("terms-highlight");
+        termsSection.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+
+      setTimeout(() => {
+        agree.focus();
+      }, 500);
+
       return;
     } else {
       if (err) err.style.display = "none";
+      if (termsSection) termsSection.classList.remove("terms-highlight");
     }
 
     const pickup = document.getElementById("pickup_date")?.value;
