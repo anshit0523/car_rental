@@ -169,9 +169,12 @@
 
     const sync = () => {
       const delivery = isDelivery();
-      wrap.classList.toggle("hidden", !delivery);
+      wrap.style.display = delivery ? "flex" : "none";
       loc.required = delivery;
-      if (!delivery) loc.value = "";
+
+      if (!delivery) {
+        loc.value = "";
+      }
     };
 
     type.addEventListener("change", sync);
