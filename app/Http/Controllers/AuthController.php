@@ -14,16 +14,19 @@ class AuthController extends Controller
         if (auth()->check()) {
             $user = auth()->user();
 
-            // If guest already selected a car before login, continue booking after auth
             if (session()->has('guest_booking_payload') && (int) $user->role_id === 2) {
                 return redirect()->route('user.booking.continue');
             }
 
+            if ((int) $user->role_id === 2) {
+                return redirect()->route('user.browse');
+            }
+
             if ((int) $user->role_id === 1) {
                 return redirect()->route('admin.dashboard');
-            } elseif ((int) $user->role_id === 2) {
-                return redirect()->route('user.browse');
-            } elseif ((int) $user->role_id === 3) {
+            }
+
+            if ((int) $user->role_id === 3) {
                 return redirect()->route('staff.dashboard');
             }
 
@@ -38,16 +41,19 @@ class AuthController extends Controller
         if (auth()->check()) {
             $user = auth()->user();
 
-            // If guest already selected a car before register, continue booking after auth
             if (session()->has('guest_booking_payload') && (int) $user->role_id === 2) {
                 return redirect()->route('user.booking.continue');
             }
 
+            if ((int) $user->role_id === 2) {
+                return redirect()->route('user.browse');
+            }
+
             if ((int) $user->role_id === 1) {
                 return redirect()->route('admin.dashboard');
-            } elseif ((int) $user->role_id === 2) {
-                return redirect()->route('user.browse');
-            } elseif ((int) $user->role_id === 3) {
+            }
+
+            if ((int) $user->role_id === 3) {
                 return redirect()->route('staff.dashboard');
             }
 
@@ -64,32 +70,36 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-
-            $user = Auth::user();
-
-            // If guest booking exists, continue booking then go to payment
-            if (session()->has('guest_booking_payload') && (int) $user->role_id === 2) {
-                return redirect()->route('user.booking.continue');
-            }
-
-            if ((int) $user->role_id === 1) {
-                return redirect()->route('admin.dashboard');
-            } elseif ((int) $user->role_id === 2) {
-                return redirect()->route('user.browse');
-            } elseif ((int) $user->role_id === 3) {
-                return redirect()->route('staff.dashboard');
-            }
-
-            return redirect('/');
+        if (!Auth::attempt($credentials)) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors([
+                    'email' => 'Invalid email or password. Please try again.'
+                ]);
         }
 
-        return back()
-            ->withInput($request->only('email'))
-            ->withErrors([
-                'email' => 'Invalid email or password. Please try again.'
-            ]);
+        $request->session()->regenerate();
+
+        $user = Auth::user();
+
+        // Only customers can use /login
+        if ((int) $user->role_id !== 2) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors([
+                    'email' => 'This login is for customers only.'
+                ]);
+        }
+
+        if (session()->has('guest_booking_payload')) {
+            return redirect()->route('user.booking.continue');
+        }
+
+        return redirect()->route('user.browse');
     }
 
     public function register(Request $request)
@@ -112,7 +122,6 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        // If guest booking exists, continue booking then go to payment
         if (session()->has('guest_booking_payload')) {
             return redirect()->route('user.booking.continue');
         }
@@ -138,20 +147,29 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
+        if (!Auth::attempt($credentials)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid email or password',
+            ], 401);
+        }
+
+        $user = Auth::user();
+
+        if ((int) $user->role_id !== 2) {
+            Auth::logout();
 
             return response()->json([
-                'success' => true,
-                'message' => 'Login successful',
-                'user' => $user,
-            ]);
+                'success' => false,
+                'message' => 'This login is for customers only.',
+            ], 403);
         }
 
         return response()->json([
-            'success' => false,
-            'message' => 'Invalid email or password',
-        ], 401);
+            'success' => true,
+            'message' => 'Login successful',
+            'user' => $user,
+        ]);
     }
 
     public function apiRegister(Request $request)
