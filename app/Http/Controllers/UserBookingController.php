@@ -55,7 +55,6 @@ class UserBookingController extends Controller
                 ->withInput();
         }
 
-        // Guest flow: save entered booking data first, then ask user to login/register.
         if (!auth()->check()) {
             session([
                 'guest_booking_payload' => $validated,
@@ -152,6 +151,70 @@ class UserBookingController extends Controller
     }
 
     /**
+     * Create a brand-new booking when the previous booking was rejected/failed.
+     * This avoids reusing the same booking ID.
+     */
+    public function retryRejectedBooking($bookingId)
+    {
+        $oldBooking = Booking::with(['status', 'car'])->findOrFail($bookingId);
+
+        if ($oldBooking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        if (($oldBooking->status->name ?? '') !== 'Failed') {
+            return back()->withErrors([
+                'booking' => 'Only rejected bookings can be retried.'
+            ]);
+        }
+
+        $blockingStatusIds = Status::whereIn('name', [
+            'Pending',
+            'Pending Payment Verification',
+            'Confirmed',
+            'Active',
+            'Reserved',
+        ])->pluck('id')->toArray();
+
+        $hasConflict = Booking::where('car_id', $oldBooking->car_id)
+            ->whereIn('status_id', $blockingStatusIds)
+            ->where('id', '!=', $oldBooking->id)
+            ->where(function ($query) use ($oldBooking) {
+                $query->where('pickup_at', '<', $oldBooking->return_at)
+                    ->where('return_at', '>', $oldBooking->pickup_at);
+            })
+            ->exists();
+
+        if ($hasConflict) {
+            return redirect()
+                ->route('user.rentals.failed')
+                ->withErrors([
+                    'booking' => 'This car is no longer available for the same schedule. Please create a new booking with a different schedule.'
+                ]);
+        }
+
+        $pendingStatus = Status::firstOrCreate(['name' => 'Pending']);
+
+        $newBooking = DB::transaction(function () use ($oldBooking, $pendingStatus) {
+            return Booking::create([
+                'car_id' => $oldBooking->car_id,
+                'user_id' => auth()->id(),
+                'pickup_at' => $oldBooking->pickup_at,
+                'return_at' => $oldBooking->return_at,
+                'total_price' => $oldBooking->total_price,
+                'final_total' => $oldBooking->final_total ?? $oldBooking->total_price,
+                'status_id' => $pendingStatus->id,
+                'service_type_id' => $oldBooking->service_type_id,
+                'service_location' => $oldBooking->service_location,
+            ]);
+        });
+
+        return redirect()
+            ->route('user.payments', ['booking_id' => $newBooking->id])
+            ->with('success', 'A new booking has been created. Please upload your new payment receipt.');
+    }
+
+    /**
      * Shared booking creation logic for logged-in users and guest-then-login flow.
      */
     private function createBookingForUser($user, array $validated): Booking
@@ -170,6 +233,14 @@ class UserBookingController extends Controller
             $validated['return_date'] . ' ' . $validated['return_time']
         );
 
+        $blockingStatusIds = Status::whereIn('name', [
+            'Pending',
+            'Pending Payment Verification',
+            'Confirmed',
+            'Active',
+            'Reserved',
+        ])->pluck('id')->toArray();
+
         $pendingStatus = Status::firstOrCreate(['name' => 'Pending']);
 
         return DB::transaction(function () use (
@@ -177,10 +248,11 @@ class UserBookingController extends Controller
             $validated,
             $pickupDateTime,
             $returnDateTime,
-            $pendingStatus
+            $pendingStatus,
+            $blockingStatusIds
         ) {
             $existingBooking = Booking::where('car_id', $validated['car_id'])
-                ->whereIn('status_id', [1, 2, 6])
+                ->whereIn('status_id', $blockingStatusIds)
                 ->where(function ($query) use ($pickupDateTime, $returnDateTime) {
                     $query->where('pickup_at', '<', $returnDateTime)
                         ->where('return_at', '>', $pickupDateTime);
@@ -246,6 +318,11 @@ class UserBookingController extends Controller
             abort(403, 'Unauthorized');
         }
 
+        if (($booking->status->name ?? '') === 'Failed') {
+            return redirect()->route('user.rentals.failed')
+                ->withErrors('This rejected booking cannot be paid again. Please create a new booking.');
+        }
+
         $paymentSetting = PaymentSetting::first();
 
         return view('user.userpayments', [
@@ -270,6 +347,16 @@ class UserBookingController extends Controller
         $booking->update(['status_id' => $cancelledStatus->id]);
 
         return back()->with('success', 'Booking cancelled successfully.');
+    }
+
+    public function myBookings()
+    {
+        $bookings = Booking::with(['car', 'status', 'payments'])
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->paginate(10);
+
+        return view('user.userrentals', compact('bookings'));
     }
 
     public function getCarDetails($carId)
