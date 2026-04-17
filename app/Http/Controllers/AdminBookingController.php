@@ -7,30 +7,31 @@ use App\Models\Brand;
 use App\Models\Car;
 use App\Models\Notification;
 use App\Models\Status;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class AdminBookingController extends Controller
 {
-    // Main index function with search + filter
     public function index(Request $request)
     {
         $query = Booking::with(['user', 'car.brand', 'status']);
 
-        // 🔍 Search by user name or car model
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->whereHas('user', function($u) use ($search) {
+
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($u) use ($search) {
                     $u->where('name', 'like', "%{$search}%");
-                })->orWhereHas('car', function($c) use ($search) {
+                })->orWhereHas('car', function ($c) use ($search) {
                     $c->where('model', 'like', "%{$search}%");
                 });
             });
         }
 
-        //  Filter by status
         if ($request->filled('status_id')) {
             $query->where('status_id', $request->status_id);
         }
@@ -41,210 +42,448 @@ class AdminBookingController extends Controller
         return view('admin.adminbooking', compact('bookings', 'statuses'));
     }
 
-
-public function updateStatus(Request $request, Booking $booking)
-{
-    $request->validate([
-        'status_id' => 'required|exists:statuses,id',
-        'admin_message' => 'nullable|string|max:500',
-    ]);
-
-    $newStatus = Status::findOrFail($request->status_id);
-    $currentStatus = $booking->status->name ?? null;
-
-    $allowedTransitions = [
-        'Pending' => ['Cancelled'],
-        'Confirmed' => ['Cancelled'],
-        'Return' => ['Checkup', 'Damage', 'Needs Repair', 'Completed'],
-        'Active' => [],
-        'Completed' => [],
-        'Cancelled' => [],
-        'Checkup' => [],
-        'Damage' => [],
-        'Needs Repair' => [],
-        'Failed' => [],
-    ];
-
-    if (!array_key_exists($currentStatus, $allowedTransitions)) {
+    public function create(Car $car)
+    {
         return redirect()
-            ->route('admin.bookings.index')
-            ->with('error', 'Invalid current booking status.');
+            ->route('admin.calendar')
+            ->with('info', 'Use the available slot in the calendar to create a walk-in booking for ' . ($car->brand->name ?? 'selected car') . ' ' . $car->model . '.');
     }
 
-    if (!in_array($newStatus->name, $allowedTransitions[$currentStatus])) {
-        return redirect()
-            ->route('admin.bookings.index')
-            ->with('error', "Cannot change status from {$currentStatus} to {$newStatus->name}.");
-    }
-
-    $booking->update([
-        'status_id' => $newStatus->id,
-    ]);
-
-    $adminMessage = trim($request->admin_message ?? '');
-
-    // Send notification only for return processing, with optional custom note
-    if ($currentStatus === 'Return') {
-        $notificationMessage = "Your booking status has been updated to {$newStatus->name}.";
-
-        if (!empty($adminMessage)) {
-            $notificationMessage .= " Admin note: {$adminMessage}";
-        }
-$title = match ($newStatus->name) {
-    'Damage' => 'Vehicle Damage Notice',
-    'Needs Repair' => 'Vehicle Repair Notice',
-    'Checkup' => 'Vehicle Checkup Notice',
-    'Completed' => 'Booking Completed',
-    default => 'Booking Return Update',
-};
-        Notification::create([
-            'user_id' => $booking->user_id,
-            'booking_id' => $booking->id,
-            'title' => $title,
-            'message' => $notificationMessage,
-            'type' => 'booking',
-            'link' => route('user.booking.confirmation', $booking->id),
+    public function searchCustomer(Request $request): JsonResponse
+    {
+        $request->validate([
+            'keyword' => 'required|string|min:2|max:255',
         ]);
-    }
 
-    return redirect()
-        ->route('admin.bookings.index')
-        ->with('success', 'Booking status updated successfully.');
-}
+        $keyword = trim($request->keyword);
 
-public function calendar(Request $request)
-{
-    $view = $request->get('view', 'weekly');
-    $dateString = $request->get('date');
-    
-    // Set start date
-    $startDate = $dateString 
-        ? Carbon::parse($dateString) 
-        : now();
-    
-    $startDate->startOfDay();
-
-    // Generate calendar dates
-    if ($view === '30days') {
-        $endDate = $startDate->copy()->addDays(29);
-    } else {
-        $endDate = $startDate->copy()->addDays(6);
-    }
-
-    $calendarDates = [];
-    $current = $startDate->copy();
-
-    while ($current <= $endDate) {
-        $calendarDates[] = [
-            'full' => $current->copy(),
-            'date' => $current->format('d'),
-            'day' => $current->format('D'),
-        ];
-        $current->addDay();
-    }
-
-    // Get cars with relationships
-    $query = Car::with([
-     'brand:id,name',          
-    'transmission:id,type', 
-        'fuelType',
-        'bookings' => function ($q) use ($startDate, $endDate) {
-            $q->whereHas('status', function ($s) {
-                $s->whereIn('name', ['confirmed', 'reserved']);
+        $user = User::query()
+            ->where('role_id', 2)
+            ->where(function ($q) use ($keyword) {
+                $q->where('email', $keyword)
+                    ->orWhere('phone', $keyword)
+                    ->orWhere('email', 'like', '%' . $keyword . '%')
+                    ->orWhere('phone', 'like', '%' . $keyword . '%');
             })
-            ->where(function ($date) use ($startDate, $endDate) {
-                $date->whereBetween('pickup_at', [$startDate, $endDate])
-                     ->orWhereBetween('return_at', [$startDate, $endDate])
-                     ->orWhere(function ($overlap) use ($startDate, $endDate) {
-                         $overlap->where('pickup_at', '<=', $startDate)
-                                 ->where('return_at', '>=', $endDate);
-                     });
-            })
-            ->with('status');
+            ->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found.',
+            ], 404);
         }
-    ])->where('active', true);
-
-    // Apply brand filter
-    if ($request->filled('brand_id')) {
-        $query->where('brand_id', $request->get('brand_id'));
-    }
-
-    // Apply search filter (search model and plate)
-    if ($request->filled('search')) {
-        $search = $request->get('search');
-        $query->where(function ($q) use ($search) {
-            $q->where('model', 'like', "%{$search}%")
-             
-            ;
-        });
-    }
-
-    $cars = $query->paginate(5);
-
-    // Calculate navigation dates
-    $previousWeek = $startDate->copy()->subDays($view === '30days' ? 30 : 7)->format('Y-m-d');
-    $nextWeek = $startDate->copy()->addDays($view === '30days' ? 30 : 7)->format('Y-m-d');
-
-    $brands = Brand::all();
-
-    $data = [
-        'cars' => $cars,
-        'calendarDates' => $calendarDates,
-        'startDate' => $startDate,
-        'endDate' => $endDate,
-        'previousWeek' => $previousWeek,
-        'nextWeek' => $nextWeek,
-        'brands' => $brands,
-        'view' => $view,
-    ];
-
-    // If AJAX → return full view (JavaScript will extract the table)
-    if ($request->ajax()) {
-        return view('admin.admincalendar', $data)->render();
-    }
-
-    return view('admin.admincalendar', $data);
-}
-
-
-
- public function showJson(Booking $booking): JsonResponse
-{
-    try {
-        $booking->load([
-            'user:id,name,email,phone',
-            'car:id,model,brand_id',
-            'car.brand:id,name',
-            'status:id,name',
-            'serviceType:id,name',
-        ]);
 
         return response()->json([
             'success' => true,
-            'id' => $booking->id,
-            'status' => $booking->status->name ?? 'N/A',
-            'pickup_at' => $booking->pickup_at?->format('M d, Y h:i A') ?? 'N/A',
-            'return_at' => $booking->return_at?->format('M d, Y h:i A') ?? 'N/A',
-            'total_price' => number_format($booking->total_price ?? 0, 2),
-            'service_type' => $booking->serviceType->name ?? 'N/A',
-            'service_location' => $booking->service_location ?? 'N/A',
             'user' => [
-                'id' => $booking->user->id ?? null,
-                'name' => $booking->user->name ?? 'N/A',
-                'email' => $booking->user->email ?? 'N/A',
-                'phone' => $booking->user->phone ?? 'N/A',
-            ],
-            'car' => [
-                'name' => ($booking->car->brand->name ?? 'Unknown') . ' ' . ($booking->car->model ?? ''),
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
             ],
         ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Error: ' . $e->getMessage(),
-        ], 500);
     }
-}
 
+    public function store(Request $request)
+    {
+        $baseRules = [
+            'car_id' => 'required|exists:cars,id',
+            'pickup_date' => 'required|date',
+            'pickup_time' => 'required|date_format:H:i',
+            'return_date' => 'required|date',
+            'return_time' => 'required|date_format:H:i',
+            'service_type_id' => 'required|exists:service_types,id',
+            'service_location' => 'nullable|string|max:255',
+            'status_name' => 'nullable|string|in:Pending,Confirmed',
+            'customer_type' => 'required|in:existing,new',
+            'existing_user_id' => 'nullable|exists:users,id',
+            'existing_customer_search' => 'nullable|string|max:255',
+            'customer_name' => 'nullable|string|max:255',
+            'customer_email' => 'nullable|email|max:255',
+            'customer_phone' => 'nullable|string|max:30',
+            'password' => 'nullable|string|min:6|confirmed',
+        ];
 
+        $validated = $request->validate($baseRules);
+
+        if ($validated['customer_type'] === 'existing') {
+            $request->validate([
+                'existing_user_id' => 'required|exists:users,id',
+            ]);
+        } else {
+            $request->validate([
+                'customer_name' => 'required|string|max:255',
+                'customer_email' => 'required|email|max:255|unique:users,email',
+                'customer_phone' => 'required|string|max:30',
+                'password' => 'required|string|min:6|confirmed',
+            ]);
+        }
+
+        try {
+            $pickupAt = Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $validated['pickup_date'] . ' ' . $validated['pickup_time']
+            );
+
+            $returnAt = Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $validated['return_date'] . ' ' . $validated['return_time']
+            );
+
+            if ($returnAt->lte($pickupAt)) {
+                return $this->bookingErrorResponse(
+                    $request,
+                    'Return date/time must be after pickup date/time.',
+                    422
+                );
+            }
+
+            $car = Car::findOrFail($validated['car_id']);
+
+            $serviceTypeName = DB::table('service_types')
+                ->where('id', $validated['service_type_id'])
+                ->value('name');
+
+            if (
+                stripos((string) $serviceTypeName, 'deliver') !== false &&
+                empty($validated['service_location'])
+            ) {
+                return $this->bookingErrorResponse(
+                    $request,
+                    'Location is required for delivery bookings.',
+                    422
+                );
+            }
+
+            $blockingStatusIds = Status::whereIn('name', [
+                'Pending',
+                'Confirmed',
+                'Reserved',
+                'Approved',
+                'Active',
+                'Pending Payment Verification',
+            ])->pluck('id')->toArray();
+
+            $hasConflict = Booking::where('car_id', $car->id)
+                ->whereIn('status_id', $blockingStatusIds)
+                ->where(function ($query) use ($pickupAt, $returnAt) {
+                    $query->where('pickup_at', '<', $returnAt)
+                        ->where('return_at', '>', $pickupAt);
+                })
+                ->exists();
+
+            if ($hasConflict) {
+                return $this->bookingErrorResponse(
+                    $request,
+                    'This car is not available for the selected date and time.',
+                    422
+                );
+            }
+
+            $status = Status::firstOrCreate([
+                'name' => $validated['status_name'] ?? 'Confirmed',
+            ]);
+
+            $days = max(1, (int) ceil($pickupAt->diffInMinutes($returnAt) / 1440));
+            $total = (float) $car->price_per_day * $days;
+
+            $booking = DB::transaction(function () use ($validated, $status, $pickupAt, $returnAt, $car, $total) {
+                if ($validated['customer_type'] === 'existing') {
+                    $user = User::where('role_id', 2)->findOrFail($validated['existing_user_id']);
+                } else {
+                    $user = User::create([
+                        'name' => $validated['customer_name'],
+                        'email' => strtolower(trim($validated['customer_email'])),
+                        'phone' => $validated['customer_phone'],
+                        'password' => Hash::make($validated['password']),
+                        'role_id' => 2,
+                    ]);
+                }
+
+                return Booking::create([
+                    'car_id' => $car->id,
+                    'user_id' => $user->id,
+                    'pickup_at' => $pickupAt,
+                    'return_at' => $returnAt,
+                    'total_price' => $total,
+                    'final_total' => $total,
+                    'status_id' => $status->id,
+                    'service_type_id' => $validated['service_type_id'],
+                    'service_location' => $validated['service_location'] ?? null,
+                ]);
+            });
+
+            return $this->bookingSuccessResponse(
+                $request,
+                'Walk-in booking created successfully.',
+                $booking->id
+            );
+        } catch (\Throwable $e) {
+            \Log::error('Admin walk-in booking error: ' . $e->getMessage());
+
+            return $this->bookingErrorResponse(
+                $request,
+                'Failed to create booking.',
+                500
+            );
+        }
+    }
+
+    public function updateStatus(Request $request, Booking $booking)
+    {
+        $request->validate([
+            'status_id' => 'required|exists:statuses,id',
+            'admin_message' => 'nullable|string|max:500',
+        ]);
+
+        $newStatus = Status::findOrFail($request->status_id);
+        $currentStatus = $booking->status->name ?? null;
+
+        $allowedTransitions = [
+            'Pending' => ['Cancelled'],
+            'Confirmed' => ['Cancelled'],
+            'Return' => ['Checkup', 'Damage', 'Needs Repair', 'Completed'],
+            'Active' => [],
+            'Completed' => [],
+            'Cancelled' => [],
+            'Checkup' => [],
+            'Damage' => [],
+            'Needs Repair' => [],
+            'Failed' => [],
+        ];
+
+        if (!array_key_exists($currentStatus, $allowedTransitions)) {
+            return redirect()
+                ->route('admin.bookings.index')
+                ->with('error', 'Invalid current booking status.');
+        }
+
+        if (!in_array($newStatus->name, $allowedTransitions[$currentStatus])) {
+            return redirect()
+                ->route('admin.bookings.index')
+                ->with('error', "Cannot change status from {$currentStatus} to {$newStatus->name}.");
+        }
+
+        $booking->update([
+            'status_id' => $newStatus->id,
+        ]);
+
+        $adminMessage = trim($request->admin_message ?? '');
+
+        if ($currentStatus === 'Return') {
+            $notificationMessage = "Your booking status has been updated to {$newStatus->name}.";
+
+            if (!empty($adminMessage)) {
+                $notificationMessage .= " Admin note: {$adminMessage}";
+            }
+
+            $title = match ($newStatus->name) {
+                'Damage' => 'Vehicle Damage Notice',
+                'Needs Repair' => 'Vehicle Repair Notice',
+                'Checkup' => 'Vehicle Checkup Notice',
+                'Completed' => 'Booking Completed',
+                default => 'Booking Return Update',
+            };
+
+            Notification::create([
+                'user_id' => $booking->user_id,
+                'booking_id' => $booking->id,
+                'title' => $title,
+                'message' => $notificationMessage,
+                'type' => 'booking',
+                'link' => route('user.booking.confirmation', $booking->id),
+            ]);
+        }
+
+        return redirect()
+            ->route('admin.bookings.index')
+            ->with('success', 'Booking status updated successfully.');
+    }
+
+    public function cancel($id)
+    {
+        $booking = Booking::with(['status', 'user'])->findOrFail($id);
+
+        if (($booking->status->name ?? '') === 'Cancelled') {
+            return redirect()
+                ->route('admin.bookings.index')
+                ->with('error', 'Booking is already cancelled.');
+        }
+
+        $cancelledStatus = Status::firstOrCreate(['name' => 'Cancelled']);
+
+        $booking->update([
+            'status_id' => $cancelledStatus->id,
+        ]);
+
+        Notification::create([
+            'user_id' => $booking->user_id,
+            'booking_id' => $booking->id,
+            'title' => 'Booking Cancelled',
+            'message' => 'Your booking has been cancelled by the administrator.',
+            'type' => 'booking',
+            'link' => route('user.booking.confirmation', $booking->id),
+        ]);
+
+        return redirect()
+            ->route('admin.bookings.index')
+            ->with('success', 'Booking cancelled successfully.');
+    }
+
+    public function calendar(Request $request)
+    {
+        $view = $request->get('view', 'weekly');
+        $dateString = $request->get('date');
+
+        $startDate = $dateString
+            ? Carbon::parse($dateString)
+            : now();
+
+        $startDate->startOfDay();
+
+        if ($view === '30days') {
+            $endDate = $startDate->copy()->addDays(29);
+        } else {
+            $endDate = $startDate->copy()->addDays(6);
+        }
+
+        $calendarDates = [];
+        $current = $startDate->copy();
+
+        while ($current <= $endDate) {
+            $calendarDates[] = [
+                'full' => $current->copy(),
+                'date' => $current->format('d'),
+                'day' => $current->format('D'),
+            ];
+            $current->addDay();
+        }
+
+        $query = Car::with([
+            'brand:id,name',
+            'transmission:id,type',
+            'fuelType',
+            'bookings' => function ($q) use ($startDate, $endDate) {
+                $q->whereHas('status', function ($s) {
+                    $s->whereIn('name', ['Pending', 'Confirmed', 'Reserved', 'Approved']);
+                })
+                ->where(function ($date) use ($startDate, $endDate) {
+                    $date->whereBetween('pickup_at', [$startDate, $endDate])
+                        ->orWhereBetween('return_at', [$startDate, $endDate])
+                        ->orWhere(function ($overlap) use ($startDate, $endDate) {
+                            $overlap->where('pickup_at', '<=', $startDate)
+                                ->where('return_at', '>=', $endDate);
+                        });
+                })
+                ->with('status');
+            }
+        ])->where('active', true);
+
+        if ($request->filled('brand_id')) {
+            $query->where('brand_id', $request->get('brand_id'));
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+
+            $query->where(function ($q) use ($search) {
+                $q->where('model', 'like', "%{$search}%");
+            });
+        }
+
+        $cars = $query->paginate(5);
+
+        $previousWeek = $startDate->copy()->subDays($view === '30days' ? 30 : 7)->format('Y-m-d');
+        $nextWeek = $startDate->copy()->addDays($view === '30days' ? 30 : 7)->format('Y-m-d');
+
+        $brands = Brand::all();
+        $serviceTypes = DB::table('service_types')->orderBy('id')->get();
+
+        $data = [
+            'cars' => $cars,
+            'calendarDates' => $calendarDates,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'previousWeek' => $previousWeek,
+            'nextWeek' => $nextWeek,
+            'brands' => $brands,
+            'view' => $view,
+            'serviceTypes' => $serviceTypes,
+        ];
+
+        if ($request->ajax()) {
+            return view('admin.admincalendar', $data)->render();
+        }
+
+        return view('admin.admincalendar', $data);
+    }
+
+    public function showJson(Booking $booking): JsonResponse
+    {
+        try {
+            $booking->load([
+                'user:id,name,email,phone',
+                'car:id,model,brand_id',
+                'car.brand:id,name',
+                'status:id,name',
+                'serviceType:id,name',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'id' => $booking->id,
+                'status' => $booking->status->name ?? 'N/A',
+                'pickup_at' => $booking->pickup_at?->format('M d, Y h:i A') ?? 'N/A',
+                'return_at' => $booking->return_at?->format('M d, Y h:i A') ?? 'N/A',
+                'total_price' => number_format($booking->total_price ?? 0, 2),
+                'service_type' => $booking->serviceType->name ?? 'N/A',
+                'service_location' => $booking->service_location ?? 'N/A',
+                'user' => [
+                    'id' => $booking->user->id ?? null,
+                    'name' => $booking->user->name ?? 'N/A',
+                    'email' => $booking->user->email ?? 'N/A',
+                    'phone' => $booking->user->phone ?? 'N/A',
+                ],
+                'car' => [
+                    'name' => ($booking->car->brand->name ?? 'Unknown') . ' ' . ($booking->car->model ?? ''),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function bookingErrorResponse(Request $request, string $message, int $statusCode = 422)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => $message,
+            ], $statusCode);
+        }
+
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('error', $message);
+    }
+
+    private function bookingSuccessResponse(Request $request, string $message, int $bookingId)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'booking_id' => $bookingId,
+            ]);
+        }
+
+        return redirect()
+            ->route('admin.bookings.index')
+            ->with('success', $message);
+    }
 }

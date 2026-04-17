@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Car Rental - User Dashboard')</title>
+    <title>@yield('title', 'EZE Car Rental  ')</title>
 
     <link href="{{ asset('template/assets/bootstrap.css') }}" rel="stylesheet">
     <link href="{{ asset('template/assets/fontawesome-all.css') }}" rel="stylesheet">

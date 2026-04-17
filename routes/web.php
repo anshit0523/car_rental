@@ -159,6 +159,11 @@ Route::middleware(['auth', 'admin'])
 
         Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/create/{car}', [AdminBookingController::class, 'create'])->name('bookings.create');
+
+        // add this
+        Route::get('/bookings/search-customer', [AdminBookingController::class, 'searchCustomer'])
+            ->name('bookings.search-customer');
+
         Route::post('/bookings', [AdminBookingController::class, 'store'])->name('bookings.store');
         Route::get('/bookings/{booking}/json', [AdminBookingController::class, 'showJson'])->name('bookings.showJson');
         Route::get('/bookings/{booking}', [AdminBookingController::class, 'showJson'])->name('bookings.json');
