@@ -83,7 +83,8 @@ class AdminPaymentController extends Controller
             'booking.car',
             'booking.photoReceipt',
             'paymentStatus',
-            'paymentMethod'
+            'paymentMethod',
+            'verifiedByUser:id,name'
         ]);
 
         if ($status) {
@@ -121,9 +122,10 @@ class AdminPaymentController extends Controller
     {
         $payment = Payment::with([
             'booking',
-            'paymentStatus'
-        ])
-            ->findOrFail($id);
+            'paymentStatus',
+            'paymentMethod',
+            'verifiedByUser:id,name'
+        ])->findOrFail($id);
 
         return view('admin.payments.show', compact('payment'));
     }
@@ -131,51 +133,55 @@ class AdminPaymentController extends Controller
 
     // aprove payment and update booking status to confirmed
     public function approve($paymentId)
-{
-    DB::transaction(function () use ($paymentId) {
-        $payment = Payment::with(['booking', 'booking.photoReceipt', 'booking.user'])
-            ->lockForUpdate()
-            ->findOrFail($paymentId);
+    {
+        DB::transaction(function () use ($paymentId) {
+            $payment = Payment::with(['booking', 'booking.photoReceipt', 'booking.user'])
+                ->lockForUpdate()
+                ->findOrFail($paymentId);
 
-        $booking = $payment->booking;
+            $booking = $payment->booking;
 
-        $completedStatusId = DB::table('payment_statuses')
-            ->where('name', 'Completed')
-            ->value('id');
+            $completedStatusId = DB::table('payment_statuses')
+                ->where('name', 'Completed')
+                ->value('id');
 
-        $payment->update([
-            'payment_status_id' => $completedStatusId,
-            'payment_date' => now()
-        ]);
-
-        $confirmedStatus = Status::where('name', 'Confirmed')->first();
-
-        if ($confirmedStatus) {
-            $booking->update([
-                'status_id' => $confirmedStatus->id
-            ]);
-        }
-
-        if ($booking->photoReceipt) {
-            $booking->photoReceipt->update([
-                'status' => 'verified',
+            $payment->update([
+                'payment_status_id' => $completedStatusId,
+                'payment_date' => now(),
                 'verified_by' => auth()->id(),
-                'verified_at' => now()
+                'verified_at' => now(),
             ]);
-        }
 
-        Notification::create([
-            'user_id' => $booking->user_id,
-            'booking_id' => $booking->id,
-            'title' => 'Payment Approved',
-            'message' => 'Your payment has been verified and your booking is now confirmed.',
-            'type' => 'payment',
-            'link' => route('user.booking.confirmation', $booking->id)
-        ]);
-    });
+            $confirmedStatus = Status::where('name', 'Confirmed')->first();
 
-    return back()->with('success', 'Payment approved and booking confirmed.');
-}
+            if ($confirmedStatus) {
+                $booking->update([
+                    'status_id' => $confirmedStatus->id
+                ]);
+            }
+
+            if ($booking->photoReceipt) {
+                $booking->photoReceipt->update([
+                    'status' => 'verified',
+                    'verified_by' => auth()->id(),
+                    'verified_at' => now()
+                ]);
+            }
+
+            Notification::create([
+                'user_id' => $booking->user_id,
+                'booking_id' => $booking->id,
+                'title' => 'Payment Approved',
+                'message' => 'Your payment has been verified and your booking is now confirmed.',
+                'type' => 'payment',
+                'link' => route('user.booking.confirmation', $booking->id)
+            ]);
+        });
+
+        return back()->with('success', 'Payment approved and booking confirmed.');
+    }
+
+
     // reject payment and update receipt status to rejected
     public function reject(Request $request, $paymentId)
     {
@@ -188,17 +194,16 @@ class AdminPaymentController extends Controller
         $booking = $payment->booking;
         $receipt = $booking->photoReceipt;
 
-        // Get payment status ID
         $failedStatusId = DB::table('payment_statuses')
             ->where('name', 'Failed')
             ->value('id');
 
-        // Update payment
         $payment->update([
-            'payment_status_id' => $failedStatusId
+            'payment_status_id' => $failedStatusId,
+            'verified_by' => auth()->id(),
+            'verified_at' => now(),
         ]);
 
-        // Update receipt
         if ($receipt) {
             $receipt->update([
                 'status' => 'rejected',
@@ -208,7 +213,6 @@ class AdminPaymentController extends Controller
             ]);
         }
 
-        // Update booking status to Failed
         $failedStatus = Status::where('name', 'Failed')->first();
 
         if ($failedStatus) {
@@ -217,80 +221,21 @@ class AdminPaymentController extends Controller
             ]);
         }
 
-        // Send notification
-       Notification::create([
-    'user_id' => $booking->user_id,
-    'booking_id' => $booking->id,
-    'title' => 'Payment Rejected',
-    'message' => 'Your payment receipt was rejected. Reason: ' . $request->admin_note,
-    'type' => 'payment',
-    'link' => route('user.rentals.failed')
-]);
+        Notification::create([
+            'user_id' => $booking->user_id,
+            'booking_id' => $booking->id,
+            'title' => 'Payment Rejected',
+            'message' => 'Your payment receipt was rejected. Reason: ' . $request->admin_note,
+            'type' => 'payment',
+            'link' => route('user.rentals.failed')
+        ]);
 
         return back()->with('success', 'Payment rejected and receipt marked as rejected.');
     }
 
+
     /**
      * Export payments to CSV
      */
-    public function export(Request $request)
-    {
-        $status = $request->input('status');
-        $dateFrom = $request->input('date_from');
-        $dateTo = $request->input('date_to');
-
-        $paymentsQuery = Payment::with([
-            'booking.user',
-            'booking.car',
-            'paymentStatus'
-        ]);
-
-        if ($status) {
-            $statusId = DB::table('payment_statuses')
-                ->where('name', ucfirst($status))
-                ->value('id');
-            $paymentsQuery = $paymentsQuery->where('payment_status_id', $statusId);
-        }
-
-        if ($dateFrom) {
-            $paymentsQuery = $paymentsQuery->whereDate('payment_date', '>=', $dateFrom);
-        }
-
-        if ($dateTo) {
-            $paymentsQuery = $paymentsQuery->whereDate('payment_date', '<=', $dateTo);
-        }
-
-        $payments = $paymentsQuery->orderBy('payment_date', 'desc')->get();
-
-        $csvFileName = 'payments_' . now()->format('Y-m-d_H-i-s') . '.csv';
-
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"$csvFileName\""
-        ];
-
-        $callback = function () use ($payments) {
-            $file = fopen('php://output', 'w');
-
-            // Header row
-            fputcsv($file, ['Date', 'Booking ID', 'Customer', 'Amount', 'Method', 'Status', 'Transaction ID']);
-
-            // Data rows
-            foreach ($payments as $payment) {
-                fputcsv($file, [
-                    $payment->payment_date->format('Y-m-d H:i:s'),
-                    'BK-' . $payment->booking_id,
-                    $payment->booking->user->name ?? 'N/A',
-                    $payment->amount,
-                    'PayPal', // Since we're only using PayPal for now
-                    $payment->paymentStatus->name ?? 'Unknown',
-                    $payment->transaction_id ?? 'N/A',
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
+   
 }

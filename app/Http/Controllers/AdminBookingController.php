@@ -244,6 +244,8 @@ public function store(Request $request)
                 'notes' => $isCash
                     ? 'Cash payment completed during booking creation'
                     : 'Payment submitted and waiting for verification',
+                    'verified_by' => $isCash ? auth()->id() : null,
+    'verified_at' => $isCash ? now() : null,
             ]);
 
             \Log::info('Admin booking payment created', [

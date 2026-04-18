@@ -6,15 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-    protected $fillable = [
-        'booking_id',
-        'payment_method_id',
-        'payment_status_id',
-        'payment_date',
-        'amount',
-        'transaction_id',
-        'notes',
-    ];
+   protected $fillable = [
+    'booking_id',
+    'payment_method_id',
+    'payment_status_id',
+    'payment_date',
+    'amount',
+    'transaction_id',
+    'notes',
+    'verified_by',
+    'verified_at',
+];
 
     protected $casts = [
         'payment_date' => 'datetime',
@@ -45,4 +47,9 @@ class Payment extends Model
     {
         return $this->hasOne(PhotoReceipt::class);
     }
+
+    public function verifiedByUser()
+{
+    return $this->belongsTo(User::class, 'verified_by');
+}
 }

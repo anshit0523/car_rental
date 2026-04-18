@@ -137,7 +137,8 @@
                                         <th class="px-6 py-4 text-right text-sm font-semibold text-slate-700">Amount</th>
                                         <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Method</th>
                                         <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Status</th>
-                                        <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Reference</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Verified By</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Verified At</th>
                                         <th class="px-6 py-4 text-center text-sm font-semibold text-slate-700">Actions</th>
                                     </tr>
                                 </thead>
@@ -174,9 +175,13 @@
                                                     {{ $status }}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 text-sm text-slate-600 font-mono">
-                                                {{ $payment->transaction_id ?? 'N/A' }}
-                                            </td>
+                                           <td class="px-6 py-4 text-sm text-gray-600">
+    {{ $payment->verifiedByUser->name ?? 'N/A' }}
+</td>
+
+<td class="px-6 py-4 text-sm text-gray-600">
+    {{ $payment->verified_at ? \Carbon\Carbon::parse($payment->verified_at)->format('M d, Y h:i A') : 'N/A' }}
+</td>
 
                                             <td class="px-6 py-4 text-sm space-x-3 text-center">
 
@@ -200,7 +205,7 @@
 
                                                     <!-- APPROVE -->
                                                     <button type="button"
-                                                       onclick="openApproveModal({{ $payment->id }}, '{{ $payment->booking_id }}')"
+                                                        onclick="openApproveModal({{ $payment->id }}, '{{ $payment->booking_id }}')"
                                                         class="text-green-600 hover:text-green-800">
                                                         <i class="fas fa-check"></i>
                                                     </button>
