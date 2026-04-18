@@ -163,7 +163,8 @@ Route::middleware(['auth', 'admin'])
         // add this
         Route::get('/bookings/search-customer', [AdminBookingController::class, 'searchCustomer'])
             ->name('bookings.search-customer');
-
+        Route::post('/bookings/check-availability-exact', [AvailabilityController::class, 'check'])
+            ->name('bookings.check-availability-exact');
         Route::post('/bookings', [AdminBookingController::class, 'store'])->name('bookings.store');
         Route::get('/bookings/{booking}/json', [AdminBookingController::class, 'showJson'])->name('bookings.showJson');
         Route::get('/bookings/{booking}', [AdminBookingController::class, 'showJson'])->name('bookings.json');

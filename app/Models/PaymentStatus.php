@@ -10,11 +10,8 @@ class PaymentStatus extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'code'];
 
-    /**
-     * A payment status can apply to many payments.
-     */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);

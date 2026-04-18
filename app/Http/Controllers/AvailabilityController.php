@@ -12,10 +12,14 @@ class AvailabilityController extends Controller
 {
     private function blockingStatusIds()
     {
-        // These statuses block dates (adjust names to match your DB)
-        return Status::whereIn('name', ['Reserved', 'Active', 'Pending', 'Confirmed'])
-            ->pluck('id')
-            ->toArray();
+        return Status::whereIn('name', [
+            'Reserved',
+            'Active',
+            'Pending',
+            'Confirmed',
+            'Approved',
+            'Pending Payment Verification',
+        ])->pluck('id')->toArray();
     }
 
     public function check(Request $request)
@@ -23,29 +27,63 @@ class AvailabilityController extends Controller
         $validated = $request->validate([
             'car_id' => 'required|exists:cars,id',
             'pickup_date' => 'required|date',
-            'return_date' => 'required|date|after:pickup_date',
+            'pickup_time' => 'required|date_format:H:i',
+            'return_date' => 'required|date',
+            'return_time' => 'required|date_format:H:i',
         ]);
 
-        $pickup = Carbon::parse($validated['pickup_date'])->startOfDay();
-        $return = Carbon::parse($validated['return_date'])->endOfDay();
+        $pickup = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $validated['pickup_date'] . ' ' . $validated['pickup_time']
+        );
+
+        $return = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $validated['return_date'] . ' ' . $validated['return_time']
+        );
+
+        if ($return->lte($pickup)) {
+            return response()->json([
+                'success' => false,
+                'available' => false,
+                'message' => 'Return date/time must be after pickup date/time.',
+            ], 422);
+        }
 
         $statusIds = $this->blockingStatusIds();
 
-        $hasConflict = Booking::where('car_id', $validated['car_id'])
+        $conflict = Booking::with('status')
+            ->where('car_id', $validated['car_id'])
             ->whereIn('status_id', $statusIds)
-            // overlap rule (same as your store logic)
-            ->where('pickup_at', '<', $return)
-            ->where('return_at', '>', $pickup)
-            ->exists();
+            ->where(function ($query) use ($pickup, $return) {
+                $query->where('pickup_at', '<', $return)
+                      ->where('return_at', '>', $pickup);
+            })
+            ->first();
+
+        if ($conflict) {
+            return response()->json([
+                'success' => true,
+                'available' => false,
+                'message' => 'This car is not available for the selected date and time.',
+                'conflict' => [
+                    'booking_id' => $conflict->id,
+                    'status' => $conflict->status->name ?? 'N/A',
+                    'pickup_at' => optional($conflict->pickup_at)->format('M d, Y h:i A'),
+                    'return_at' => optional($conflict->return_at)->format('M d, Y h:i A'),
+                ],
+            ]);
+        }
 
         return response()->json([
-            'available' => !$hasConflict
+            'success' => true,
+            'available' => true,
+            'message' => 'Car is available for the selected date and time.',
         ]);
     }
 
     public function unavailableDates($carId)
     {
-        // verify car exists
         Car::findOrFail($carId);
 
         $statusIds = $this->blockingStatusIds();
@@ -57,17 +95,26 @@ class AvailabilityController extends Controller
         $dates = [];
 
         foreach ($bookings as $b) {
-            $start = Carbon::parse($b->pickup_at)->startOfDay();
-            $end = Carbon::parse($b->return_at)->startOfDay();
+            $bookingStart = Carbon::parse($b->pickup_at);
+            $bookingEnd = Carbon::parse($b->return_at);
 
-            while ($start <= $end) {
-                $dates[] = $start->format('Y-m-d');
-                $start->addDay();
+            $cursor = $bookingStart->copy()->startOfDay();
+            $lastDay = $bookingEnd->copy()->startOfDay();
+
+            while ($cursor <= $lastDay) {
+                $dayStart = $cursor->copy()->startOfDay();
+                $dayEnd = $cursor->copy()->endOfDay();
+
+                $blocksWholeDay = $bookingStart->lte($dayStart) && $bookingEnd->gte($dayEnd);
+
+                if ($blocksWholeDay) {
+                    $dates[] = $cursor->format('Y-m-d');
+                }
+
+                $cursor->addDay();
             }
         }
 
-        $dates = array_values(array_unique($dates));
-
-        return response()->json($dates);
+        return response()->json(array_values(array_unique($dates)));
     }
 }

@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use App\Models\PaymentMethod;
-use App\Models\PaymentStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-   protected $fillable = [
+    protected $fillable = [
         'booking_id',
         'payment_method_id',
         'payment_status_id',
@@ -19,11 +17,10 @@ class Payment extends Model
     ];
 
     protected $casts = [
-        'paid_at' => 'datetime',
+        'payment_date' => 'datetime',
         'amount' => 'decimal:2',
     ];
 
-    // Relationships
     public function booking()
     {
         return $this->belongsTo(Booking::class);
@@ -38,13 +35,14 @@ class Payment extends Model
     {
         return $this->belongsTo(PaymentStatus::class, 'payment_status_id');
     }
+
     public function receipt()
     {
         return $this->hasOne(Receipt::class);
     }
 
     public function photoReceipt()
-{
-    return $this->hasOne(PhotoReceipt::class);
-}
+    {
+        return $this->hasOne(PhotoReceipt::class);
+    }
 }
