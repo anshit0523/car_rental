@@ -101,8 +101,6 @@ public function store(Request $request)
         'return_time' => 'required|date_format:H:i',
         'service_type_id' => 'required|exists:service_types,id',
         'payment_method_code' => 'required|exists:payment_methods,code',
-        'service_location' => 'nullable|string|max:255',
-        'status_name' => 'nullable|string|in:Pending,Confirmed',
         'customer_type' => 'required|in:existing,new',
         'existing_user_id' => 'nullable|exists:users,id',
         'existing_customer_search' => 'nullable|string|max:255',
@@ -110,6 +108,7 @@ public function store(Request $request)
         'customer_email' => 'nullable|email|max:255',
         'customer_phone' => 'nullable|string|max:30',
         'password' => 'nullable|string|min:6|confirmed',
+        'service_location' => 'nullable|string|max:255',
     ];
 
     $validated = $request->validate($baseRules);
@@ -188,14 +187,29 @@ public function store(Request $request)
             );
         }
 
-        $status = Status::firstOrCreate([
-            'name' => $validated['status_name'] ?? 'Confirmed',
+        $paymentMethod = PaymentMethods::where('code', $validated['payment_method_code'])->firstOrFail();
+        $isCash = $paymentMethod->code === 'cash';
+
+        $bookingStatus = Status::firstOrCreate([
+            'name' => $isCash ? 'Confirmed' : 'Pending Payment Verification',
         ]);
+
+        $paymentStatus = PaymentStatus::where('code', $isCash ? 'completed' : 'pending')->firstOrFail();
 
         $days = max(1, (int) ceil($pickupAt->diffInMinutes($returnAt) / 1440));
         $total = (float) $car->price_per_day * $days;
 
-        $booking = DB::transaction(function () use ($validated, $status, $pickupAt, $returnAt, $car, $total) {
+        $booking = DB::transaction(function () use (
+            $validated,
+            $pickupAt,
+            $returnAt,
+            $car,
+            $total,
+            $paymentMethod,
+            $bookingStatus,
+            $paymentStatus,
+            $isCash
+        ) {
             if ($validated['customer_type'] === 'existing') {
                 $user = User::where('role_id', 2)->findOrFail($validated['existing_user_id']);
             } else {
@@ -215,13 +229,10 @@ public function store(Request $request)
                 'return_at' => $returnAt,
                 'total_price' => $total,
                 'final_total' => $total,
-                'status_id' => $status->id,
+                'status_id' => $bookingStatus->id,
                 'service_type_id' => $validated['service_type_id'],
                 'service_location' => $validated['service_location'] ?? null,
             ]);
-
-            $paymentMethod = PaymentMethods::where('code', $validated['payment_method_code'])->firstOrFail();
-            $paymentStatus = PaymentStatus::where('code', 'pending')->firstOrFail();
 
             $payment = Payment::create([
                 'booking_id' => $booking->id,
@@ -230,7 +241,9 @@ public function store(Request $request)
                 'payment_method_id' => $paymentMethod->id,
                 'payment_status_id' => $paymentStatus->id,
                 'transaction_id' => null,
-                'notes' => 'Auto-created from admin walk-in booking',
+                'notes' => $isCash
+                    ? 'Cash payment completed during booking creation'
+                    : 'Payment submitted and waiting for verification',
             ]);
 
             \Log::info('Admin booking payment created', [
@@ -260,7 +273,7 @@ public function store(Request $request)
             500
         );
     }
-}
+} 
 
     public function updateStatus(Request $request, Booking $booking)
     {

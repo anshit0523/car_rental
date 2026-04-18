@@ -431,14 +431,7 @@
                                         </select>
                                     </div>
 
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                                        <select name="status_name"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
-                                            <option value="Confirmed" selected>Confirmed</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </div>
+                                    
                                 </div>
                             </div>
                         </div>
