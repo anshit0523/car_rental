@@ -14,6 +14,12 @@ function qsa(selector, root = document) {
     return Array.from(root.querySelectorAll(selector));
 }
 
+function getTodayStr() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 function showLoading() {
     qs('#loadingIndicator')?.classList.remove('hidden');
 }
@@ -143,6 +149,29 @@ function toggleServiceLocation() {
     }
 }
 
+function syncReturnMinDate() {
+    const pickupDateInput = qs('#modal_pickup_date');
+    const returnDateInput = qs('#modal_return_date');
+
+    if (!pickupDateInput || !returnDateInput) return;
+
+    const todayStr = getTodayStr();
+
+    pickupDateInput.min = todayStr;
+
+    if (!pickupDateInput.value || pickupDateInput.value < todayStr) {
+        pickupDateInput.value = todayStr;
+    }
+
+    const pickupDate = pickupDateInput.value || todayStr;
+
+    returnDateInput.min = pickupDate;
+
+    if (!returnDateInput.value || returnDateInput.value < pickupDate) {
+        returnDateInput.value = pickupDate;
+    }
+}
+
 function syncReturnToPickup() {
     const pickupDateInput = qs('#modal_pickup_date');
     const pickupTimeInput = qs('input[name="pickup_time"]');
@@ -247,6 +276,7 @@ async function checkExactAvailability() {
         saveBtn.disabled = false;
         saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
     } catch (error) {
+        console.error('Availability check failed:', error);
         box.classList.add('bg-red-50', 'border-red-200', 'text-red-700');
         box.textContent = 'Failed to check exact availability.';
         saveBtn.disabled = true;
@@ -350,6 +380,7 @@ async function searchExistingCustomers(keyword) {
 
         renderExistingCustomerDropdown(data.users);
     } catch (error) {
+        console.error('Customer search failed:', error);
         if (dropdown) {
             dropdown.innerHTML = '';
             dropdown.classList.add('hidden');
@@ -389,80 +420,81 @@ function openBookingModal(bookingId) {
     fetch(`${CONFIG.bookingDetailsBaseUrl}/${bookingId}`, {
         headers: { 'Accept': 'application/json' }
     })
-    .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-    })
-    .then(data => {
-        const isConfirmed = ['confirmed', 'approved', 'active'].includes((data.status || '').toLowerCase());
-        const statusBadge = isConfirmed ? 'bg-red-500' : 'bg-amber-500';
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            const isConfirmed = ['confirmed', 'approved', 'active'].includes((data.status || '').toLowerCase());
+            const statusBadge = isConfirmed ? 'bg-red-500' : 'bg-amber-500';
 
-        if (content) {
-            content.innerHTML = `
-                <div class="space-y-3 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Status</span>
-                        <span class="px-3 py-1 rounded-full text-white ${statusBadge}">
-                            ${data.status ?? 'N/A'}
-                        </span>
+            if (content) {
+                content.innerHTML = `
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Status</span>
+                            <span class="px-3 py-1 rounded-full text-white ${statusBadge}">
+                                ${data.status ?? 'N/A'}
+                            </span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Car</span>
+                            <span class="font-semibold">${data.car?.name ?? 'N/A'}</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Customer</span>
+                            <span>${data.user?.name ?? 'N/A'}</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Email</span>
+                            <span>${data.user?.email ?? 'N/A'}</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Phone</span>
+                            <span>${data.user?.phone ?? 'N/A'}</span>
+                        </div>
+
+                        <div class="border-t pt-3">
+                            <p><strong>Pickup:</strong> ${data.pickup_at ?? 'N/A'}</p>
+                            <p><strong>Return:</strong> ${data.return_at ?? 'N/A'}</p>
+                            <p><strong>Service Type:</strong> ${data.service_type ?? 'N/A'}</p>
+                            <p><strong>Location:</strong> ${data.service_location ?? 'N/A'}</p>
+                        </div>
+
+                        <div class="border-t pt-3 text-right font-bold text-lg">
+                            ₱${data.total_price ?? '0.00'}
+                        </div>
                     </div>
+                `;
+            }
 
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Car</span>
-                        <span class="font-semibold">${data.car?.name ?? 'N/A'}</span>
+            if (addBtn && data.car?.id && data.return_at_iso) {
+                const available = getPickupFromReturn(data.return_at_iso);
+
+                addBtn.dataset.carId = data.car.id;
+                addBtn.dataset.carName = data.car.name ?? 'N/A';
+                addBtn.dataset.pickupDate = available.pickupDate;
+                addBtn.dataset.pickupTime = available.pickupTime;
+                addBtn.dataset.returnDate = available.pickupDate;
+                addBtn.dataset.returnTime = available.pickupTime;
+
+                addBtn.classList.remove('hidden');
+            }
+        })
+        .catch((error) => {
+            console.error('Booking modal load failed:', error);
+            if (content) {
+                content.innerHTML = `
+                    <div class="text-red-500 text-center py-4">
+                        <i class="fas fa-exclamation-circle mr-2"></i>Failed to load booking details.
                     </div>
-
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Customer</span>
-                        <span>${data.user?.name ?? 'N/A'}</span>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Email</span>
-                        <span>${data.user?.email ?? 'N/A'}</span>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Phone</span>
-                        <span>${data.user?.phone ?? 'N/A'}</span>
-                    </div>
-
-                    <div class="border-t pt-3">
-                        <p><strong>Pickup:</strong> ${data.pickup_at ?? 'N/A'}</p>
-                        <p><strong>Return:</strong> ${data.return_at ?? 'N/A'}</p>
-                        <p><strong>Service Type:</strong> ${data.service_type ?? 'N/A'}</p>
-                        <p><strong>Location:</strong> ${data.service_location ?? 'N/A'}</p>
-                    </div>
-
-                    <div class="border-t pt-3 text-right font-bold text-lg">
-                        ₱${data.total_price ?? '0.00'}
-                    </div>
-                </div>
-            `;
-        }
-
-        if (addBtn && data.car?.id && data.return_at_iso) {
-            const available = getPickupFromReturn(data.return_at_iso);
-
-            addBtn.dataset.carId = data.car.id;
-            addBtn.dataset.carName = data.car.name ?? 'N/A';
-            addBtn.dataset.pickupDate = available.pickupDate;
-            addBtn.dataset.pickupTime = available.pickupTime;
-            addBtn.dataset.returnDate = available.pickupDate;
-            addBtn.dataset.returnTime = available.pickupTime;
-
-            addBtn.classList.remove('hidden');
-        }
-    })
-    .catch(() => {
-        if (content) {
-            content.innerHTML = `
-                <div class="text-red-500 text-center py-4">
-                    <i class="fas fa-exclamation-circle mr-2"></i>Failed to load booking details.
-                </div>
-            `;
-        }
-    });
+                `;
+            }
+        });
 }
 
 function closeBookingModal() {
@@ -500,13 +532,18 @@ function openCreateBookingModal(
     const returnDateInput = qs('#modal_return_date');
     const returnTimeInput = qs('input[name="return_time"]');
 
+    const todayStr = getTodayStr();
+    const safePickupDate = pickupDate && pickupDate >= todayStr ? pickupDate : todayStr;
+    const safeReturnDate = returnDate && returnDate >= safePickupDate ? returnDate : safePickupDate;
+
     if (carIdInput) carIdInput.value = carId;
     if (carNameInput) carNameInput.value = carName;
-    if (pickupDateInput) pickupDateInput.value = pickupDate;
+    if (pickupDateInput) pickupDateInput.value = safePickupDate;
     if (pickupTimeInput) pickupTimeInput.value = pickupTime;
-    if (returnDateInput) returnDateInput.value = returnDate ?? pickupDate;
+    if (returnDateInput) returnDateInput.value = safeReturnDate;
     if (returnTimeInput) returnTimeInput.value = returnTime ?? pickupTime;
 
+    syncReturnMinDate();
     syncReturnToPickup();
     toggleServiceLocation();
 
@@ -561,6 +598,7 @@ function closeCreateBookingModal() {
     const defaultRadio = qs('input[name="customer_type"][value="new"]');
     if (defaultRadio) defaultRadio.checked = true;
 
+    syncReturnMinDate();
     toggleCustomerType();
     toggleServiceLocation();
 }
@@ -608,7 +646,7 @@ async function submitCreateBookingForm(e) {
             fetchFilteredData();
         }, 900);
     } catch (error) {
-        console.error(error);
+        console.error('Create booking failed:', error);
         if (errorBox) {
             errorBox.textContent = 'Something went wrong while creating the booking.';
             errorBox.classList.remove('hidden');
@@ -640,6 +678,7 @@ function bindStaticEvents() {
     });
 
     qs('#modal_pickup_date')?.addEventListener('change', () => {
+        syncReturnMinDate();
         syncReturnToPickup();
         checkExactAvailability();
     });
@@ -697,6 +736,7 @@ function bindStaticEvents() {
 
     createBookingForm?.addEventListener('submit', submitCreateBookingForm);
 
+    syncReturnMinDate();
     toggleCustomerType();
     toggleServiceLocation();
 }

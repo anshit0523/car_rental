@@ -25,7 +25,8 @@
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
                                     <i class="fas fa-tag text-blue-600 mr-2"></i>Filter by Brand
                                 </label>
-                                <select name="brand_id"
+                                <select
+                                    name="brand_id"
                                     class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
                                     <option value="">All Brands</option>
                                     @foreach($brands as $brand)
@@ -41,7 +42,11 @@
                                     <i class="fas fa-search text-blue-600 mr-2"></i>Search
                                 </label>
                                 <div class="relative">
-                                    <input type="text" name="search" placeholder="Model..." value="{{ request('search') }}"
+                                    <input
+                                        type="text"
+                                        name="search"
+                                        placeholder="Model..."
+                                        value="{{ request('search') }}"
                                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
                                 </div>
                             </div>
@@ -56,28 +61,31 @@
                                     @endphp
 
                                     @if($isPastOrToday)
-                                        <span class="p-2.5 rounded-lg text-gray-300 cursor-not-allowed select-none"
+                                        <span
+                                            class="p-2.5 rounded-lg text-gray-300 cursor-not-allowed select-none"
                                             title="Cannot navigate to past dates">
                                             <i class="fas fa-chevron-left"></i>
                                         </span>
                                     @else
-                                        <a href="{{ route('admin.calendar', ['date' => $previousWeek, 'view' => request('view', 'weekly'), 'brand_id' => request('brand_id'), 'search' => request('search')]) }}"
+                                        <a
+                                            href="{{ route('admin.calendar', ['date' => $previousWeek, 'view' => request('view', 'weekly'), 'brand_id' => request('brand_id'), 'search' => request('search')]) }}"
                                             class="p-2.5 hover:bg-gray-100 rounded-lg transition text-gray-600 hover:text-blue-600">
                                             <i class="fas fa-chevron-left"></i>
                                         </a>
                                     @endif
 
-                                    <span
-                                        class="text-sm font-medium text-gray-700 px-3 py-2 bg-gray-50 rounded-lg min-w-fit">
+                                    <span class="text-sm font-medium text-gray-700 px-3 py-2 bg-gray-50 rounded-lg min-w-fit">
                                         {{ $startDate->format('M d') }} - {{ $endDate->format('M d, Y') }}
                                     </span>
 
-                                    <a href="{{ route('admin.calendar', ['date' => $nextWeek, 'view' => request('view', 'weekly'), 'brand_id' => request('brand_id'), 'search' => request('search')]) }}"
+                                    <a
+                                        href="{{ route('admin.calendar', ['date' => $nextWeek, 'view' => request('view', 'weekly'), 'brand_id' => request('brand_id'), 'search' => request('search')]) }}"
                                         class="p-2.5 hover:bg-gray-100 rounded-lg transition text-gray-600 hover:text-blue-600">
                                         <i class="fas fa-chevron-right"></i>
                                     </a>
 
-                                    <a href="{{ route('admin.calendar') }}"
+                                    <a
+                                        href="{{ route('admin.calendar') }}"
                                         class="ml-auto px-3 py-2 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition">
                                         Today
                                     </a>
@@ -89,22 +97,34 @@
                             <span class="text-sm font-semibold text-gray-700">View:</span>
                             <div class="flex gap-4">
                                 <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="radio" name="view" value="weekly" {{ request('view', 'weekly') == 'weekly' ? 'checked' : '' }} class="w-4 h-4 text-blue-600 cursor-pointer">
-                                    <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition">7
-                                        Days</span>
+                                    <input
+                                        type="radio"
+                                        name="view"
+                                        value="weekly"
+                                        {{ request('view', 'weekly') == 'weekly' ? 'checked' : '' }}
+                                        class="w-4 h-4 text-blue-600 cursor-pointer">
+                                    <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition">
+                                        7 Days
+                                    </span>
                                 </label>
+
                                 <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="radio" name="view" value="30days" {{ request('view') == '30days' ? 'checked' : '' }} class="w-4 h-4 text-blue-600 cursor-pointer">
-                                    <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition">30
-                                        Days</span>
+                                    <input
+                                        type="radio"
+                                        name="view"
+                                        value="30days"
+                                        {{ request('view') == '30days' ? 'checked' : '' }}
+                                        class="w-4 h-4 text-blue-600 cursor-pointer">
+                                    <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition">
+                                        30 Days
+                                    </span>
                                 </label>
                             </div>
                         </div>
                     </form>
                 </div>
 
-                <div id="loadingIndicator"
-                    class="hidden bg-blue-50 border-b border-blue-200 px-6 py-3 flex items-center gap-2">
+                <div id="loadingIndicator" class="hidden bg-blue-50 border-b border-blue-200 px-6 py-3 flex items-center gap-2">
                     <div class="animate-spin">
                         <i class="fas fa-spinner text-blue-600"></i>
                     </div>
@@ -115,8 +135,7 @@
                     <table class="w-full">
                         <thead>
                             <tr class="bg-gradient-to-r from-gray-800 to-gray-900 text-white sticky top-0 z-20">
-                                <th
-                                    class="sticky left-0 bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-4 text-left text-sm font-bold z-30 min-w-64">
+                                <th class="sticky left-0 bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-4 text-left text-sm font-bold z-30 min-w-64">
                                     <i class="fas fa-car mr-2"></i>Vehicle Details
                                 </th>
                                 @foreach($calendarDates as $date)
@@ -142,12 +161,10 @@
                                                     {{ $car->brand->name ?? 'Unknown' }}, {{ $car->model }}
                                                 </p>
                                                 <div class="flex gap-2 mt-2 flex-wrap">
-                                                    <span
-                                                        class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
                                                         <i class="fas fa-cog"></i>{{ $car->transmission->type ?? 'N/A' }}
                                                     </span>
-                                                    <span
-                                                        class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
                                                         <i class="fas fa-users"></i>{{ $car->seats }}
                                                     </span>
                                                 </div>
@@ -345,8 +362,7 @@
 
     <div class="relative w-full h-full overflow-y-auto">
         <div class="min-h-full flex items-start lg:items-center justify-end p-3 md:p-5 lg:pr-8">
-            <div
-                class="bg-white rounded-2xl shadow-2xl w-full max-w-md sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-hidden my-4 flex flex-col">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-hidden my-4 flex flex-col">
                 <div class="flex items-center justify-between px-5 md:px-6 py-4 border-b bg-white">
                     <h2 class="text-lg md:text-xl font-bold text-gray-800">Create Walk-in Booking</h2>
                     <button type="button" onclick="window.closeCreateBookingModal()" class="text-gray-400 hover:text-gray-600">
@@ -367,38 +383,62 @@
                                         Booking Summary
                                     </p>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Selected Car</label>
-                                    <input type="text" id="modal_car_name" readonly
+                                    <input
+                                        type="text"
+                                        id="modal_car_name"
+                                        readonly
                                         class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm">
                                 </div>
 
                                 <div class="grid grid-cols-1 gap-4">
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Pickup Date</label>
-                                        <input type="date" name="pickup_date" id="modal_pickup_date" required
+                                        <input
+                                            type="date"
+                                            name="pickup_date"
+                                            id="modal_pickup_date"
+                                            min="{{ now()->format('Y-m-d') }}"
+                                            required
                                             class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Pickup Time</label>
-                                        <input type="time" name="pickup_time" value="09:00" required
+                                        <input
+                                            type="time"
+                                            name="pickup_time"
+                                            value="09:00"
+                                            required
                                             class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Return Date</label>
-                                        <input type="date" name="return_date" id="modal_return_date" required
+                                        <input
+                                            type="date"
+                                            name="return_date"
+                                            id="modal_return_date"
+                                            min="{{ now()->format('Y-m-d') }}"
+                                            required
                                             class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Return Time</label>
-                                        <input type="time" name="return_time" value="18:00" required
+                                        <input
+                                            type="time"
+                                            name="return_time"
+                                            value="18:00"
+                                            required
                                             class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Service Type</label>
-                                        <select name="service_type_id" id="service_type_id" required
+                                        <select
+                                            name="service_type_id"
+                                            id="service_type_id"
+                                            required
                                             class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
                                             <option value="">Select service type</option>
                                             @foreach($serviceTypes as $serviceType)
@@ -421,7 +461,9 @@
 
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Method</label>
-                                        <select name="payment_method_code" required
+                                        <select
+                                            name="payment_method_code"
+                                            required
                                             class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
                                             @foreach($paymentMethods as $paymentMethod)
                                                 <option value="{{ $paymentMethod->code }}" {{ $paymentMethod->code === 'cash' ? 'selected' : '' }}>
@@ -429,9 +471,8 @@
                                                 </option>
                                             @endforeach
                                         </select>
+                                        
                                     </div>
-
-                                    
                                 </div>
                             </div>
                         </div>
@@ -443,7 +484,11 @@
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <label class="border border-gray-300 rounded-xl px-4 py-3 cursor-pointer hover:border-blue-500 transition">
                                             <div class="flex items-start gap-3">
-                                                <input type="radio" name="customer_type" value="existing" class="mt-1"
+                                                <input
+                                                    type="radio"
+                                                    name="customer_type"
+                                                    value="existing"
+                                                    class="mt-1"
                                                     onchange="window.toggleCustomerType()">
                                                 <div>
                                                     <p class="font-semibold text-gray-800">Existing Customer</p>
@@ -454,8 +499,13 @@
 
                                         <label class="border border-gray-300 rounded-xl px-4 py-3 cursor-pointer hover:border-blue-500 transition">
                                             <div class="flex items-start gap-3">
-                                                <input type="radio" name="customer_type" value="new" class="mt-1"
-                                                    checked onchange="window.toggleCustomerType()">
+                                                <input
+                                                    type="radio"
+                                                    name="customer_type"
+                                                    value="new"
+                                                    class="mt-1"
+                                                    checked
+                                                    onchange="window.toggleCustomerType()">
                                                 <div>
                                                     <p class="font-semibold text-gray-800">New Walk-in Customer</p>
                                                     <p class="text-sm text-gray-500">Create a new customer account</p>
@@ -465,8 +515,7 @@
                                     </div>
                                 </div>
 
-                                <div id="existingCustomerSection"
-                                    class="hidden space-y-4 border border-blue-100 bg-blue-50/50 rounded-2xl p-4">
+                                <div id="existingCustomerSection" class="hidden space-y-4 border border-blue-100 bg-blue-50/50 rounded-2xl p-4">
                                     <div>
                                         <h3 class="font-semibold text-gray-800">Find Existing Customer</h3>
                                         <p class="text-sm text-gray-500 mt-1">
@@ -510,8 +559,7 @@
                                         </div>
                                     </div>
 
-                                    <div id="existingCustomerNotFound"
-                                        class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                                    <div id="existingCustomerNotFound" class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
                                         Customer not found. Use <strong>New Walk-in Customer</strong> instead.
                                     </div>
                                 </div>
@@ -527,32 +575,46 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-2">Customer Name</label>
-                                            <input type="text" name="customer_name" id="new_customer_name"
+                                            <input
+                                                type="text"
+                                                name="customer_name"
+                                                id="new_customer_name"
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
                                         </div>
 
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
-                                            <input type="text" name="customer_phone" id="new_customer_phone"
+                                            <input
+                                                type="text"
+                                                name="customer_phone"
+                                                id="new_customer_phone"
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
                                         </div>
 
                                         <div class="md:col-span-2">
                                             <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                                            <input type="email" name="customer_email" id="new_customer_email"
+                                            <input
+                                                type="email"
+                                                name="customer_email"
+                                                id="new_customer_email"
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
                                                 placeholder="Enter email">
                                         </div>
 
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                                            <input type="password" name="password" id="new_customer_password"
+                                            <input
+                                                type="password"
+                                                name="password"
+                                                id="new_customer_password"
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
                                         </div>
 
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
-                                            <input type="password" name="password_confirmation"
+                                            <input
+                                                type="password"
+                                                name="password_confirmation"
                                                 id="new_customer_password_confirmation"
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
                                         </div>
@@ -560,12 +622,8 @@
                                 </div>
 
                                 <div id="liveAvailabilityBox" class="hidden rounded-xl px-4 py-3 text-sm border"></div>
-                                <div id="createBookingError"
-                                    class="hidden rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
-                                </div>
-                                <div id="createBookingSuccess"
-                                    class="hidden rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-600">
-                                </div>
+                                <div id="createBookingError" class="hidden rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600"></div>
+                                <div id="createBookingSuccess" class="hidden rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-600"></div>
 
                                 <div class="flex flex-col sm:flex-row justify-end gap-3 pt-3 border-t">
                                     <button
@@ -600,4 +658,4 @@ window.AdminCalendarConfig = {
     searchCustomerUrl: "{{ route('admin.bookings.search-customer') }}",
 };
 </script>
-<script src="{{ asset('js/admin/admincalendar.js') }}"></script>
+<script src="{{ asset('js/admin/admincalendar.js') }}?v={{ time() }}"></script>
