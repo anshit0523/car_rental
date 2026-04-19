@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
         PaymentMethodsSeeder::class,
         PaymentStatusesSeeder::class,
          CarTypeSeeder::class,
+         IssueStatusSeeder::class,
     ]);
 
     $this->call(RoleSeeder::class);

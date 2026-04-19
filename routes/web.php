@@ -155,12 +155,21 @@ Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard
+        |--------------------------------------------------------------------------
+        */
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/revenue', [AdminDashboardController::class, 'revenue'])->name('revenue');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Bookings
+        |--------------------------------------------------------------------------
+        */
         Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/create/{car}', [AdminBookingController::class, 'create'])->name('bookings.create');
-
-        // add this
         Route::get('/bookings/search-customer', [AdminBookingController::class, 'searchCustomer'])
             ->name('bookings.search-customer');
         Route::post('/bookings/check-availability-exact', [AvailabilityController::class, 'check'])
@@ -170,45 +179,85 @@ Route::middleware(['auth', 'admin'])
         Route::get('/bookings/{booking}', [AdminBookingController::class, 'showJson'])->name('bookings.json');
         Route::put('/bookings/{booking}/update-status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
         Route::post('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
-
         Route::get('/calendar', [AdminBookingController::class, 'calendar'])->name('calendar');
 
-        Route::get('/cars', [CarsController::class, 'cars'])->name('cars');
-        Route::post('/cars', [CarsController::class, 'store'])->name('cars.store');
-        Route::get('/cars/{id}/edit', [CarsController::class, 'edit'])->name('cars.edit');
-        Route::put('/cars/{id}', [CarsController::class, 'update'])->name('cars.update');
-        Route::delete('/cars/{id}', [CarsController::class, 'destroy'])->name('cars.destroy');
-
-        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
-        Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
-        Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
-        Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
-
-        Route::get('/revenue', [AdminDashboardController::class, 'revenue'])->name('revenue');
-
-        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
-        Route::get('/payments/{payment}', [AdminPaymentController::class, 'show'])->name('payments.show');
-        Route::get('/payments/export/csv', [AdminPaymentController::class, 'export'])->name('payments.export');
-        Route::post('/payments/{id}/approve', [AdminPaymentController::class, 'approve'])->name('payments.approve');
-        Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])->name('payments.reject');
-
-        Route::get('/payment-settings', [AdminPaymentSettingController::class, 'edit'])->name('payment-settings.edit');
-        Route::put('/payment-settings', [AdminPaymentSettingController::class, 'update'])->name('payment-settings.update');
-
-        Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');
-        Route::get('/replay', [LiveMapController::class, 'replayPage'])->name('replay');
-        Route::get('/replay/history', [LiveMapController::class, 'history'])->name('replay.history');
-        Route::get('/live/positions', [LiveMapController::class, 'positions'])->name('live.positions');
-
-        Route::get('/trackers/create', [AdminTrackerController::class, 'create'])->name('trackers.create');
-        Route::post('/trackers', [AdminTrackerController::class, 'store'])->name('trackers.store');
+        /*
+        |--------------------------------------------------------------------------
+        | Return Issues / Damage Reports
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/return-issues', [ReturnIssueController::class, 'index'])
+            ->name('return-issues.index');
 
         Route::get('/bookings/{booking}/return-issue/create', [ReturnIssueController::class, 'create'])
             ->name('return-issues.create');
 
         Route::post('/bookings/{booking}/return-issue', [ReturnIssueController::class, 'store'])
             ->name('return-issues.store');
+
+        Route::patch('/return-issues/{returnIssue}/status', [ReturnIssueController::class, 'updateStatus'])
+            ->name('return-issues.update-status');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Cars / Fleet
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/cars', [CarsController::class, 'cars'])->name('cars');
+        Route::post('/cars', [CarsController::class, 'store'])->name('cars.store');
+        Route::get('/cars/{id}/edit', [CarsController::class, 'edit'])->name('cars.edit');
+        Route::put('/cars/{id}', [CarsController::class, 'update'])->name('cars.update');
+        Route::delete('/cars/{id}', [CarsController::class, 'destroy'])->name('cars.destroy');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Users
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
+        Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Payments
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+        Route::get('/payments/{payment}', [AdminPaymentController::class, 'show'])->name('payments.show');
+        Route::get('/payments/export/csv', [AdminPaymentController::class, 'export'])->name('payments.export');
+        Route::post('/payments/{id}/approve', [AdminPaymentController::class, 'approve'])->name('payments.approve');
+        Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])->name('payments.reject');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Payment Settings
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/payment-settings', [AdminPaymentSettingController::class, 'edit'])->name('payment-settings.edit');
+        Route::put('/payment-settings', [AdminPaymentSettingController::class, 'update'])->name('payment-settings.update');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Live Tracking
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');
+        Route::get('/replay', [LiveMapController::class, 'replayPage'])->name('replay');
+        Route::get('/replay/history', [LiveMapController::class, 'history'])->name('replay.history');
+        Route::get('/live/positions', [LiveMapController::class, 'positions'])->name('live.positions');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Trackers
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/trackers/create', [AdminTrackerController::class, 'create'])->name('trackers.create');
+        Route::post('/trackers', [AdminTrackerController::class, 'store'])->name('trackers.store');
     });
+
+    
 
 /*
 |--------------------------------------------------------------------------

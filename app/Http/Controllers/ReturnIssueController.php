@@ -3,14 +3,45 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\IssueStatus;
 use App\Models\Notification;
 use App\Models\ReturnIssue;
+use App\Models\Status;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ReturnIssueController extends Controller
 {
+    public function index(Request $request)
+    {
+        $issueStatusId = $request->get('issue_status_id');
+
+        $returnIssues = ReturnIssue::with([
+            'booking.user',
+            'booking.car.brand',
+            'booking.status',
+            'photos',
+            'reporter',
+            'issueStatus',
+        ])
+            ->when($issueStatusId, function ($query) use ($issueStatusId) {
+                $query->where('issue_status_id', $issueStatusId);
+            })
+            ->latest('reported_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        $bookingStatuses = Status::whereIn('name', ['Checkup', 'Damage', 'Needs Repair'])->get();
+        $issueStatuses = IssueStatus::orderBy('id')->get();
+
+        return view('admin.adminreturn_issues_index', compact(
+            'returnIssues',
+            'bookingStatuses',
+            'issueStatuses',
+            'issueStatusId'
+        ));
+    }
+
     public function create(Request $request, Booking $booking)
     {
         $booking->load(['user', 'car.brand', 'status']);
@@ -33,6 +64,8 @@ class ReturnIssueController extends Controller
         ]);
 
         DB::transaction(function () use ($validated, $request, $booking) {
+            $pendingStatus = IssueStatus::where('name', 'pending')->firstOrFail();
+
             $issue = ReturnIssue::create([
                 'booking_id' => $booking->id,
                 'reported_by' => auth()->id(),
@@ -40,13 +73,14 @@ class ReturnIssueController extends Controller
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
                 'status' => 'pending',
+                'issue_status_id' => $pendingStatus->id,
                 'estimated_charge' => $validated['estimated_charge'] ?? 0,
                 'final_charge' => 0,
                 'reported_at' => now(),
             ]);
 
             if (!empty($validated['status_name'])) {
-                $status = \App\Models\Status::where('name', $validated['status_name'])->first();
+                $status = Status::where('name', $validated['status_name'])->first();
 
                 if ($status) {
                     $booking->update([
@@ -81,6 +115,48 @@ class ReturnIssueController extends Controller
             ->with('success', 'Return issue created successfully.');
     }
 
+    public function updateStatus(Request $request, ReturnIssue $returnIssue)
+    {
+        $validated = $request->validate([
+            'issue_status_id' => 'required|exists:issue_statuses,id',
+            'final_charge' => 'nullable|numeric|min:0',
+            'booking_status_name' => 'nullable|string|in:Checkup,Damage,Needs Repair',
+        ]);
+
+        DB::transaction(function () use ($validated, $returnIssue) {
+            $issueStatus = IssueStatus::findOrFail($validated['issue_status_id']);
+
+            $returnIssue->update([
+                'status' => $issueStatus->name,
+                'issue_status_id' => $issueStatus->id,
+                'final_charge' => $validated['final_charge'] ?? $returnIssue->final_charge,
+            ]);
+
+            if (!empty($validated['booking_status_name'])) {
+                $bookingStatus = Status::where('name', $validated['booking_status_name'])->first();
+
+                if ($bookingStatus) {
+                    $returnIssue->booking->update([
+                        'status_id' => $bookingStatus->id,
+                    ]);
+                }
+            }
+
+            Notification::create([
+                'user_id' => $returnIssue->booking->user_id,
+                'booking_id' => $returnIssue->booking->id,
+                'title' => 'Return Issue Updated',
+                'message' => 'Your return issue "' . $returnIssue->title . '" was updated to ' . ($issueStatus->label ?? ucfirst($issueStatus->name)) . '.',
+                'type' => 'booking',
+                'link' => route('user.return-issues.show', $returnIssue->id),
+            ]);
+        });
+
+        return redirect()
+            ->route('admin.return-issues.index')
+            ->with('success', 'Return issue updated successfully.');
+    }
+
     public function show(ReturnIssue $returnIssue)
     {
         $returnIssue->load([
@@ -88,6 +164,7 @@ class ReturnIssueController extends Controller
             'booking.car.brand',
             'photos',
             'reporter',
+            'issueStatus',
         ]);
 
         abort_if($returnIssue->booking->user_id !== auth()->id(), 403);

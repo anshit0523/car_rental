@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ReturnIssue extends Model
 {
@@ -12,7 +13,7 @@ class ReturnIssue extends Model
         'issue_type',
         'title',
         'description',
-        'status',
+        'issue_status_id',
         'estimated_charge',
         'final_charge',
         'reported_at',
@@ -37,5 +38,10 @@ class ReturnIssue extends Model
     public function photos()
     {
         return $this->hasMany(ReturnIssuePhoto::class);
+    }
+
+     public function issueStatus(): BelongsTo
+    {
+        return $this->belongsTo(IssueStatus::class);
     }
 }
