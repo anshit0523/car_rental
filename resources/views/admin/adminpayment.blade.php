@@ -116,8 +116,6 @@
                                 <input type="date" id="dateTo" value="{{ request('date_to') }}"
                                     class="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             </div>
-
-
                         </div>
                     </div>
 
@@ -148,9 +146,33 @@
                                             <td class="px-6 py-4 text-sm text-slate-900">
                                                 {{ \Carbon\Carbon::parse($payment->payment_date)->format('Y-m-d H:i') }}
                                             </td>
-                                            <td class="px-6 py-4 text-sm font-semibold text-blue-600">
-                                                #{{ $payment->booking_id }}
+
+                                            <td class="px-6 py-4 text-sm">
+                                                <div class="flex flex-col gap-1">
+                                                    <span class="font-semibold text-blue-600">
+                                                        #{{ $payment->booking_id }}
+                                                    </span>
+
+                                                    @if($payment->return_issue_id)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-orange-100 text-orange-800 w-fit">
+    Issue 
+</span>
+
+                                                        <span class="text-xs text-slate-500 leading-5">
+                                                            {{ $payment->returnIssue->title ?? 'Return Issue' }}
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-800 w-fit">
+    Booking 
+</span>
+                                                    @endif
+
+                                                    <div class="text-xs text-red-500">
+    return_issue_id: {{ $payment->return_issue_id ?? 'NULL' }}
+</div>
+                                                </div>
                                             </td>
+
                                             <td class="px-6 py-4 text-sm text-slate-900">
                                                 {{ $payment->booking->user->name ?? 'N/A' }}
                                             </td>
@@ -175,24 +197,21 @@
                                                     {{ $status }}
                                                 </span>
                                             </td>
-                                           <td class="px-6 py-4 text-sm text-gray-600">
-    {{ $payment->verifiedByUser->name ?? 'N/A' }}
-</td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                {{ $payment->verifiedByUser->name ?? 'N/A' }}
+                                            </td>
 
-<td class="px-6 py-4 text-sm text-gray-600">
-    {{ $payment->verified_at ? \Carbon\Carbon::parse($payment->verified_at)->format('M d, Y h:i A') : 'N/A' }}
-</td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                {{ $payment->verified_at ? \Carbon\Carbon::parse($payment->verified_at)->format('M d, Y h:i A') : 'N/A' }}
+                                            </td>
 
                                             <td class="px-6 py-4 text-sm space-x-3 text-center">
-
                                                 <!-- VIEW RECEIPT -->
                                                 @if($payment->booking->photoReceipt)
                                                     <button
                                                         onclick="openReceiptModal('{{ asset('storage/' . $payment->booking->photoReceipt->image_path) }}')"
                                                         class="text-blue-600 hover:text-blue-800">
-
                                                         <i class="fas fa-eye"></i>
-
                                                     </button>
                                                 @else
                                                     <span class="text-gray-400">No Receipt</span>
@@ -203,31 +222,34 @@
                                                     class="inline">
                                                     @csrf
 
-                                                    <!-- APPROVE -->
                                                     <button type="button"
-                                                        onclick="openApproveModal({{ $payment->id }}, '{{ $payment->booking_id }}')"
+                                                        onclick="openApproveModal(
+                                                            {{ $payment->id }},
+                                                            '{{ $payment->booking_id }}',
+                                                            '{{ $payment->return_issue_id ? 'issue' : 'booking' }}',
+                                                            @js($payment->returnIssue->title ?? '')
+                                                        )"
                                                         class="text-green-600 hover:text-green-800">
                                                         <i class="fas fa-check"></i>
                                                     </button>
-
                                                 </form>
-
-
-
 
                                                 <!-- REJECT -->
                                                 <button type="button"
-                                                    onclick="openRejectModal({{ $payment->id }}, '{{ $payment->booking_id }}')"
+                                                    onclick="openRejectModal(
+                                                        {{ $payment->id }},
+                                                        '{{ $payment->booking_id }}',
+                                                        '{{ $payment->return_issue_id ? 'issue' : 'booking' }}',
+                                                        @js($payment->returnIssue->title ?? '')
+                                                    )"
                                                     class="text-red-600 hover:text-red-800">
                                                     <i class="fas fa-times"></i>
                                                 </button>
-
-
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="8" class="px-6 py-8 text-center text-slate-400">
+                                            <td colspan="9" class="px-6 py-8 text-center text-slate-400">
                                                 <i class="fas fa-inbox text-2xl mb-2 block"></i>
                                                 No payments found
                                             </td>
@@ -248,12 +270,9 @@
         </div>
     </div>
 
-
     <!-- RECEIPT MODAL -->
     <div id="receiptModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-
         <div class="bg-white rounded-lg p-6 max-w-lg w-full relative">
-
             <button onclick="closeReceiptModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl">
                 ✕
             </button>
@@ -262,7 +281,6 @@
                 Payment Receipt
             </h3>
             <img id="receiptImage" class="w-full max-h-[500px] object-contain rounded border">
-
         </div>
     </div>
 
@@ -271,9 +289,9 @@
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <div class="flex items-start justify-between mb-4">
                 <div>
-                    <h3 class="text-lg font-bold text-slate-900">Approve Payment</h3>
-                    <p class="text-sm text-slate-500 mt-1">
-                        Are you sure you want to approve this booking payment?
+                    <h3 id="approveModalTitle" class="text-lg font-bold text-slate-900">Approve Payment</h3>
+                    <p id="approveModalSubtitle" class="text-sm text-slate-500 mt-1">
+                        Are you sure you want to approve this payment?
                     </p>
                 </div>
 
@@ -283,11 +301,21 @@
             </div>
 
             <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <span id="approveTypeLabel"
+                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                        Booking Payment
+                    </span>
+                </div>
+
                 <p class="text-sm text-green-800">
                     Booking:
                     <span id="approveBookingLabel" class="font-semibold"></span>
                 </p>
-                <p class="text-xs text-green-700 mt-1">
+
+                <p id="approveIssueText" class="text-sm text-green-800 mt-1 hidden"></p>
+
+                <p id="approveTypeHint" class="text-xs text-green-700 mt-2">
                     This will mark the payment as completed and confirm the booking.
                 </p>
             </div>
@@ -314,9 +342,9 @@
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <div class="flex items-start justify-between mb-4">
                 <div>
-                    <h3 class="text-lg font-bold text-slate-900">Reject Payment</h3>
-                    <p class="text-sm text-slate-500 mt-1">
-                        Are you sure you want to reject this booking payment?
+                    <h3 id="rejectModalTitle" class="text-lg font-bold text-slate-900">Reject Payment</h3>
+                    <p id="rejectModalSubtitle" class="text-sm text-slate-500 mt-1">
+                        Are you sure you want to reject this payment?
                     </p>
                 </div>
 
@@ -326,12 +354,22 @@
             </div>
 
             <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <span id="rejectTypeLabel"
+                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                        Booking Payment
+                    </span>
+                </div>
+
                 <p class="text-sm text-red-800">
                     Booking:
                     <span id="rejectBookingLabel" class="font-semibold"></span>
                 </p>
-                <p class="text-xs text-red-700 mt-1">
-                    Please provide the reason for rejection before continuing.
+
+                <p id="rejectIssueText" class="text-sm text-red-800 mt-1 hidden"></p>
+
+                <p id="rejectTypeHint" class="text-xs text-red-700 mt-2">
+                    Please provide the reason for rejecting this booking payment before continuing.
                 </p>
             </div>
 

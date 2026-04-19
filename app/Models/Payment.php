@@ -52,4 +52,10 @@ class Payment extends Model
 {
     return $this->belongsTo(User::class, 'verified_by');
 }
+
+public function returnIssue()
+{
+    return $this->belongsTo(\App\Models\ReturnIssue::class);
+}
+
 }
