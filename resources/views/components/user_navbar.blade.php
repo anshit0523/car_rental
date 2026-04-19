@@ -16,13 +16,13 @@
 <header style="background:#ffffff; border-bottom:1px solid #ececec; box-shadow:0 4px 18px rgba(0,0,0,0.04); position:sticky; top:0; z-index:999;">
     <div class="container">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:24px; min-height:84px; flex-wrap:wrap;">
-            
+
             <!-- Logo -->
             <div style="flex-shrink:0;">
                 <a href="{{ route('user.browse') }}" style="display:flex; align-items:center; gap:12px; text-decoration:none;">
-                    <img src="{{ asset('storage/cars/ezelogo.png') }}" 
-                        alt="Logo" 
-                        style="height:60px; width:auto; display:block;">
+                    <img src="{{ asset('storage/cars/ezelogo.png') }}"
+                         alt="Logo"
+                         style="height:60px; width:auto; display:block;">
 
                     <span style="font-size:30px; font-weight:700; color:#111; font-family:'Outfit', sans-serif;">
                         Eze Car Rental
@@ -86,27 +86,39 @@
 
                             @if($unreadCount > 0)
                                 <span id="notificationBadge"
-                                      style="position:absolute; top:8px; right:8px; width:10px; height:10px; background:#ef4444; border-radius:9999px;"></span>
+                                      style="position:absolute; top:8px; right:8px; min-width:10px; height:10px; background:#ef4444; border-radius:9999px;"></span>
                             @endif
                         </button>
 
                         <div id="notificationDropdown"
                              class="hidden"
-                             style="display:none; position:absolute; right:0; top:54px; width:320px; background:#fff; border:1px solid #ececec; border-radius:16px; box-shadow:0 14px 32px rgba(0,0,0,0.10); z-index:9999; overflow:hidden;">
+                             style="display:none; position:absolute; right:0; top:54px; width:340px; background:#fff; border:1px solid #ececec; border-radius:16px; box-shadow:0 14px 32px rgba(0,0,0,0.10); z-index:9999; overflow:hidden;">
 
-                            <div style="padding:16px 18px; border-bottom:1px solid #f1f1f1; font-size:15px; font-weight:700; color:#111;">
-                                Notifications
+                            <div style="padding:16px 18px; border-bottom:1px solid #f1f1f1; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                                <div style="font-size:15px; font-weight:700; color:#111;">
+                                    Notifications
+                                </div>
+
+                               
                             </div>
 
                             <div class="notification-list" style="max-height:320px; overflow-y:auto;">
                                 @forelse($notifications as $notification)
                                     <a href="{{ route('user.notifications.read', $notification->id) }}"
-                                       style="display:block; padding:14px 18px; border-bottom:1px solid #f5f5f5; text-decoration:none;">
-                                        <p style="margin:0 0 6px; font-size:14px; font-weight:600; color:#111;">
-                                            {{ $notification->title }}
-                                        </p>
+                                       style="display:block; padding:14px 18px; border-bottom:1px solid #f5f5f5; text-decoration:none; background:{{ $notification->is_read ? '#fff' : '#f8faff' }};">
+                                        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:6px;">
+                                            <p style="margin:0; font-size:14px; font-weight:600; color:#111; line-height:1.4;">
+                                                {{ $notification->title }}
+                                            </p>
 
-                                        <p style="margin:0 0 6px; font-size:12px; color:#666;">
+                                            @if(!$notification->is_read)
+                                                <span style="flex-shrink:0; font-size:10px; font-weight:700; color:#4338ca; background:#eef2ff; border:1px solid #c7d2fe; border-radius:9999px; padding:4px 7px; line-height:1;">
+                                                    New
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                        <p style="margin:0 0 6px; font-size:12px; color:#666; line-height:1.5;">
                                             {{ $notification->message }}
                                         </p>
 
@@ -120,6 +132,15 @@
                                     </div>
                                 @endforelse
                             </div>
+
+                            @if($notifications->count())
+                                <div style="padding:12px 18px; border-top:1px solid #f1f1f1; background:#fafafa;">
+                                    <a href="{{ route('user.notifications.index') }}"
+                                       style="display:block; text-align:center; font-size:13px; font-weight:700; color:#4f46e5; text-decoration:none;">
+                                       View All Notifications
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     </div>
 

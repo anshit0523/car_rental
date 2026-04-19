@@ -24,6 +24,7 @@ use App\Http\Controllers\Staff\StaffReturnIssueController;
 use App\Http\Controllers\UserBookingController;
 use App\Http\Controllers\UserCarBrowseController;
 use App\Http\Controllers\UserDashboardController;
+use App\Http\Controllers\UserNotificationController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserRentalController;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,7 @@ use Illuminate\Support\Facades\Route;
 | Landing
 |--------------------------------------------------------------------------
 */
+
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 
 /*
@@ -100,12 +102,17 @@ Route::middleware(['auth', 'user'])
         Route::get('/booking/continue', [UserBookingController::class, 'continueGuestBooking'])
             ->name('booking.continue');
 
-        Route::get('/notifications/read/{id}', [UserDashboardController::class, 'markRead'])
+            Route::get('/notifications', [UserNotificationController::class, 'index'])
+            ->name('notifications.index');
+
+        Route::get('/notifications/{id}/read', [UserNotificationController::class, 'markRead'])
             ->name('notifications.read');
 
-        Route::get('/notifications/latest', [UserDashboardController::class, 'latestNotifications'])
-            ->name('notifications.latest');
+        Route::post('/notifications/mark-all-read', [UserNotificationController::class, 'markAllRead'])
+            ->name('notifications.markAllRead');
 
+        Route::get('/notifications/latest', [UserNotificationController::class, 'latestNotifications'])
+            ->name('notifications.latest');
         Route::get('/profile', [UserProfileController::class, 'edit'])->name('profile');
         Route::post('/profile/update', [UserProfileController::class, 'updateInfo'])->name('profile.update');
         Route::post('/profile/password', [UserProfileController::class, 'updatePassword'])->name('profile.password');
@@ -257,7 +264,7 @@ Route::middleware(['auth', 'admin'])
         Route::post('/trackers', [AdminTrackerController::class, 'store'])->name('trackers.store');
     });
 
-    
+
 
 /*
 |--------------------------------------------------------------------------

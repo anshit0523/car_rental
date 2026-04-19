@@ -72,7 +72,6 @@ class ReturnIssueController extends Controller
                 'issue_type' => $validated['issue_type'],
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
-                'status' => 'pending',
                 'issue_status_id' => $pendingStatus->id,
                 'estimated_charge' => $validated['estimated_charge'] ?? 0,
                 'final_charge' => 0,
@@ -115,33 +114,49 @@ class ReturnIssueController extends Controller
             ->with('success', 'Return issue created successfully.');
     }
 
-    public function updateStatus(Request $request, ReturnIssue $returnIssue)
-    {
-        $validated = $request->validate([
-            'issue_status_id' => 'required|exists:issue_statuses,id',
-            'final_charge' => 'nullable|numeric|min:0',
-            'booking_status_name' => 'nullable|string|in:Checkup,Damage,Needs Repair',
+   public function updateStatus(Request $request, ReturnIssue $returnIssue)
+{
+    $validated = $request->validate([
+        'issue_status_id' => 'required|exists:issue_statuses,id',
+        'final_charge' => 'nullable|numeric|min:0',
+        'booking_status_name' => 'nullable|string|in:Checkup,Damage,Needs Repair',
+    ]);
+
+    $result = DB::transaction(function () use ($validated, $returnIssue) {
+        $issueStatus = IssueStatus::findOrFail($validated['issue_status_id']);
+
+        $oldIssueStatusId = (int) $returnIssue->issue_status_id;
+        $newIssueStatusId = (int) $issueStatus->id;
+        $statusChanged = $oldIssueStatusId !== $newIssueStatusId;
+
+        $oldFinalCharge = (float) $returnIssue->final_charge;
+        $newFinalCharge = array_key_exists('final_charge', $validated) && $validated['final_charge'] !== null
+            ? (float) $validated['final_charge']
+            : $oldFinalCharge;
+
+        $returnIssue->update([
+            'status' => $issueStatus->name,
+            'issue_status_id' => $issueStatus->id,
+            'final_charge' => $newFinalCharge,
         ]);
 
-        DB::transaction(function () use ($validated, $returnIssue) {
-            $issueStatus = IssueStatus::findOrFail($validated['issue_status_id']);
+        $bookingStatusChanged = false;
+        $updatedBookingStatusName = optional($returnIssue->booking->status)->name;
 
-            $returnIssue->update([
-                'status' => $issueStatus->name,
-                'issue_status_id' => $issueStatus->id,
-                'final_charge' => $validated['final_charge'] ?? $returnIssue->final_charge,
-            ]);
+        if (!empty($validated['booking_status_name'])) {
+            $bookingStatus = Status::where('name', $validated['booking_status_name'])->first();
 
-            if (!empty($validated['booking_status_name'])) {
-                $bookingStatus = Status::where('name', $validated['booking_status_name'])->first();
+            if ($bookingStatus && (int) $returnIssue->booking->status_id !== (int) $bookingStatus->id) {
+                $returnIssue->booking->update([
+                    'status_id' => $bookingStatus->id,
+                ]);
 
-                if ($bookingStatus) {
-                    $returnIssue->booking->update([
-                        'status_id' => $bookingStatus->id,
-                    ]);
-                }
+                $bookingStatusChanged = true;
+                $updatedBookingStatusName = $bookingStatus->name;
             }
+        }
 
+        if ($statusChanged) {
             Notification::create([
                 'user_id' => $returnIssue->booking->user_id,
                 'booking_id' => $returnIssue->booking->id,
@@ -150,12 +165,29 @@ class ReturnIssueController extends Controller
                 'type' => 'booking',
                 'link' => route('user.return-issues.show', $returnIssue->id),
             ]);
-        });
+        }
 
-        return redirect()
-            ->route('admin.return-issues.index')
-            ->with('success', 'Return issue updated successfully.');
+        return [
+            'success' => true,
+            'status_changed' => $statusChanged,
+            'booking_status_changed' => $bookingStatusChanged,
+            'issue_id' => $returnIssue->id,
+            'issue_status_id' => $issueStatus->id,
+            'issue_status_name' => $issueStatus->name,
+            'issue_status_label' => $issueStatus->label ?? ucfirst($issueStatus->name),
+            'final_charge' => $newFinalCharge,
+            'booking_status_name' => $updatedBookingStatusName,
+        ];
+    });
+
+    if ($request->expectsJson() || $request->ajax()) {
+        return response()->json($result);
     }
+
+    return redirect()
+        ->route('admin.return-issues.index')
+        ->with('success', 'Return issue updated successfully.');
+}
 
     public function show(ReturnIssue $returnIssue)
     {

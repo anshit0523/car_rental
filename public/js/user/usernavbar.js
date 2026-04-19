@@ -22,8 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!dropdown || !bell) return;
 
         if (!dropdown.contains(e.target) && !bell.contains(e.target)) {
-            dropdown.classList.add('hidden');
-            dropdown.style.display = 'none';
+            closeNotificationsDropdown();
         }
     });
 
@@ -46,9 +45,26 @@ function toggleNotifications(event) {
         dropdown.classList.remove('hidden');
         dropdown.style.display = 'block';
     } else {
-        dropdown.classList.add('hidden');
-        dropdown.style.display = 'none';
+        closeNotificationsDropdown();
     }
+}
+
+function closeNotificationsDropdown() {
+    const dropdown = document.getElementById('notificationDropdown');
+    if (!dropdown) return;
+
+    dropdown.classList.add('hidden');
+    dropdown.style.display = 'none';
+}
+
+function escapeHtml(value) {
+    if (value === null || value === undefined) return '';
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 function loadNotifications() {
@@ -78,7 +94,7 @@ function loadNotifications() {
                 badge.style.position = 'absolute';
                 badge.style.top = '8px';
                 badge.style.right = '8px';
-                badge.style.width = '10px';
+                badge.style.minWidth = '10px';
                 badge.style.height = '10px';
                 badge.style.background = '#ef4444';
                 badge.style.borderRadius = '9999px';
@@ -100,17 +116,28 @@ function loadNotifications() {
         }
 
         data.notifications.forEach(n => {
+            const isUnread = !n.is_read;
+
             dropdownList.innerHTML += `
-                <a href="${n.read_url}"
-                   style="display:block; padding:14px 18px; border-bottom:1px solid #f5f5f5; text-decoration:none;">
-                    <p style="margin:0 0 6px; font-size:14px; font-weight:600; color:#111;">
-                        ${n.title ?? ''}
+                <a href="${escapeHtml(n.read_url)}"
+                   style="display:block; padding:14px 18px; border-bottom:1px solid #f5f5f5; text-decoration:none; background:${isUnread ? '#f8faff' : '#fff'};">
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:6px;">
+                        <p style="margin:0; font-size:14px; font-weight:600; color:#111; line-height:1.4;">
+                            ${escapeHtml(n.title)}
+                        </p>
+                        ${isUnread ? `
+                            <span style="flex-shrink:0; font-size:10px; font-weight:700; color:#4338ca; background:#eef2ff; border:1px solid #c7d2fe; border-radius:9999px; padding:4px 7px; line-height:1;">
+                                New
+                            </span>
+                        ` : ''}
+                    </div>
+
+                    <p style="margin:0 0 6px; font-size:12px; color:#666; line-height:1.5;">
+                        ${escapeHtml(n.message)}
                     </p>
-                    <p style="margin:0 0 6px; font-size:12px; color:#666;">
-                        ${n.message ?? ''}
-                    </p>
+
                     <p style="margin:0; font-size:11px; color:#aaa;">
-                        ${n.time ?? ''}
+                        ${escapeHtml(n.time)}
                     </p>
                 </a>
             `;

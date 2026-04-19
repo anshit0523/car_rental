@@ -88,48 +88,6 @@ class UserDashboardController extends Controller
 
 
 
-  // notification mark as read
-public function markRead($id)
-{
-    $notification = Notification::findOrFail($id);
-
-    abort_if($notification->user_id !== auth()->id(), 403);
-
-    $notification->update([
-        'is_read' => true
-    ]);
-
-    return redirect($notification->link ?: route('user.browse'));
-}
-
-// Fetch latest notifications
-public function latestNotifications()
-{
-    $notifications = Notification::where('user_id', auth()->id())
-        ->latest()
-        ->take(5)
-        ->get()
-        ->map(function ($notification) {
-            return [
-                'id' => $notification->id,
-                'title' => $notification->title,
-                'message' => $notification->message,
-                'time' => $notification->created_at->diffForHumans(),
-                'read_url' => route('user.notifications.read', $notification->id),
-                'link' => $notification->link,
-                'is_read' => $notification->is_read,
-            ];
-        });
-
-    $unreadCount = Notification::where('user_id', auth()->id())
-        ->where('is_read', false)
-        ->count();
-
-    return response()->json([
-        'notifications' => $notifications,
-        'unread' => $unreadCount
-    ]);
-}
 
     public function rentals()
     {
