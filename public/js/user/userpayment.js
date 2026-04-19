@@ -43,23 +43,33 @@ document.addEventListener("DOMContentLoaded", function () {
         errorModal.style.display = "none";
     };
 
+    function setPaymentMethod(method) {
+        clearActiveOptions();
+        hideAllPaymentSections();
+
+        if (paymentMethodInput) {
+            paymentMethodInput.value = method;
+        }
+
+        const selectedOption = document.querySelector(`.payment-option[data-method="${method}"]`);
+        if (selectedOption) {
+            selectedOption.classList.add("is-active");
+        }
+
+        if (method === "gcash" && gcashSection) {
+            gcashSection.classList.remove("hidden-panel");
+        }
+
+        if (method === "bank" && bankSection) {
+            bankSection.classList.remove("hidden-panel");
+        }
+    }
+
     paymentOptions.forEach(option => {
         option.addEventListener("click", function () {
             const method = this.dataset.method;
-
-            clearActiveOptions();
-            this.classList.add("is-active");
-
-            hideAllPaymentSections();
-            paymentMethodInput.value = method;
-
-            if (method === "gcash" && gcashSection) {
-                gcashSection.classList.remove("hidden-panel");
-            }
-
-            if (method === "bank" && bankSection) {
-                bankSection.classList.remove("hidden-panel");
-            }
+            if (!method) return;
+            setPaymentMethod(method);
         });
     });
 
@@ -102,7 +112,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (gcashInput && gcashPreview && gcashPreviewImg) {
         gcashInput.addEventListener("change", function () {
             const file = this.files && this.files[0];
-            if (!file) return;
+
+            if (!file) {
+                gcashPreviewImg.src = "";
+                gcashPreview.style.display = "none";
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = function (e) {
@@ -116,7 +131,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (bankInput && bankPreview && bankPreviewImg) {
         bankInput.addEventListener("change", function () {
             const file = this.files && this.files[0];
-            if (!file) return;
+
+            if (!file) {
+                bankPreviewImg.src = "";
+                bankPreview.style.display = "none";
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = function (e) {

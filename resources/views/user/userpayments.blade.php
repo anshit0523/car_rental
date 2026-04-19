@@ -68,6 +68,14 @@
         letter-spacing: -0.02em;
     }
 
+    .payment-card-subtitle {
+        margin: 0 0 16px;
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.6;
+        font-weight: 500;
+    }
+
     .payment-method-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -298,6 +306,7 @@
     .bank-row span:last-child {
         color: #0f172a;
         font-weight: 800;
+        text-align: right;
     }
 
     .file-input {
@@ -399,6 +408,27 @@
         color: #0f172a;
     }
 
+    .payment-alert {
+        margin-bottom: 14px;
+        border-radius: 14px;
+        padding: 14px 15px;
+        border: 1px solid #e5e7eb;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .payment-alert-error {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #b91c1c;
+    }
+
+    .payment-alert-warning {
+        background: #fff7ed;
+        border-color: #fdba74;
+        color: #c2410c;
+    }
+
     .error-modal {
         position: fixed;
         inset: 0;
@@ -486,15 +516,14 @@
 @section('content')
 <div class="payment-page">
     <div class="payment-shell">
-
         <div class="payment-header">
-            <a href="{{ route('user.browse') }}" class="payment-back" aria-label="Back">
+            <a href="{{ !empty($returnIssue) ? route('user.return-issues.show', $returnIssue->id) : route('user.browse') }}" class="payment-back" aria-label="Back">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
 
-            <h1 class="payment-title">Payment</h1>
+            <h1 class="payment-title">{{ $paymentTitle ?? 'Payment' }}</h1>
         </div>
 
         @php
@@ -514,12 +543,29 @@
         @endphp
 
         <div class="payment-grid">
-
             <!-- Left -->
             <div style="display:flex; flex-direction:column; gap:18px;">
 
+                @if($errors->any())
+                    <div class="payment-alert payment-alert-error">
+                        @foreach($errors->all() as $error)
+                            <div>{{ $error }}</div>
+                        @endforeach
+                    </div>
+                @endif
+
+                @if(($paymentType ?? 'booking') === 'return_issue' && !empty($returnIssue))
+                    <div class="payment-alert payment-alert-warning">
+                        You are paying for a return issue: <strong>{{ $returnIssue->title }}</strong>.
+                        Please upload your proof of payment after sending the exact final charge.
+                    </div>
+                @endif
+
                 <div class="payment-card">
                     <h2 class="payment-card-title">Select Payment Method</h2>
+                    <p class="payment-card-subtitle">
+                        Choose your preferred payment option, then upload your receipt after sending the payment.
+                    </p>
 
                     <div class="payment-method-grid">
                         <label class="payment-option" data-method="gcash">
@@ -540,6 +586,7 @@
                     @csrf
 
                     <input type="hidden" name="booking_id" value="{{ $booking->id }}">
+                    <input type="hidden" name="return_issue_id" value="{{ $returnIssue->id ?? '' }}">
                     <input type="hidden" name="payment_method" id="paymentMethod">
 
                     <!-- GCASH -->
@@ -667,17 +714,35 @@
                     </div>
 
                     <div class="summary-lines">
-                      
-                        
+                        @if(($paymentType ?? 'booking') === 'return_issue' && !empty($returnIssue))
+                            <div class="summary-line">
+                                <span>Payment For :</span>
+                                <span>Return Issue</span>
+                            </div>
+
+                            <div class="summary-line">
+                                <span>Issue :</span>
+                                <span>{{ $returnIssue->title }}</span>
+                            </div>
+
+                            <div class="summary-line">
+                                <span>Status :</span>
+                                <span>{{ optional($returnIssue->issueStatus)->label ?? ucfirst(str_replace('_', ' ', $returnIssue->status ?? '')) }}</span>
+                            </div>
+                        @else
+                            <div class="summary-line">
+                                <span>Payment For :</span>
+                                <span>Booking</span>
+                            </div>
+                        @endif
 
                         <div class="summary-line total">
                             <span>Total :</span>
-                            <span>₱{{ number_format($total, 2) }}</span>
+                            <span>₱{{ number_format($payableAmount ?? $total, 2) }}</span>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
 
         <!-- Error Modal -->

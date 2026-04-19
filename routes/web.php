@@ -138,7 +138,7 @@ Route::middleware(['auth', 'user'])
         Route::get('/booking/{id}/confirmation', [UserBookingController::class, 'confirmation'])
             ->name('booking.confirmation');
 
-        Route::get('/payments', [UserBookingController::class, 'showPayment'])->name('payments');
+        Route::get('/payments', [PaymentController::class, 'showPayment'])->name('payments');
         Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 
         Route::get('/receipts', [ReceiptController::class, 'index'])->name('receipts.index');

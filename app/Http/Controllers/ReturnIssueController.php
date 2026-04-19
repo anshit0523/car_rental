@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\IssueStatus;
 use App\Models\Notification;
 use App\Models\ReturnIssue;
+use App\Models\ReturnIssueHistory;
 use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -107,6 +108,17 @@ class ReturnIssueController extends Controller
                 'type' => 'booking',
                 'link' => route('user.return-issues.show', $issue->id),
             ]);
+
+            ReturnIssueHistory::create([
+    'return_issue_id' => $issue->id,
+    'issue_status_id' => $pendingStatus->id,
+    'changed_by' => auth()->id(),
+    'event_type' => 'created',
+    'title' => 'Issue Report Created',
+    'message' => 'A new return issue was reported and marked as Pending.',
+    'final_charge' => 0,
+    'booking_status_name' => $validated['status_name'] ?? null,
+]);
         });
 
         return redirect()
@@ -114,7 +126,9 @@ class ReturnIssueController extends Controller
             ->with('success', 'Return issue created successfully.');
     }
 
-   public function updateStatus(Request $request, ReturnIssue $returnIssue)
+  
+
+  public function updateStatus(Request $request, ReturnIssue $returnIssue)
 {
     $validated = $request->validate([
         'issue_status_id' => 'required|exists:issue_statuses,id',
@@ -133,6 +147,8 @@ class ReturnIssueController extends Controller
         $newFinalCharge = array_key_exists('final_charge', $validated) && $validated['final_charge'] !== null
             ? (float) $validated['final_charge']
             : $oldFinalCharge;
+
+        $chargeChanged = $oldFinalCharge !== $newFinalCharge;
 
         $returnIssue->update([
             'status' => $issueStatus->name,
@@ -154,6 +170,35 @@ class ReturnIssueController extends Controller
                 $bookingStatusChanged = true;
                 $updatedBookingStatusName = $bookingStatus->name;
             }
+        }
+
+        if ($statusChanged || $chargeChanged || $bookingStatusChanged) {
+            $historyTitle = 'Issue Updated';
+            $historyMessageParts = [];
+
+            if ($statusChanged) {
+                $historyTitle = 'Issue Status Updated';
+                $historyMessageParts[] = 'Status changed to ' . ($issueStatus->label ?? ucfirst($issueStatus->name)) . '.';
+            }
+
+            if ($chargeChanged) {
+                $historyMessageParts[] = 'Final charge updated to ₱' . number_format($newFinalCharge, 2) . '.';
+            }
+
+            if ($bookingStatusChanged) {
+                $historyMessageParts[] = 'Booking status changed to ' . $updatedBookingStatusName . '.';
+            }
+
+            ReturnIssueHistory::create([
+                'return_issue_id' => $returnIssue->id,
+                'issue_status_id' => $issueStatus->id,
+                'changed_by' => auth()->id(),
+                'event_type' => 'updated',
+                'title' => $historyTitle,
+                'message' => implode(' ', $historyMessageParts),
+                'final_charge' => $newFinalCharge,
+                'booking_status_name' => $updatedBookingStatusName,
+            ]);
         }
 
         if ($statusChanged) {
@@ -189,18 +234,23 @@ class ReturnIssueController extends Controller
         ->with('success', 'Return issue updated successfully.');
 }
 
-    public function show(ReturnIssue $returnIssue)
-    {
-        $returnIssue->load([
-            'booking.user',
-            'booking.car.brand',
-            'photos',
-            'reporter',
-            'issueStatus',
-        ]);
 
-        abort_if($returnIssue->booking->user_id !== auth()->id(), 403);
+   public function show(ReturnIssue $returnIssue)
+{
+    $returnIssue->load([
+        'booking.user',
+        'booking.car.brand',
+        'photos',
+        'reporter',
+        'issueStatus',
+        'histories.issueStatus',
+        'histories.changedBy',
+    ]);
 
-        return view('user.user_return_issue', compact('returnIssue'));
-    }
+    abort_if($returnIssue->booking->user_id !== auth()->id(), 403);
+
+    return view('user.user_return_issue', compact('returnIssue'));
+}
+
+
 }

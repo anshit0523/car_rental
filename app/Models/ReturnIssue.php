@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+
 class ReturnIssue extends Model
 {
     protected $fillable = [
@@ -44,4 +45,9 @@ class ReturnIssue extends Model
     {
         return $this->belongsTo(IssueStatus::class);
     }
+
+    public function histories()
+{
+    return $this->hasMany(ReturnIssueHistory::class)->latest();
+}
 }
