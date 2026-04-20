@@ -81,6 +81,7 @@
                         'route' => route('admin.payments.index'),
                         'pattern' => 'admin.payments*',
                         'icon' => 'fas fa-credit-card',
+                        'badge' => $pendingPaymentsCount ?? 0,
                     ],
                     [
                         'label' => 'Payment Settings',
@@ -119,8 +120,18 @@
 
                     <a href="{{ $item['route'] }}"
                        class="{{ $baseLinkClass }} {{ $isActive ? 'bg-white/20 text-white shadow-sm' : 'hover:bg-white/10 hover:text-white' }}">
-                        <i class="{{ $item['icon'] }} w-5 text-center"></i>
-                        <span class="font-medium">{{ $item['label'] }}</span>
+                        <div class="flex items-center justify-between w-full">
+                            <div class="flex items-center gap-3">
+                                <i class="{{ $item['icon'] }} w-5 text-center"></i>
+                                <span class="font-medium">{{ $item['label'] }}</span>
+                            </div>
+
+                            @if(isset($item['badge']) && $item['badge'] > 0)
+                                <span class="ml-3 inline-flex min-w-[20px] h-5 px-1.5 items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold leading-none">
+                                    {{ $item['badge'] > 99 ? '99+' : $item['badge'] }}
+                                </span>
+                            @endif
+                        </div>
                     </a>
                 @endforeach
             </nav>
@@ -191,8 +202,18 @@
 
                         <a href="{{ $item['route'] }}"
                            class="{{ $baseLinkClass }} {{ $isActive ? 'bg-white/20 text-white shadow-sm' : 'hover:bg-white/10 hover:text-white' }}">
-                            <i class="{{ $item['icon'] }} w-5 text-center"></i>
-                            <span class="font-medium">{{ $item['label'] }}</span>
+                            <div class="flex items-center justify-between w-full">
+                                <div class="flex items-center gap-3">
+                                    <i class="{{ $item['icon'] }} w-5 text-center"></i>
+                                    <span class="font-medium">{{ $item['label'] }}</span>
+                                </div>
+
+                                @if(isset($item['badge']) && $item['badge'] > 0)
+                                    <span class="ml-3 inline-flex min-w-[20px] h-5 px-1.5 items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold leading-none">
+                                        {{ $item['badge'] > 99 ? '99+' : $item['badge'] }}
+                                    </span>
+                                @endif
+                            </div>
                         </a>
                     @endforeach
                 </nav>
