@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
 use App\Models\Brand;
 use App\Models\Car;
-use Illuminate\Http\JsonResponse;
+use App\Models\PaymentMethods;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class StaffCalendarController extends Controller
 {
@@ -17,12 +17,17 @@ class StaffCalendarController extends Controller
         $view = $request->get('view', 'weekly');
         $dateString = $request->get('date');
 
-        $startDate = $dateString ? Carbon::parse($dateString) : now();
+        $startDate = $dateString
+            ? Carbon::parse($dateString)
+            : now();
+
         $startDate->startOfDay();
 
-        $endDate = $view === '30days'
-            ? $startDate->copy()->addDays(29)
-            : $startDate->copy()->addDays(6);
+        if ($view === '30days') {
+            $endDate = $startDate->copy()->addDays(29);
+        } else {
+            $endDate = $startDate->copy()->addDays(6);
+        }
 
         $calendarDates = [];
         $current = $startDate->copy();
@@ -42,17 +47,25 @@ class StaffCalendarController extends Controller
             'fuelType',
             'bookings' => function ($q) use ($startDate, $endDate) {
                 $q->whereHas('status', function ($s) {
-                    $s->whereIn('name', ['Reserved', 'Active', 'Pending', 'Confirmed']);
+                    $s->whereIn('name', [
+                        'Pending',
+                        'Confirmed',
+                        'Reserved',
+                        'Approved',
+                        'Active',
+                        'Pending Payment Verification',
+                    ]);
                 })
                 ->where(function ($date) use ($startDate, $endDate) {
                     $date->whereBetween('pickup_at', [$startDate, $endDate])
-                         ->orWhereBetween('return_at', [$startDate, $endDate])
-                         ->orWhere(function ($overlap) use ($startDate, $endDate) {
-                             $overlap->where('pickup_at', '<=', $startDate)
-                                     ->where('return_at', '>=', $endDate);
-                         });
+                        ->orWhereBetween('return_at', [$startDate, $endDate])
+                        ->orWhere(function ($overlap) use ($startDate, $endDate) {
+                            $overlap->where('pickup_at', '<=', $startDate)
+                                ->where('return_at', '>=', $endDate);
+                        });
                 })
-                ->with('status');
+                ->with('status')
+                ->orderBy('pickup_at');
             }
         ])->where('active', true);
 
@@ -62,7 +75,10 @@ class StaffCalendarController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->get('search');
-            $query->where('model', 'like', "%{$search}%");
+
+            $query->where(function ($q) use ($search) {
+                $q->where('model', 'like', "%{$search}%");
+            });
         }
 
         $cars = $query->paginate(5);
@@ -71,44 +87,26 @@ class StaffCalendarController extends Controller
         $nextWeek = $startDate->copy()->addDays($view === '30days' ? 30 : 7)->format('Y-m-d');
 
         $brands = Brand::all();
+        $serviceTypes = DB::table('service_types')->orderBy('id')->get();
+        $paymentMethods = PaymentMethods::orderBy('name')->get();
 
-        $data = compact(
-            'cars',
-            'calendarDates',
-            'startDate',
-            'endDate',
-            'previousWeek',
-            'nextWeek',
-            'brands',
-            'view'
-        );
+        $data = [
+            'cars' => $cars,
+            'calendarDates' => $calendarDates,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'previousWeek' => $previousWeek,
+            'nextWeek' => $nextWeek,
+            'brands' => $brands,
+            'view' => $view,
+            'serviceTypes' => $serviceTypes,
+            'paymentMethods' => $paymentMethods,
+        ];
 
         if ($request->ajax()) {
             return view('staff.staffcalendar', $data)->render();
         }
 
         return view('staff.staffcalendar', $data);
-    }
-
-    public function showBookingJson(Booking $booking): JsonResponse
-    {
-        $booking->load('user:id,name,email', 'car:id,model,brand_id', 'car.brand:id,name', 'status:id,name');
-
-        return response()->json([
-            'success' => true,
-            'id' => $booking->id,
-            'status' => $booking->status->name,
-            'pickup_at' => $booking->pickup_at?->format('M d, Y h:i A') ?? 'N/A',
-            'return_at' => $booking->return_at?->format('M d, Y h:i A') ?? 'N/A',
-            'total_price' => number_format($booking->total_price ?? 0, 2),
-            'user' => [
-                'id' => $booking->user->id,
-                'name' => $booking->user->name,
-                'email' => $booking->user->email,
-            ],
-            'car' => [
-                'name' => ($booking->car->brand->name ?? 'Unknown') . ' ' . $booking->car->model,
-            ],
-        ]);
     }
 }

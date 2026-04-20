@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Models\IssueStatus;
 use App\Models\Notification;
 use App\Models\Payment;
+use App\Models\ReturnIssueHistory;
 use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -72,8 +74,11 @@ class StaffPaymentController extends Controller
             'booking.user',
             'booking.car',
             'booking.photoReceipt',
+            'photoReceipt',
             'paymentStatus',
-            'paymentMethod'
+            'paymentMethod',
+            'verifiedByUser:id,name',
+            'returnIssue',
         ]);
 
         if ($status) {
@@ -92,7 +97,8 @@ class StaffPaymentController extends Controller
             $paymentsQuery->whereDate('payment_date', '<=', $dateTo);
         }
 
-        $payments = $paymentsQuery->orderBy('payment_date', 'desc')
+        $payments = $paymentsQuery
+            ->orderBy('payment_date', 'desc')
             ->paginate(10)
             ->withQueryString();
 
@@ -107,156 +113,201 @@ class StaffPaymentController extends Controller
 
     public function approve($paymentId)
     {
-        DB::transaction(function () use ($paymentId) {
-            $payment = Payment::with(['booking', 'booking.photoReceipt', 'booking.user'])
+        $alreadyCompleted = false;
+
+        DB::transaction(function () use ($paymentId, &$alreadyCompleted) {
+            $payment = Payment::with([
+                'booking',
+                'booking.user',
+                'photoReceipt',
+                'returnIssue',
+            ])
                 ->lockForUpdate()
                 ->findOrFail($paymentId);
 
             $booking = $payment->booking;
+            $receipt = $payment->photoReceipt;
 
-            $completedStatusId = DB::table('payment_statuses')
+            $completedPaymentStatusId = DB::table('payment_statuses')
                 ->where('name', 'Completed')
                 ->value('id');
 
-            $payment->update([
-                'payment_status_id' => $completedStatusId,
-                'payment_date' => now()
-            ]);
-
-            $confirmedStatus = Status::where('name', 'Confirmed')->first();
-
-            if ($confirmedStatus) {
-                $booking->update([
-                    'status_id' => $confirmedStatus->id
-                ]);
+            if ((int) $payment->payment_status_id === (int) $completedPaymentStatusId) {
+                $alreadyCompleted = true;
+                return;
             }
 
-            if ($booking->photoReceipt) {
-                $booking->photoReceipt->update([
+            $payment->update([
+                'payment_status_id' => $completedPaymentStatusId,
+                'payment_date' => now(),
+                'verified_by' => auth()->id(),
+                'verified_at' => now(),
+            ]);
+
+            if ($receipt) {
+                $receipt->update([
                     'status' => 'verified',
                     'verified_by' => auth()->id(),
-                    'verified_at' => now()
+                    'verified_at' => now(),
                 ]);
             }
 
-            $pointsEarned = 0;
+            if ($payment->return_issue_id && $payment->returnIssue) {
+                $resolvedIssueStatus = IssueStatus::where('name', 'resolved')->first();
+                $completedBookingStatus = Status::where('name', 'Completed')->first();
 
-            if ((int) $booking->points_used === 0) {
-                $alreadyEarned = DB::table('points_transactions')
-                    ->where('user_id', $booking->user_id)
-                    ->where('booking_id', $booking->id)
-                    ->whereExists(function ($query) {
-                        $query->select(DB::raw(1))
-                            ->from('points_transaction_types')
-                            ->whereColumn('points_transaction_types.id', 'points_transactions.points_id')
-                            ->where('points_transaction_types.name', 'earn');
-                    })
-                    ->exists();
-
-                if (!$alreadyEarned) {
-                    $pointsEarned = (int) floor($booking->final_total / 100);
-
-                    if ($pointsEarned > 0) {
-                        $earnTypeId = (int) DB::table('points_transaction_types')
-                            ->where('name', 'earn')
-                            ->value('id');
-
-                        $userRow = DB::table('users')
-                            ->where('id', $booking->user_id)
-                            ->lockForUpdate()
-                            ->first();
-
-                        $balanceBefore = (int) $userRow->points_balance;
-                        $balanceAfter = $balanceBefore + $pointsEarned;
-
-                        DB::table('users')
-                            ->where('id', $booking->user_id)
-                            ->update([
-                                'points_balance' => $balanceAfter,
-                                'updated_at' => now(),
-                            ]);
-
-                        DB::table('points_transactions')->insert([
-                            'user_id' => $booking->user_id,
-                            'booking_id' => $booking->id,
-                            'points_id' => $earnTypeId,
-                            'points_change' => $pointsEarned,
-                            'balance_before' => $balanceBefore,
-                            'balance_after' => $balanceAfter,
-                            'note' => 'Points earned from approved booking',
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                    }
+                if ($resolvedIssueStatus) {
+                    $payment->returnIssue->update([
+                        'issue_status_id' => $resolvedIssueStatus->id,
+                        'status' => $resolvedIssueStatus->name,
+                    ]);
                 }
-            }
 
-            $notificationMessage = 'Your payment has been verified and your booking is now confirmed.';
+                if ($completedBookingStatus) {
+                    $booking->update([
+                        'status_id' => $completedBookingStatus->id,
+                    ]);
+                }
 
-            if ((int) $booking->points_used > 0) {
-                $notificationMessage .= ' No points were earned because redeemed points were used for this booking.';
+                ReturnIssueHistory::create([
+                    'return_issue_id' => $payment->returnIssue->id,
+                    'issue_status_id' => $payment->returnIssue->issue_status_id,
+                    'changed_by' => auth()->id(),
+                    'event_type' => 'payment_verified',
+                    'title' => 'Issue Payment Approved',
+                    'message' => 'The issue payment was verified by staff. The return issue is now resolved and the booking was marked as completed.',
+                    'final_charge' => $payment->returnIssue->final_charge,
+                    'booking_status_name' => optional($booking->status)->name,
+                ]);
+
+                Notification::create([
+                    'user_id' => $booking->user_id,
+                    'booking_id' => $booking->id,
+                    'title' => 'Issue Payment Approved',
+                    'message' => 'Your issue payment has been verified. The return issue is now resolved and your booking is marked as completed.',
+                    'type' => 'payment',
+                    'link' => route('user.return-issues.show', $payment->returnIssue->id),
+                ]);
             } else {
-                $notificationMessage .= " You earned {$pointsEarned} points from this booking.";
-            }
+                $confirmedStatus = Status::where('name', 'Confirmed')->first();
 
-            Notification::create([
-                'user_id' => $booking->user_id,
-                'booking_id' => $booking->id,
-                'title' => 'Payment Approved',
-                'message' => $notificationMessage,
-                'type' => 'payment',
-                'link' => route('user.booking.confirmation', $booking->id)
-            ]);
+                if ($confirmedStatus) {
+                    $booking->update([
+                        'status_id' => $confirmedStatus->id,
+                    ]);
+                }
+
+                Notification::create([
+                    'user_id' => $booking->user_id,
+                    'booking_id' => $booking->id,
+                    'title' => 'Payment Approved',
+                    'message' => 'Your payment has been verified and your booking is now confirmed.',
+                    'type' => 'payment',
+                    'link' => route('user.booking.confirmation', $booking->id),
+                ]);
+            }
         });
 
-        return back()->with('success', 'Payment approved and booking confirmed.');
+        if ($alreadyCompleted) {
+            return back()->with('warning', 'This payment is already completed.');
+        }
+
+        return back()->with('success', 'Payment approved successfully.');
     }
 
     public function reject(Request $request, $paymentId)
     {
         $request->validate([
-            'admin_note' => 'required|string|max:500'
+            'admin_note' => 'required|string|max:500',
         ]);
 
-        $payment = Payment::with(['booking.photoReceipt'])->findOrFail($paymentId);
+        $alreadyCompleted = false;
 
-        $booking = $payment->booking;
-        $receipt = $booking->photoReceipt;
+        DB::transaction(function () use ($request, $paymentId, &$alreadyCompleted) {
+            $payment = Payment::with([
+                'booking',
+                'booking.user',
+                'photoReceipt',
+                'returnIssue',
+            ])
+                ->lockForUpdate()
+                ->findOrFail($paymentId);
 
-        $failedStatusId = DB::table('payment_statuses')
-            ->where('name', 'Failed')
-            ->value('id');
+            $booking = $payment->booking;
+            $receipt = $payment->photoReceipt;
 
-        $payment->update([
-            'payment_status_id' => $failedStatusId
-        ]);
+            $completedPaymentStatusId = DB::table('payment_statuses')
+                ->where('name', 'Completed')
+                ->value('id');
 
-        if ($receipt) {
-            $receipt->update([
-                'status' => 'rejected',
-                'admin_note' => $request->admin_note,
+            if ((int) $payment->payment_status_id === (int) $completedPaymentStatusId) {
+                $alreadyCompleted = true;
+                return;
+            }
+
+            $failedStatusId = DB::table('payment_statuses')
+                ->where('name', 'Failed')
+                ->value('id');
+
+            $payment->update([
+                'payment_status_id' => $failedStatusId,
                 'verified_by' => auth()->id(),
-                'verified_at' => now()
+                'verified_at' => now(),
             ]);
+
+            if ($receipt) {
+                $receipt->update([
+                    'status' => 'rejected',
+                    'admin_note' => $request->admin_note,
+                    'verified_by' => auth()->id(),
+                    'verified_at' => now(),
+                ]);
+            }
+
+            if ($payment->return_issue_id && $payment->returnIssue) {
+                ReturnIssueHistory::create([
+                    'return_issue_id' => $payment->returnIssue->id,
+                    'issue_status_id' => $payment->returnIssue->issue_status_id,
+                    'changed_by' => auth()->id(),
+                    'event_type' => 'payment_rejected',
+                    'title' => 'Issue Payment Rejected',
+                    'message' => 'The submitted issue payment receipt was rejected. Reason: ' . $request->admin_note,
+                    'final_charge' => $payment->returnIssue->final_charge,
+                    'booking_status_name' => optional($booking->status)->name,
+                ]);
+
+                Notification::create([
+                    'user_id' => $booking->user_id,
+                    'booking_id' => $booking->id,
+                    'title' => 'Issue Payment Rejected',
+                    'message' => 'Your issue payment receipt was rejected. Reason: ' . $request->admin_note,
+                    'type' => 'payment',
+                    'link' => route('user.return-issues.show', $payment->returnIssue->id),
+                ]);
+            } else {
+                $failedStatus = Status::where('name', 'Failed')->first();
+
+                if ($failedStatus) {
+                    $booking->update([
+                        'status_id' => $failedStatus->id,
+                    ]);
+                }
+
+                Notification::create([
+                    'user_id' => $booking->user_id,
+                    'booking_id' => $booking->id,
+                    'title' => 'Payment Rejected',
+                    'message' => 'Your payment receipt was rejected. Reason: ' . $request->admin_note,
+                    'type' => 'payment',
+                    'link' => route('user.rentals.failed'),
+                ]);
+            }
+        });
+
+        if ($alreadyCompleted) {
+            return back()->with('warning', 'Completed payments can no longer be rejected.');
         }
 
-        $failedStatus = Status::where('name', 'Failed')->first();
-
-        if ($failedStatus) {
-            $booking->update([
-                'status_id' => $failedStatus->id
-            ]);
-        }
-
-        Notification::create([
-            'user_id' => $booking->user_id,
-            'booking_id' => $booking->id,
-            'title' => 'Payment Rejected',
-            'message' => 'Your payment receipt was rejected. Reason: ' . $request->admin_note,
-            'type' => 'payment',
-            'link' => route('user.rentals.pending', $booking->id)
-        ]);
-
-        return back()->with('error', 'Payment rejected.');
+        return back()->with('success', 'Payment rejection processed successfully.');
     }
 }

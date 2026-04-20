@@ -290,7 +290,7 @@
 
                         <!-- Pagination -->
                         <div class="p-2 border-t border-gray-200">
-                            {{ $payments->links() }}
+                            {{ $payments->onEachSide(1)->links() }}
                         </div>
                     </div>
 

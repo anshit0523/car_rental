@@ -4,15 +4,29 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Car;
 use App\Models\Notification;
+use App\Models\Payment;
+use App\Models\PaymentMethods;
+use App\Models\PaymentStatus;
 use App\Models\Status;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class StaffBookingController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Booking::with(['user', 'car.brand', 'status']);
+        $query = Booking::with([
+            'user',
+            'car.brand',
+            'status',
+            'serviceType',
+        ]);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -30,10 +44,332 @@ class StaffBookingController extends Controller
             $query->where('status_id', $request->status_id);
         }
 
-        $bookings = $query->latest()->paginate(10);
+        $bookings = $query->latest()->paginate(10)->onEachSide(1);
         $statuses = Status::all();
 
         return view('staff.staffbooking', compact('bookings', 'statuses'));
+    }
+
+    public function searchCustomer(Request $request): JsonResponse
+    {
+        $request->validate([
+            'keyword' => 'required|string|min:1|max:255',
+        ]);
+
+        $keyword = trim($request->keyword);
+        $keywordLower = strtolower($keyword);
+
+        $users = User::query()
+            ->where('role_id', 2)
+            ->where(function ($q) use ($keyword, $keywordLower) {
+                $q->whereRaw('LOWER(name) LIKE ?', ["{$keywordLower}%"])
+                    ->orWhereRaw('LOWER(name) LIKE ?', ["% {$keywordLower}%"])
+                    ->orWhereRaw('LOWER(email) LIKE ?', ["{$keywordLower}%"])
+                    ->orWhereRaw('LOWER(email) LIKE ?', ["%{$keywordLower}%"])
+                    ->orWhere('phone', 'like', "{$keyword}%")
+                    ->orWhere('phone', 'like', "%{$keyword}%");
+            })
+            ->orderBy('name')
+            ->limit(10)
+            ->get(['id', 'name', 'email', 'phone']);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found.',
+                'users' => [],
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'users' => $users,
+        ]);
+    }
+
+    public function checkAvailabilityExact(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'car_id' => 'required|exists:cars,id',
+            'pickup_date' => 'required|date',
+            'pickup_time' => 'required|date_format:H:i',
+            'return_date' => 'required|date',
+            'return_time' => 'required|date_format:H:i',
+        ]);
+
+        try {
+            $pickupAt = Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $validated['pickup_date'] . ' ' . $validated['pickup_time']
+            );
+
+            $returnAt = Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $validated['return_date'] . ' ' . $validated['return_time']
+            );
+
+            if ($returnAt->lte($pickupAt)) {
+                return response()->json([
+                    'available' => false,
+                    'message' => 'Return date/time must be after pickup date/time.',
+                ], 422);
+            }
+
+            $blockingStatusIds = Status::whereIn('name', [
+                'Pending',
+                'Confirmed',
+                'Reserved',
+                'Approved',
+                'Active',
+                'Pending Payment Verification',
+            ])->pluck('id')->toArray();
+
+            $hasConflict = Booking::where('car_id', $validated['car_id'])
+                ->whereIn('status_id', $blockingStatusIds)
+                ->where(function ($query) use ($pickupAt, $returnAt) {
+                    $query->where('pickup_at', '<', $returnAt)
+                        ->where('return_at', '>', $pickupAt);
+                })
+                ->exists();
+
+            if ($hasConflict) {
+                return response()->json([
+                    'available' => false,
+                    'message' => 'This car is not available for the selected date and time.',
+                ], 422);
+            }
+
+            return response()->json([
+                'available' => true,
+                'message' => 'Car is available for the selected date and time.',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'available' => false,
+                'message' => 'Failed to check exact availability.',
+            ], 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        $baseRules = [
+            'car_id' => 'required|exists:cars,id',
+            'pickup_date' => 'required|date',
+            'pickup_time' => 'required|date_format:H:i',
+            'return_date' => 'required|date',
+            'return_time' => 'required|date_format:H:i',
+            'service_type_id' => 'required|exists:service_types,id',
+            'payment_method_code' => 'required|exists:payment_methods,code',
+            'customer_type' => 'required|in:existing,new',
+            'existing_user_id' => 'nullable|exists:users,id',
+            'existing_customer_search' => 'nullable|string|max:255',
+            'customer_name' => 'nullable|string|max:255',
+            'customer_email' => 'nullable|email|max:255',
+            'customer_phone' => 'nullable|string|max:30',
+            'password' => 'nullable|string|min:6|confirmed',
+            'service_location' => 'nullable|string|max:255',
+        ];
+
+        $validated = $request->validate($baseRules);
+
+        if ($validated['customer_type'] === 'existing') {
+            $request->validate([
+                'existing_user_id' => 'required|exists:users,id',
+            ]);
+        } else {
+            $request->validate([
+                'customer_name' => 'required|string|max:255',
+                'customer_email' => 'required|email|max:255|unique:users,email',
+                'customer_phone' => 'required|string|max:30',
+                'password' => 'required|string|min:6|confirmed',
+            ]);
+        }
+
+        try {
+            $pickupAt = Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $validated['pickup_date'] . ' ' . $validated['pickup_time']
+            );
+
+            $returnAt = Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $validated['return_date'] . ' ' . $validated['return_time']
+            );
+
+            if ($returnAt->lte($pickupAt)) {
+                return $this->bookingErrorResponse(
+                    $request,
+                    'Return date/time must be after pickup date/time.',
+                    422
+                );
+            }
+
+            $car = Car::findOrFail($validated['car_id']);
+
+            $serviceTypeName = DB::table('service_types')
+                ->where('id', $validated['service_type_id'])
+                ->value('name');
+
+            if (
+                stripos((string) $serviceTypeName, 'deliver') !== false &&
+                empty($validated['service_location'])
+            ) {
+                return $this->bookingErrorResponse(
+                    $request,
+                    'Location is required for delivery bookings.',
+                    422
+                );
+            }
+
+            $blockingStatusIds = Status::whereIn('name', [
+                'Pending',
+                'Confirmed',
+                'Reserved',
+                'Approved',
+                'Active',
+                'Pending Payment Verification',
+            ])->pluck('id')->toArray();
+
+            $hasConflict = Booking::where('car_id', $car->id)
+                ->whereIn('status_id', $blockingStatusIds)
+                ->where(function ($query) use ($pickupAt, $returnAt) {
+                    $query->where('pickup_at', '<', $returnAt)
+                        ->where('return_at', '>', $pickupAt);
+                })
+                ->exists();
+
+            if ($hasConflict) {
+                return $this->bookingErrorResponse(
+                    $request,
+                    'This car is not available for the selected date and time.',
+                    422
+                );
+            }
+
+            $paymentMethod = PaymentMethods::where('code', $validated['payment_method_code'])->firstOrFail();
+            $isCash = $paymentMethod->code === 'cash';
+
+            $bookingStatus = Status::firstOrCreate([
+                'name' => $isCash ? 'Confirmed' : 'Pending Payment Verification',
+            ]);
+
+            $paymentStatus = PaymentStatus::where('code', $isCash ? 'completed' : 'pending')->firstOrFail();
+
+            $days = max(1, (int) ceil($pickupAt->diffInMinutes($returnAt) / 1440));
+            $total = (float) $car->price_per_day * $days;
+
+            $booking = DB::transaction(function () use (
+                $validated,
+                $pickupAt,
+                $returnAt,
+                $car,
+                $total,
+                $paymentMethod,
+                $bookingStatus,
+                $paymentStatus,
+                $isCash
+            ) {
+                if ($validated['customer_type'] === 'existing') {
+                    $user = User::where('role_id', 2)->findOrFail($validated['existing_user_id']);
+                } else {
+                    $user = User::create([
+                        'name' => $validated['customer_name'],
+                        'email' => strtolower(trim($validated['customer_email'])),
+                        'phone' => $validated['customer_phone'],
+                        'password' => Hash::make($validated['password']),
+                        'role_id' => 2,
+                    ]);
+                }
+
+                $booking = Booking::create([
+                    'car_id' => $car->id,
+                    'user_id' => $user->id,
+                    'pickup_at' => $pickupAt,
+                    'return_at' => $returnAt,
+                    'total_price' => $total,
+                    'final_total' => $total,
+                    'status_id' => $bookingStatus->id,
+                    'service_type_id' => $validated['service_type_id'],
+                    'service_location' => $validated['service_location'] ?? null,
+                ]);
+
+                Payment::create([
+                    'booking_id' => $booking->id,
+                    'payment_date' => now(),
+                    'amount' => $booking->final_total ?? $booking->total_price ?? 0,
+                    'payment_method_id' => $paymentMethod->id,
+                    'payment_status_id' => $paymentStatus->id,
+                    'transaction_id' => null,
+                    'notes' => $isCash
+                        ? 'Cash payment completed during booking creation'
+                        : 'Payment submitted and waiting for verification',
+                    'verified_by' => $isCash ? auth()->id() : null,
+                    'verified_at' => $isCash ? now() : null,
+                ]);
+
+                return $booking;
+            });
+
+            return $this->bookingSuccessResponse(
+                $request,
+                'Walk-in booking created successfully.',
+                $booking->id
+            );
+        } catch (\Throwable $e) {
+            \Log::error('Staff walk-in booking error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return $this->bookingErrorResponse(
+                $request,
+                'Failed to create booking.',
+                500
+            );
+        }
+    }
+
+    public function showJson(Booking $booking): JsonResponse
+    {
+        try {
+            $booking->load([
+                'user:id,name,email,phone',
+                'car:id,model,brand_id',
+                'car.brand:id,name',
+                'status:id,name',
+                'serviceType:id,name',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'id' => $booking->id,
+                'status' => $booking->status->name ?? 'N/A',
+                'pickup_at' => $booking->pickup_at?->format('M d, Y h:i A') ?? 'N/A',
+                'pickup_at_iso' => $booking->pickup_at?->toIso8601String(),
+                'return_at' => $booking->return_at?->format('M d, Y h:i A') ?? 'N/A',
+                'return_at_iso' => $booking->return_at?->toIso8601String(),
+                'total_price' => number_format((float) ($booking->total_price ?? 0), 2),
+                'service_type' => $booking->serviceType->name ?? 'N/A',
+                'service_location' => $booking->service_location ?? 'N/A',
+                'user' => [
+                    'id' => $booking->user->id ?? null,
+                    'name' => $booking->user->name ?? 'N/A',
+                    'email' => $booking->user->email ?? 'N/A',
+                    'phone' => $booking->user->phone ?? 'N/A',
+                ],
+                'car' => [
+                    'id' => $booking->car->id ?? null,
+                    'name' => trim(($booking->car->brand->name ?? 'Unknown') . ' ' . ($booking->car->model ?? '')),
+                    'brand' => $booking->car->brand->name ?? 'N/A',
+                    'model' => $booking->car->model ?? 'N/A',
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load booking details.',
+            ], 500);
+        }
     }
 
     public function updateStatus(Request $request, Booking $booking)
@@ -105,5 +441,35 @@ class StaffBookingController extends Controller
         return redirect()
             ->route('staff.bookings.index')
             ->with('success', 'Booking status updated successfully.');
+    }
+
+    private function bookingErrorResponse(Request $request, string $message, int $statusCode = 422)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => $message,
+            ], $statusCode);
+        }
+
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('error', $message);
+    }
+
+    private function bookingSuccessResponse(Request $request, string $message, int $bookingId)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'booking_id' => $bookingId,
+            ]);
+        }
+
+        return redirect()
+            ->route('staff.bookings.index')
+            ->with('success', $message);
     }
 }

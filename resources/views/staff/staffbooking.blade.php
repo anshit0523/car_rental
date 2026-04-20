@@ -72,21 +72,41 @@
 
                         <tbody class="divide-y divide-gray-200">
                             @forelse ($bookings as $booking)
-                                @php $statusName = $booking->status->name ?? 'Unknown'; @endphp
+                                @php
+                                    $statusName = $booking->status->name ?? 'Unknown';
+                                @endphp
 
                                 <tr class="hover:bg-gray-50 transition">
-                                    <td class="px-6 py-4 text-sm font-medium text-gray-900">#{{ $booking->id }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-600">{{ $booking->user->name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-600">{{ $booking->car->brand->name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-600">{{ optional($booking->pickup_at)->format('M d, Y') ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-600">{{ optional($booking->return_at)->format('M d, Y') ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 text-sm font-medium text-gray-900">&#8369;{{ number_format($booking->total_price, 2) }}</td>
+                                    <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                        #{{ $booking->id }}
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm text-gray-600">
+                                        {{ $booking->user->name ?? 'N/A' }}
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm text-gray-600">
+                                        {{ $booking->car->brand->name ?? 'N/A' }}
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm text-gray-600">
+                                        {{ optional($booking->pickup_at)->format('M d, Y') ?? 'N/A' }}
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm text-gray-600">
+                                        {{ optional($booking->return_at)->format('M d, Y') ?? 'N/A' }}
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                        &#8369;{{ number_format($booking->total_price, 2) }}
+                                    </td>
 
                                     <td class="px-6 py-4 text-sm">
                                         <span class="px-3 py-1 rounded-full text-xs font-medium
                                             @switch($statusName)
                                                 @case('Pending') bg-gray-100 text-gray-800 @break
                                                 @case('Reserved') bg-yellow-100 text-yellow-800 @break
+                                                @case('Confirmed') bg-yellow-100 text-yellow-800 @break
                                                 @case('Active') bg-blue-100 text-blue-800 @break
                                                 @case('Return') bg-orange-100 text-orange-800 @break
                                                 @case('Completed') bg-green-100 text-green-800 @break
@@ -103,10 +123,20 @@
 
                                     <td class="px-6 py-4 text-sm space-x-2">
                                         <button
+                                            class="text-blue-600 hover:text-blue-800 viewBookingBtn"
+                                            data-booking-id="{{ $booking->id }}"
+                                            type="button"
+                                            title="View Booking"
+                                        >
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+
+                                        <button
                                             class="text-amber-600 hover:text-amber-800 editBookingBtn"
                                             data-booking-id="{{ $booking->id }}"
                                             data-status-name="{{ trim($booking->status->name ?? '') }}"
                                             type="button"
+                                            title="Update Status"
                                         >
                                             <i class="fas fa-edit"></i>
                                         </button>
@@ -134,7 +164,7 @@
                 </div>
 
                 <div class="p-4 border-t border-gray-200">
-                    {{ $bookings->links() }}
+                    {{ $bookings->onEachSide(1)->links() }}
                 </div>
             </div>
         </div>
@@ -149,6 +179,7 @@
 
                     <div class="mb-4">
                         <label class="block text-gray-700 font-medium mb-1">Select Status</label>
+
                         <select
                             name="status_id"
                             id="statusDropdown"
@@ -176,7 +207,7 @@
                         ></textarea>
 
                         <p class="text-sm text-gray-500 mt-2">
-                            Use this for simple updates only. Damage, repair, and checkup statuses will open a detailed issue form.
+                            Use this for simple updates only.
                         </p>
                     </div>
 
@@ -202,12 +233,40 @@
         </div>
     </div>
 </div>
+
+<div id="viewModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white w-full max-w-lg rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">Booking Details</h2>
+            <button type="button" id="closeViewModal" class="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+        </div>
+
+        <div class="space-y-3 text-sm text-gray-700">
+            <p><strong>Booking ID:</strong> <span id="viewBookingId">-</span></p>
+            <p><strong>Status:</strong> <span id="viewStatus">-</span></p>
+            <p><strong>User:</strong> <span id="viewUserName">-</span></p>
+            <p><strong>Email:</strong> <span id="viewUserEmail">-</span></p>
+            <p><strong>Phone:</strong> <span id="viewUserPhone">-</span></p>
+            <p><strong>Car:</strong> <span id="viewCarName">-</span></p>
+            <p><strong>Pickup:</strong> <span id="viewPickupAt">-</span></p>
+            <p><strong>Return:</strong> <span id="viewReturnAt">-</span></p>
+            <p><strong>Total Price:</strong> ₱<span id="viewTotalPrice">-</span></p>
+            <p><strong>Service Type:</strong> <span id="viewServiceType">-</span></p>
+
+            <p id="viewServiceLocationWrapper" class="hidden">
+                <strong>Service Location:</strong> <span id="viewServiceLocation">-</span>
+            </p>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
 <script>
     window.bookingStatusMap = @json($statuses->pluck('id', 'name'));
     window.staffBookingUpdateUrlTemplate = "{{ route('staff.bookings.update-status', ':id') }}";
+    window.staffBookingViewUrlTemplate = "{{ route('staff.bookings.show-json', ':id') }}";
+    window.staffReturnIssueCreateUrlTemplate = "{{ route('staff.return-issues.create', ':id') }}";
 </script>
 <script src="{{ asset('js/staff/staffbooking.js') }}"></script>
 @endsection

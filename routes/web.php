@@ -277,21 +277,29 @@ Route::middleware(['auth', 'staff'])
     ->group(function () {
         Route::get('/dashboard', [StaffDashboardController::class, 'index'])->name('dashboard');
 
-        Route::get('/bookings', [StaffBookingController::class, 'index'])->name('bookings.index');
-        Route::put('/bookings/{booking}/status', [StaffBookingController::class, 'updateStatus'])->name('bookings.update-status');
+        // Calendar
+        Route::get('/calendar', [StaffCalendarController::class, 'index'])->name('calendar');
 
+        // Staff bookings
+        Route::get('/bookings', [StaffBookingController::class, 'index'])->name('bookings.index');
+        Route::post('/bookings', [StaffBookingController::class, 'store'])->name('bookings.store');
+        Route::post('/bookings/check-availability-exact', [StaffBookingController::class, 'checkAvailabilityExact'])->name('bookings.check-availability-exact');
+        Route::get('/bookings/search-customer', [StaffBookingController::class, 'searchCustomer'])->name('bookings.search-customer');
+        Route::get('/bookings/{booking}/json', [StaffBookingController::class, 'showJson'])->name('bookings.show-json');
+        Route::put('/bookings/{booking}/update-status', [StaffBookingController::class, 'updateStatus'])->name('bookings.update-status');
+
+        // Staff payments
         Route::get('/payments', [StaffPaymentController::class, 'index'])->name('payments.index');
         Route::post('/payments/{payment}/approve', [StaffPaymentController::class, 'approve'])->name('payments.approve');
         Route::post('/payments/{payment}/reject', [StaffPaymentController::class, 'reject'])->name('payments.reject');
 
-        Route::get('/calendar', [StaffCalendarController::class, 'index'])->name('calendar');
-        Route::get('/bookings/{booking}/json', [StaffCalendarController::class, 'showBookingJson'])->name('bookings.show-json');
-
+        // Staff map
         Route::get('/live-map', [StaffMapController::class, 'index'])->name('live-map');
         Route::get('/live/positions', [StaffMapController::class, 'positions'])->name('live.positions');
         Route::get('/replay', [StaffMapController::class, 'replayPage'])->name('replay');
         Route::get('/replay/history', [StaffMapController::class, 'history'])->name('replay.history');
 
+        // Return issues
         Route::get('/bookings/{booking}/return-issue/create', [StaffReturnIssueController::class, 'create'])
             ->name('return-issues.create');
 

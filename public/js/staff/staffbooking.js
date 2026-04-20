@@ -1,14 +1,21 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const modal = document.getElementById('editModal');
-    const closeModalBtn = document.getElementById('closeModal');
+    const editModal = document.getElementById('editModal');
+    const closeModal = document.getElementById('closeModal');
+    const updateStatusForm = document.getElementById('updateStatusForm');
     const statusDropdown = document.getElementById('statusDropdown');
-    const updateForm = document.getElementById('updateStatusForm');
-    const statusHelpText = document.getElementById('statusHelpText');
     const adminMessageWrapper = document.getElementById('adminMessageWrapper');
     const adminMessage = document.getElementById('adminMessage');
-    const saveStatusBtn = document.getElementById('saveStatusBtn');
+    const statusHelpText = document.getElementById('statusHelpText');
 
-    const allowedTransitions = {
+    const viewModal = document.getElementById('viewModal');
+    const closeViewModal = document.getElementById('closeViewModal');
+
+    const bookingStatusMap = window.bookingStatusMap || {};
+    const updateUrlTemplate = window.staffBookingUpdateUrlTemplate || '';
+    const viewUrlTemplate = window.staffBookingViewUrlTemplate || '';
+    const returnIssueCreateUrlTemplate = window.staffReturnIssueCreateUrlTemplate || '';
+
+    const statusOptionsByCurrent = {
         Pending: ['Cancelled'],
         Confirmed: ['Cancelled'],
         Return: ['Checkup', 'Damage', 'Needs Repair', 'Completed'],
@@ -21,21 +28,82 @@ document.addEventListener('DOMContentLoaded', function () {
         Failed: [],
     };
 
-    const issueStatuses = ['Checkup', 'Damage', 'Needs Repair'];
+    function openModal(modal) {
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
 
-    function toggleAdminMessageField() {
-        if (!statusDropdown || !adminMessageWrapper) return;
+    function closeModalFn(modal) {
+        if (!modal) return;
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    }
 
-        const selectedText = statusDropdown.options[statusDropdown.selectedIndex]?.text?.trim() || '';
-        const showFor = ['Completed', 'Checkup', 'Damage', 'Needs Repair'];
+    function resetEditModal() {
+        if (updateStatusForm) updateStatusForm.reset();
+        if (statusDropdown) statusDropdown.innerHTML = '';
+        if (adminMessageWrapper) adminMessageWrapper.classList.add('hidden');
+        if (adminMessage) adminMessage.value = '';
+        if (statusHelpText) {
+            statusHelpText.textContent = '';
+            statusHelpText.classList.add('hidden');
+        }
+    }
 
-        if (showFor.includes(selectedText)) {
+    function fillStatusOptions(currentStatus) {
+        if (!statusDropdown) return;
+
+        statusDropdown.innerHTML = '';
+
+        const allowed = statusOptionsByCurrent[currentStatus] || [];
+
+        if (allowed.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No available status changes';
+            statusDropdown.appendChild(option);
+
+            if (statusHelpText) {
+                statusHelpText.textContent = `No status changes are allowed from ${currentStatus || 'this status'}.`;
+                statusHelpText.classList.remove('hidden');
+            }
+
+            if (adminMessageWrapper) adminMessageWrapper.classList.add('hidden');
+            return;
+        }
+
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Select a new status';
+        placeholder.selected = true;
+        placeholder.disabled = true;
+        statusDropdown.appendChild(placeholder);
+
+        allowed.forEach(statusName => {
+            if (bookingStatusMap[statusName]) {
+                const option = document.createElement('option');
+                option.value = bookingStatusMap[statusName];
+                option.textContent = statusName;
+                option.dataset.statusName = statusName;
+                statusDropdown.appendChild(option);
+            }
+        });
+
+        if (statusHelpText) {
+            statusHelpText.textContent = `Current status: ${currentStatus}.`;
+            statusHelpText.classList.remove('hidden');
+        }
+    }
+
+    function toggleAdminMessage(selectedStatusName) {
+        if (!adminMessageWrapper) return;
+
+        if (selectedStatusName === 'Completed') {
             adminMessageWrapper.classList.remove('hidden');
         } else {
             adminMessageWrapper.classList.add('hidden');
-            if (adminMessage) {
-                adminMessage.value = '';
-            }
+            if (adminMessage) adminMessage.value = '';
         }
     }
 
@@ -44,113 +112,122 @@ document.addEventListener('DOMContentLoaded', function () {
             const bookingId = this.dataset.bookingId;
             const currentStatus = (this.dataset.statusName || '').trim();
 
-            updateForm.action = window.staffBookingUpdateUrlTemplate.replace(':id', bookingId);
-            statusDropdown.innerHTML = '';
+            resetEditModal();
+            fillStatusOptions(currentStatus);
 
-            const transitions = allowedTransitions[currentStatus] || [];
-
-            if (transitions.length > 0) {
-                transitions.forEach(statusName => {
-                    const statusId = window.bookingStatusMap[statusName];
-
-                    if (statusId) {
-                        const option = document.createElement('option');
-                        option.value = statusId;
-                        option.textContent = statusName;
-                        statusDropdown.appendChild(option);
-                    }
-                });
-
-                statusDropdown.disabled = false;
-
-                if (saveStatusBtn) {
-                    saveStatusBtn.disabled = false;
-                    saveStatusBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }
-
-                statusHelpText.textContent = '';
-                statusHelpText.classList.add('hidden');
-
-                toggleAdminMessageField();
-            } else {
-                const option = document.createElement('option');
-                option.textContent = 'No available transitions';
-                option.disabled = true;
-                option.selected = true;
-                statusDropdown.appendChild(option);
-
-                statusDropdown.disabled = true;
-
-                if (saveStatusBtn) {
-                    saveStatusBtn.disabled = true;
-                    saveStatusBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                }
-
-                statusHelpText.textContent = `No manual action available for ${currentStatus}.`;
-                statusHelpText.classList.remove('hidden');
-
-                if (adminMessageWrapper) adminMessageWrapper.classList.add('hidden');
-                if (adminMessage) adminMessage.value = '';
+            if (updateStatusForm && updateUrlTemplate) {
+                updateStatusForm.action = updateUrlTemplate.replace(':id', bookingId);
             }
 
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            openModal(editModal);
         });
     });
 
     if (statusDropdown) {
-        statusDropdown.addEventListener('change', toggleAdminMessageField);
+        statusDropdown.addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const selectedStatusName = selectedOption?.dataset?.statusName || '';
+
+            toggleAdminMessage(selectedStatusName);
+        });
     }
 
-    if (updateForm) {
-        updateForm.addEventListener('submit', function (e) {
-            if (!statusDropdown) return;
+    if (updateStatusForm) {
+        updateStatusForm.addEventListener('submit', function (e) {
+            const selectedOption = statusDropdown?.options[statusDropdown.selectedIndex];
+            const selectedStatusName = selectedOption?.dataset?.statusName || '';
 
-            const selectedText = statusDropdown.options[statusDropdown.selectedIndex]?.text?.trim() || '';
-            const action = updateForm.action || '';
-            const bookingIdMatch = action.match(/\/staff\/bookings\/(\d+)\/update-status/);
-
-            if (!bookingIdMatch) return;
-
-            const bookingId = bookingIdMatch[1];
-
-            if (issueStatuses.includes(selectedText)) {
+            if (
+                ['Damage', 'Needs Repair', 'Checkup'].includes(selectedStatusName) &&
+                returnIssueCreateUrlTemplate
+            ) {
                 e.preventDefault();
-                window.location.href = `/staff/bookings/${bookingId}/return-issue/create?status=${encodeURIComponent(selectedText)}`;
+
+                const bookingId = updateStatusForm.action.split('/').slice(-2)[0];
+                window.location.href = returnIssueCreateUrlTemplate.replace(':id', bookingId);
             }
         });
     }
 
-    function closeModal() {
-        if (!modal) return;
-
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-
-        if (statusDropdown) {
-            statusDropdown.innerHTML = '';
-            statusDropdown.disabled = false;
-        }
-
-        if (saveStatusBtn) {
-            saveStatusBtn.disabled = false;
-            saveStatusBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
-
-        if (statusHelpText) {
-            statusHelpText.textContent = '';
-            statusHelpText.classList.add('hidden');
-        }
-
-        if (adminMessageWrapper) adminMessageWrapper.classList.add('hidden');
-        if (adminMessage) adminMessage.value = '';
+    if (closeModal) {
+        closeModal.addEventListener('click', function () {
+            closeModalFn(editModal);
+            resetEditModal();
+        });
     }
 
-    closeModalBtn?.addEventListener('click', closeModal);
+    if (editModal) {
+        editModal.addEventListener('click', function (e) {
+            if (e.target === editModal) {
+                closeModalFn(editModal);
+                resetEditModal();
+            }
+        });
+    }
 
-    modal?.addEventListener('click', function (e) {
-        if (e.target === modal) {
-            closeModal();
-        }
+    function setText(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value ?? '-';
+    }
+
+    document.querySelectorAll('.viewBookingBtn').forEach(button => {
+        button.addEventListener('click', async function () {
+            const bookingId = this.dataset.bookingId;
+            if (!viewUrlTemplate) return;
+
+            try {
+                const response = await fetch(viewUrlTemplate.replace(':id', bookingId), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to load booking details.');
+                }
+
+                setText('viewBookingId', data.id ? `#${data.id}` : '-');
+                setText('viewStatus', data.status);
+                setText('viewUserName', data.user?.name || 'N/A');
+                setText('viewUserEmail', data.user?.email || 'N/A');
+                setText('viewUserPhone', data.user?.phone || 'N/A');
+                setText('viewCarName', `${data.car?.brand || 'N/A'} ${data.car?.model || ''}`.trim());
+                setText('viewPickupAt', data.pickup_at || 'N/A');
+                setText('viewReturnAt', data.return_at || 'N/A');
+                setText('viewTotalPrice', data.total_price || '0.00');
+                setText('viewServiceType', data.service_type || 'N/A');
+                setText('viewServiceLocation', data.service_location || '-');
+
+                const locationWrapper = document.getElementById('viewServiceLocationWrapper');
+                if (locationWrapper) {
+                    if (data.service_location) {
+                        locationWrapper.classList.remove('hidden');
+                    } else {
+                        locationWrapper.classList.add('hidden');
+                    }
+                }
+
+                openModal(viewModal);
+            } catch (error) {
+                alert(error.message || 'Failed to load booking details.');
+            }
+        });
     });
+
+    if (closeViewModal) {
+        closeViewModal.addEventListener('click', function () {
+            closeModalFn(viewModal);
+        });
+    }
+
+    if (viewModal) {
+        viewModal.addEventListener('click', function (e) {
+            if (e.target === viewModal) {
+                closeModalFn(viewModal);
+            }
+        });
+    }
 });
