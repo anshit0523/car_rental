@@ -19,6 +19,7 @@ class AdminPaymentController extends Controller
             ->value('id');
 
         $status = $request->input('status');
+        $paymentType = $request->input('payment_type');
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
 
@@ -32,6 +33,12 @@ class AdminPaymentController extends Controller
             $statsQuery->where('payment_status_id', $statusId);
         } else {
             $statsQuery->where('payment_status_id', $completedStatusId);
+        }
+
+        if ($paymentType === 'booking') {
+            $statsQuery->whereNull('return_issue_id');
+        } elseif ($paymentType === 'issue') {
+            $statsQuery->whereNotNull('return_issue_id');
         }
 
         if ($dateFrom) {
@@ -54,7 +61,7 @@ class AdminPaymentController extends Controller
 
         $thisMonth = $thisMonthQuery->sum('amount') ?? 0;
 
-        $hasFilters = !empty($status) || !empty($dateFrom) || !empty($dateTo);
+        $hasFilters = !empty($status) || !empty($paymentType) || !empty($dateFrom) || !empty($dateTo);
 
         if (!$hasFilters) {
             $lastMonth = Payment::whereMonth('payment_date', now()->subMonth()->month)
@@ -86,6 +93,12 @@ class AdminPaymentController extends Controller
                 ->value('id');
 
             $paymentsQuery->where('payment_status_id', $statusId);
+        }
+
+        if ($paymentType === 'booking') {
+            $paymentsQuery->whereNull('return_issue_id');
+        } elseif ($paymentType === 'issue') {
+            $paymentsQuery->whereNotNull('return_issue_id');
         }
 
         if ($dateFrom) {

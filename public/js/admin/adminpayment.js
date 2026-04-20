@@ -1,4 +1,5 @@
 let statusFilter;
+let paymentTypeFilter;
 let dateFrom;
 let dateTo;
 let tableBody;
@@ -7,6 +8,7 @@ let statsGrid;
 
 document.addEventListener('DOMContentLoaded', function () {
     statusFilter = document.getElementById('statusFilter');
+    paymentTypeFilter = document.getElementById('paymentTypeFilter');
     dateFrom = document.getElementById('dateFrom');
     dateTo = document.getElementById('dateTo');
     tableBody = document.querySelector('tbody');
@@ -14,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
     statsGrid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-3');
 
     if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+    if (paymentTypeFilter) paymentTypeFilter.addEventListener('change', applyFilters);
     if (dateFrom) dateFrom.addEventListener('change', applyFilters);
     if (dateTo) dateTo.addEventListener('change', applyFilters);
 
@@ -59,6 +62,10 @@ function applyFilters() {
 
     if (statusFilter && statusFilter.value) {
         params.append('status', statusFilter.value);
+    }
+
+    if (paymentTypeFilter && paymentTypeFilter.value) {
+        params.append('payment_type', paymentTypeFilter.value);
     }
 
     if (dateFrom && dateFrom.value) {

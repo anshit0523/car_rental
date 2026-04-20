@@ -110,6 +110,16 @@
                                         Cancelled</option>
                                 </select>
 
+                                <!-- Payment Type Filter -->
+                                <select id="paymentTypeFilter"
+                                    class="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">All Types</option>
+                                    <option value="booking" {{ request('payment_type') == 'booking' ? 'selected' : '' }}>
+                                        Booking Payment</option>
+                                    <option value="issue" {{ request('payment_type') == 'issue' ? 'selected' : '' }}>
+                                        Issue Payment</option>
+                                </select>
+
                                 <!-- Date Range Filter -->
                                 <input type="date" id="dateFrom" value="{{ request('date_from') }}"
                                     class="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
