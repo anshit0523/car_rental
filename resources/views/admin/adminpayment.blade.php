@@ -142,6 +142,17 @@
                                 </thead>
                                 <tbody class="divide-y divide-slate-200">
                                     @forelse($payments as $payment)
+                                        @php
+                                            $status = $payment->paymentStatus->name ?? 'Unknown';
+                                            $colors = [
+                                                'Completed' => 'bg-green-100 text-green-800',
+                                                'Pending' => 'bg-yellow-100 text-yellow-800',
+                                                'Failed' => 'bg-red-100 text-red-800',
+                                                'Cancelled' => 'bg-slate-100 text-slate-800',
+                                            ];
+                                            $isCompleted = strtolower($status) === 'completed';
+                                        @endphp
+
                                         <tr class="hover:bg-slate-50 transition-colors">
                                             <td class="px-6 py-4 text-sm text-slate-900">
                                                 {{ \Carbon\Carbon::parse($payment->payment_date)->format('Y-m-d H:i') }}
@@ -155,45 +166,39 @@
 
                                                     @if($payment->return_issue_id)
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-orange-100 text-orange-800 w-fit">
-    Issue 
-</span>
+                                                            Issue
+                                                        </span>
 
                                                         <span class="text-xs text-slate-500 leading-5">
                                                             {{ $payment->returnIssue->title ?? 'Return Issue' }}
                                                         </span>
                                                     @else
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-800 w-fit">
-    Booking 
-</span>
+                                                            Booking
+                                                        </span>
                                                     @endif
-
-                                         
+                                                </div>
                                             </td>
 
                                             <td class="px-6 py-4 text-sm text-slate-900">
                                                 {{ $payment->booking->user->name ?? 'N/A' }}
                                             </td>
+
                                             <td class="px-6 py-4 text-sm font-bold text-slate-900 text-right">
                                                 ₱{{ number_format($payment->amount, 2) }}
                                             </td>
+
                                             <td class="px-6 py-4 text-sm text-slate-900">
                                                 {{ $payment->paymentMethod->name ?? 'N/A' }}
                                             </td>
+
                                             <td class="px-6 py-4 text-sm">
-                                                @php
-                                                    $status = $payment->paymentStatus->name ?? 'Unknown';
-                                                    $colors = [
-                                                        'Completed' => 'bg-green-100 text-green-800',
-                                                        'Pending' => 'bg-yellow-100 text-yellow-800',
-                                                        'Failed' => 'bg-red-100 text-red-800',
-                                                        'Cancelled' => 'bg-slate-100 text-slate-800',
-                                                    ];
-                                                @endphp
                                                 <span
                                                     class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold {{ $colors[$status] ?? 'bg-slate-100 text-slate-800' }}">
                                                     {{ $status }}
                                                 </span>
                                             </td>
+
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 {{ $payment->verifiedByUser->name ?? 'N/A' }}
                                             </td>
@@ -202,46 +207,63 @@
                                                 {{ $payment->verified_at ? \Carbon\Carbon::parse($payment->verified_at)->format('M d, Y h:i A') : 'N/A' }}
                                             </td>
 
-                                            <td class="px-6 py-4 text-sm space-x-3 text-center">
-                                                <!-- VIEW RECEIPT -->
-                                                @if($payment->booking->photoReceipt)
-                                                    <button
-                                                        onclick="openReceiptModal('{{ asset('storage/' . $payment->booking->photoReceipt->image_path) }}')"
-                                                        class="text-blue-600 hover:text-blue-800">
-                                                        <i class="fas fa-eye"></i>
-                                                    </button>
-                                                @else
-                                                    <span class="text-gray-400">No Receipt</span>
-                                                @endif
+                                            <td class="px-6 py-4 text-sm text-center">
+                                                <div class="inline-flex items-center gap-3">
+                                                    <!-- VIEW RECEIPT -->
+                                                    @if($payment->booking->photoReceipt)
+                                                        <button
+                                                            onclick="openReceiptModal('{{ asset('storage/' . $payment->booking->photoReceipt->image_path) }}')"
+                                                            class="text-blue-600 hover:text-blue-800"
+                                                            title="View Receipt">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                    @else
+                                                        <span class="text-gray-400">No Receipt</span>
+                                                    @endif
 
-                                                <!-- APPROVE -->
-                                                <form action="{{ route('admin.payments.approve', $payment->id) }}" method="POST"
-                                                    class="inline">
-                                                    @csrf
+                                                    <!-- APPROVE -->
+                                                    @if(!$isCompleted)
+                                                        <form action="{{ route('admin.payments.approve', $payment->id) }}" method="POST"
+                                                            class="inline">
+                                                            @csrf
 
-                                                    <button type="button"
-                                                        onclick="openApproveModal(
-                                                            {{ $payment->id }},
-                                                            '{{ $payment->booking_id }}',
-                                                            '{{ $payment->return_issue_id ? 'issue' : 'booking' }}',
-                                                            @js($payment->returnIssue->title ?? '')
-                                                        )"
-                                                        class="text-green-600 hover:text-green-800">
-                                                        <i class="fas fa-check"></i>
-                                                    </button>
-                                                </form>
+                                                            <button type="button"
+                                                                onclick="openApproveModal(
+                                                                    {{ $payment->id }},
+                                                                    '{{ $payment->booking_id }}',
+                                                                    '{{ $payment->return_issue_id ? 'issue' : 'booking' }}',
+                                                                    @js($payment->returnIssue->title ?? '')
+                                                                )"
+                                                                class="text-green-600 hover:text-green-800"
+                                                                title="Approve Payment">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        </form>
+                                                    @else
+                                                        <span class="inline-block text-gray-300 cursor-not-allowed" title="Already completed">
+                                                            <i class="fas fa-check"></i>
+                                                        </span>
+                                                    @endif
 
-                                                <!-- REJECT -->
-                                                <button type="button"
-                                                    onclick="openRejectModal(
-                                                        {{ $payment->id }},
-                                                        '{{ $payment->booking_id }}',
-                                                        '{{ $payment->return_issue_id ? 'issue' : 'booking' }}',
-                                                        @js($payment->returnIssue->title ?? '')
-                                                    )"
-                                                    class="text-red-600 hover:text-red-800">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
+                                                    <!-- REJECT -->
+                                                    @if(!$isCompleted)
+                                                        <button type="button"
+                                                            onclick="openRejectModal(
+                                                                {{ $payment->id }},
+                                                                '{{ $payment->booking_id }}',
+                                                                '{{ $payment->return_issue_id ? 'issue' : 'booking' }}',
+                                                                @js($payment->returnIssue->title ?? '')
+                                                            )"
+                                                            class="text-red-600 hover:text-red-800"
+                                                            title="Reject Payment">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    @else
+                                                        <span class="inline-block text-gray-300 cursor-not-allowed" title="Completed payments can no longer be rejected">
+                                                            <i class="fas fa-times"></i>
+                                                        </span>
+                                                    @endif
+                                                </div>
                                             </td>
                                         </tr>
                                     @empty

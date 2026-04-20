@@ -126,7 +126,9 @@ class AdminPaymentController extends Controller
 
     public function approve($paymentId)
     {
-        DB::transaction(function () use ($paymentId) {
+        $alreadyCompleted = false;
+
+        DB::transaction(function () use ($paymentId, &$alreadyCompleted) {
             $payment = Payment::with([
                 'booking',
                 'booking.user',
@@ -142,6 +144,11 @@ class AdminPaymentController extends Controller
             $completedPaymentStatusId = DB::table('payment_statuses')
                 ->where('name', 'Completed')
                 ->value('id');
+
+            if ((int) $payment->payment_status_id === (int) $completedPaymentStatusId) {
+                $alreadyCompleted = true;
+                return;
+            }
 
             $payment->update([
                 'payment_status_id' => $completedPaymentStatusId,
@@ -214,6 +221,10 @@ class AdminPaymentController extends Controller
             }
         });
 
+        if ($alreadyCompleted) {
+            return back()->with('warning', 'This payment is already completed.');
+        }
+
         return back()->with('success', 'Payment approved successfully.');
     }
 
@@ -223,7 +234,9 @@ class AdminPaymentController extends Controller
             'admin_note' => 'required|string|max:500',
         ]);
 
-        DB::transaction(function () use ($request, $paymentId) {
+        $alreadyCompleted = false;
+
+        DB::transaction(function () use ($request, $paymentId, &$alreadyCompleted) {
             $payment = Payment::with([
                 'booking',
                 'booking.user',
@@ -235,6 +248,15 @@ class AdminPaymentController extends Controller
 
             $booking = $payment->booking;
             $receipt = $payment->photoReceipt;
+
+            $completedPaymentStatusId = DB::table('payment_statuses')
+                ->where('name', 'Completed')
+                ->value('id');
+
+            if ((int) $payment->payment_status_id === (int) $completedPaymentStatusId) {
+                $alreadyCompleted = true;
+                return;
+            }
 
             $failedStatusId = DB::table('payment_statuses')
                 ->where('name', 'Failed')
@@ -294,6 +316,10 @@ class AdminPaymentController extends Controller
                 ]);
             }
         });
+
+        if ($alreadyCompleted) {
+            return back()->with('warning', 'Completed payments can no longer be rejected.');
+        }
 
         return back()->with('success', 'Payment rejection processed successfully.');
     }
