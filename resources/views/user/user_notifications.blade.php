@@ -68,7 +68,7 @@
         font-weight: 700;
         border: 1px solid #d1d5db;
         background: #fff;
-        color: #374151;
+        color: #ff5a1f;
         transition: 0.2s ease;
     }
 
@@ -78,8 +78,8 @@
     }
 
     .notifications-filter.active {
-        background: #4f46e5;
-        border-color: #4f46e5;
+        background: #ff5a1f;
+        border-color: #ff5a1f;
         color: #fff;
     }
 
