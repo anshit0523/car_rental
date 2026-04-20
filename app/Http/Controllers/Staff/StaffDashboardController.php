@@ -1,77 +1,92 @@
 <?php
 
 namespace App\Http\Controllers\Staff;
+
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Status;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class StaffDashboardController extends Controller
 {
-     public function index()
+    public function index()
     {
         $today = now()->toDateString();
 
-        $pendingStatusId = Status::where('name', 'Pending')->value('id');
-        $confirmedStatusId = Status::where('name', 'Confirmed')->value('id');
-        $activeStatusId = Status::where('name', 'Active')->value('id');
-        $returnStatusId = Status::where('name', 'Return')->value('id');
-        $checkupStatusId = Status::where('name', 'Checkup')->value('id');
-        $damageStatusId = Status::where('name', 'Damage')->value('id');
-        $repairStatusId = Status::where('name', 'Needs Repair')->value('id');
+        $statusIds = Status::whereIn('name', [
+            'Pending',
+            'Active',
+            'Return',
+            'Checkup',
+            'Damage',
+            'Needs Repair',
+        ])->pluck('id', 'name');
 
-        $completedPaymentStatusId = DB::table('payment_statuses')
-            ->where('name', 'Completed')
-            ->value('id');
+        $paymentStatusIds = DB::table('payment_statuses')
+            ->whereIn('name', ['Pending', 'Completed'])
+            ->pluck('id', 'name');
 
-        $pendingPaymentStatusId = DB::table('payment_statuses')
-            ->where('name', 'Pending')
-            ->value('id');
+        $pendingStatusId = $statusIds['Pending'] ?? null;
+        $activeStatusId = $statusIds['Active'] ?? null;
+        $returnStatusId = $statusIds['Return'] ?? null;
 
-        $pendingBookings = Booking::when($pendingStatusId, function ($query) use ($pendingStatusId) {
-                $query->where('status_id', $pendingStatusId);
-            })
-            ->count();
+        $attentionStatusIds = array_values(array_filter([
+            $statusIds['Checkup'] ?? null,
+            $statusIds['Damage'] ?? null,
+            $statusIds['Needs Repair'] ?? null,
+        ]));
 
-        $pendingPayments = Payment::when($pendingPaymentStatusId, function ($query) use ($pendingPaymentStatusId) {
-                $query->where('payment_status_id', $pendingPaymentStatusId);
-            })
-            ->count();
+        $pendingPaymentStatusId = $paymentStatusIds['Pending'] ?? null;
 
-        $activeRentals = Booking::when($activeStatusId, function ($query) use ($activeStatusId) {
-                $query->where('status_id', $activeStatusId);
-            })
-            ->count();
+        $pendingBookings = $pendingStatusId
+            ? Booking::where('status_id', $pendingStatusId)->count()
+            : 0;
 
-        $returnsToday = Booking::when($returnStatusId, function ($query) use ($returnStatusId) {
-                $query->where('status_id', $returnStatusId);
-            })
-            ->whereDate('return_at', $today)
-            ->count();
+        $pendingPayments = $pendingPaymentStatusId
+            ? Payment::where('payment_status_id', $pendingPaymentStatusId)->count()
+            : 0;
 
-        $attentionCars = Booking::whereIn('status_id', array_filter([
-                $checkupStatusId,
-                $damageStatusId,
-                $repairStatusId,
-            ]))
-            ->count();
+        $activeRentals = $activeStatusId
+            ? Booking::where('status_id', $activeStatusId)->count()
+            : 0;
+
+        $returnsToday = $returnStatusId
+            ? Booking::where('status_id', $returnStatusId)
+                ->whereDate('return_at', $today)
+                ->count()
+            : 0;
+
+        $attentionCars = !empty($attentionStatusIds)
+            ? Booking::whereIn('status_id', $attentionStatusIds)->count()
+            : 0;
 
         $recentBookings = Booking::with(['user', 'car.brand', 'status'])
             ->latest()
             ->limit(5)
             ->get();
 
-        $todayPickups = Booking::with(['user', 'car.brand', 'status'])
+        $todayPickupsBase = Booking::with(['user', 'car.brand', 'status'])
             ->whereDate('pickup_at', $today)
-            ->orderBy('pickup_at')
-            ->get();
+            ->orderBy('pickup_at');
 
-        $todayReturns = Booking::with(['user', 'car.brand', 'status'])
+        $todayReturnsBase = Booking::with(['user', 'car.brand', 'status'])
             ->whereDate('return_at', $today)
-            ->orderBy('return_at')
-            ->get();
+            ->orderBy('return_at');
+
+        $todayPickupsCount = (clone $todayPickupsBase)->count();
+        $todayReturnsCount = (clone $todayReturnsBase)->count();
+
+        $todayPickups = $todayPickupsBase->limit(6)->get();
+        $todayReturns = $todayReturnsBase->limit(6)->get();
+
+        $attentionBookings = !empty($attentionStatusIds)
+            ? Booking::with(['user', 'car.brand', 'status'])
+                ->whereIn('status_id', $attentionStatusIds)
+                ->latest()
+                ->limit(5)
+                ->get()
+            : collect();
 
         return view('staff.staffdashboard', [
             'pendingBookings' => $pendingBookings,
@@ -82,6 +97,9 @@ class StaffDashboardController extends Controller
             'recentBookings' => $recentBookings,
             'todayPickups' => $todayPickups,
             'todayReturns' => $todayReturns,
+            'todayPickupsCount' => $todayPickupsCount,
+            'todayReturnsCount' => $todayReturnsCount,
+            'attentionBookings' => $attentionBookings,
         ]);
     }
 }

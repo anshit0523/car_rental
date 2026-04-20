@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\IssueStatus;
 use App\Models\Notification;
 use App\Models\ReturnIssue;
+use App\Models\ReturnIssueHistory;
 use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,22 +36,23 @@ class StaffReturnIssueController extends Controller
         ]);
 
         DB::transaction(function () use ($validated, $request, $booking) {
+            $pendingStatus = IssueStatus::where('name', 'pending')->firstOrFail();
+
             $issue = ReturnIssue::create([
                 'booking_id' => $booking->id,
                 'reported_by' => auth()->id(),
                 'issue_type' => $validated['issue_type'],
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
-                'status' => 'pending',
+                'issue_status_id' => $pendingStatus->id,
+                'status' => $pendingStatus->name, // keep for compatibility if your UI still uses this column
                 'estimated_charge' => $validated['estimated_charge'] ?? 0,
                 'final_charge' => 0,
                 'reported_at' => now(),
             ]);
 
-            $statusName = trim((string) ($validated['status_name'] ?? ''));
-
-            if ($statusName !== '') {
-                $status = Status::where('name', $statusName)->first();
+            if (!empty($validated['status_name'])) {
+                $status = Status::where('name', $validated['status_name'])->first();
 
                 if ($status) {
                     $booking->update([
@@ -76,6 +79,17 @@ class StaffReturnIssueController extends Controller
                 'message' => 'A return issue was reported for your rental: ' . $issue->title,
                 'type' => 'booking',
                 'link' => route('user.return-issues.show', $issue->id),
+            ]);
+
+            ReturnIssueHistory::create([
+                'return_issue_id' => $issue->id,
+                'issue_status_id' => $pendingStatus->id,
+                'changed_by' => auth()->id(),
+                'event_type' => 'created',
+                'title' => 'Issue Report Created',
+                'message' => 'A new return issue was reported and marked as Pending.',
+                'final_charge' => 0,
+                'booking_status_name' => $validated['status_name'] ?? null,
             ]);
         });
 
