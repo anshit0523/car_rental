@@ -268,7 +268,7 @@
             width: 16px;
             height: 16px;
             border-radius: 9999px;
-            background: #4f46e5;
+            background: #e7912e;
             border: 3px solid #eef2ff;
             box-sizing: border-box;
         }

@@ -15,82 +15,83 @@ use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
-    
     /**
      * Show payment page
-     */public function showPayment()
-{
-    $bookingId = request()->query('booking_id');
-    $returnIssueId = request()->query('return_issue_id');
+     */
+    public function showPayment(Request $request)
+    {
+        $bookingId = $request->query('booking_id');
+        $returnIssueId = $request->query('return_issue_id');
 
-    if (!$bookingId) {
-        return redirect()->route('user.browse')
-            ->withErrors('Booking ID is required. Please complete your booking.');
-    }
-
-    $booking = Booking::with(['car.brand', 'user', 'status'])->find($bookingId);
-
-    if (!$booking) {
-        return redirect()->route('user.browse')
-            ->withErrors('Booking not found.');
-    }
-
-    if ($booking->user_id !== auth()->id()) {
-        abort(403, 'Unauthorized');
-    }
-
-    if (($booking->status->name ?? '') === 'Failed') {
-        return redirect()->route('user.rentals.failed')
-            ->withErrors('This rejected booking cannot be paid again. Please create a new booking.');
-    }
-
-    $paymentSetting = PaymentSetting::first();
-
-    $returnIssue = null;
-    $paymentType = 'booking';
-    $paymentTitle = 'Payment';
-    $payableAmount = $booking->final_total ?? $booking->total_price;
-
-    if ($returnIssueId) {
-        $returnIssue = \App\Models\ReturnIssue::with(['issueStatus', 'booking'])
-            ->findOrFail($returnIssueId);
-
-        abort_if($returnIssue->booking_id != $booking->id, 404);
-        abort_if($returnIssue->booking->user_id !== auth()->id(), 403);
-
-        $issueStatusName = optional($returnIssue->issueStatus)->name ?? $returnIssue->status;
-
-        if ($issueStatusName !== 'awaiting_payment') {
+        if (!$bookingId) {
             return redirect()
-                ->route('user.return-issues.show', $returnIssue->id)
-                ->withErrors([
-                    'payment' => 'This return issue is not ready for payment yet.',
-                ]);
+                ->route('user.browse')
+                ->withErrors('Booking ID is required. Please complete your booking.');
         }
 
-        if ((float) $returnIssue->final_charge <= 0) {
+        $booking = Booking::with(['car.brand', 'user', 'status'])->find($bookingId);
+
+        if (!$booking) {
             return redirect()
-                ->route('user.return-issues.show', $returnIssue->id)
-                ->withErrors([
-                    'payment' => 'Final charge is not yet available for this return issue.',
-                ]);
+                ->route('user.browse')
+                ->withErrors('Booking not found.');
         }
 
-        $paymentType = 'return_issue';
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        if (($booking->status->name ?? '') === 'Failed') {
+            return redirect()
+                ->route('user.rentals.failed')
+                ->withErrors('This rejected booking cannot be paid again. Please create a new booking.');
+        }
+
+        $paymentSetting = PaymentSetting::first();
+
+        $returnIssue = null;
+        $paymentType = 'booking';
         $paymentTitle = 'Payment';
-        $payableAmount = (float) $returnIssue->final_charge;
+        $payableAmount = (float) ($booking->final_total ?? $booking->total_price);
+
+        if ($returnIssueId) {
+            $returnIssue = ReturnIssue::with(['issueStatus', 'booking'])->findOrFail($returnIssueId);
+
+            abort_if($returnIssue->booking_id != $booking->id, 404);
+            abort_if($returnIssue->booking->user_id !== auth()->id(), 403);
+
+            $issueStatusName = optional($returnIssue->issueStatus)->name ?? $returnIssue->status;
+
+            if ($issueStatusName !== 'awaiting_payment') {
+                return redirect()
+                    ->route('user.return-issues.show', $returnIssue->id)
+                    ->withErrors([
+                        'payment' => 'This return issue is not ready for payment yet.',
+                    ]);
+            }
+
+            if ((float) $returnIssue->final_charge <= 0) {
+                return redirect()
+                    ->route('user.return-issues.show', $returnIssue->id)
+                    ->withErrors([
+                        'payment' => 'Final charge is not yet available for this return issue.',
+                    ]);
+            }
+
+            $paymentType = 'return_issue';
+            $paymentTitle = 'Payment';
+            $payableAmount = (float) $returnIssue->final_charge;
+        }
+
+        return view('user.userpayments', [
+            'booking' => $booking,
+            'paymentSetting' => $paymentSetting,
+            'returnIssue' => $returnIssue,
+            'paymentType' => $paymentType,
+            'paymentTitle' => $paymentTitle,
+            'payableAmount' => $payableAmount,
+        ]);
     }
-
-    return view('user.userpayments', [
-        'booking' => $booking,
-        'paymentSetting' => $paymentSetting,
-        'returnIssue' => $returnIssue,
-        'paymentType' => $paymentType,
-        'paymentTitle' => $paymentTitle,
-        'payableAmount' => $payableAmount,
-    ]);
-}
-
 
     /**
      * Process manual payment (GCash / Bank)
@@ -105,7 +106,7 @@ class PaymentController extends Controller
             'bank_receipt' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $booking = Booking::findOrFail($validated['booking_id']);
+        $booking = Booking::with(['status', 'user'])->findOrFail($validated['booking_id']);
 
         if ($booking->user_id !== auth()->id()) {
             abort(403);
@@ -113,16 +114,18 @@ class PaymentController extends Controller
 
         $returnIssue = null;
         $paymentType = 'booking';
-        $amount = $booking->final_total ?? $booking->total_price;
+        $amount = (float) ($booking->final_total ?? $booking->total_price);
         $paymentNotes = 'Manual booking payment submitted';
 
         if (!empty($validated['return_issue_id'])) {
             $returnIssue = ReturnIssue::with(['issueStatus', 'booking'])->findOrFail($validated['return_issue_id']);
 
-            abort_if($returnIssue->booking_id !== $booking->id, 404);
+            abort_if($returnIssue->booking_id != $booking->id, 404);
             abort_if($returnIssue->booking->user_id !== auth()->id(), 403);
 
-            if ((optional($returnIssue->issueStatus)->name ?? $returnIssue->status) !== 'awaiting_payment') {
+            $issueStatusName = optional($returnIssue->issueStatus)->name ?? $returnIssue->status;
+
+            if ($issueStatusName !== 'awaiting_payment') {
                 return back()->withErrors([
                     'payment' => 'This return issue is not ready for payment yet.',
                 ]);
@@ -144,23 +147,21 @@ class PaymentController extends Controller
         if ($validated['payment_method'] === 'gcash') {
             if (!$request->hasFile('receipt_image')) {
                 return back()->withErrors([
-                    'receipt_image' => 'Please upload your GCash receipt.'
+                    'receipt_image' => 'Please upload your GCash receipt.',
                 ]);
             }
 
-            $receiptPath = $request->file('receipt_image')
-                ->store('payment_receipts', 'public');
+            $receiptPath = $request->file('receipt_image')->store('payment_receipts', 'public');
         }
 
         if ($validated['payment_method'] === 'bank') {
             if (!$request->hasFile('bank_receipt')) {
                 return back()->withErrors([
-                    'bank_receipt' => 'Please upload your bank transfer receipt.'
+                    'bank_receipt' => 'Please upload your bank transfer receipt.',
                 ]);
             }
 
-            $receiptPath = $request->file('bank_receipt')
-                ->store('payment_receipts', 'public');
+            $receiptPath = $request->file('bank_receipt')->store('payment_receipts', 'public');
         }
 
         $paymentMethod = PaymentMethods::where('code', $validated['payment_method'])->firstOrFail();
@@ -168,16 +169,16 @@ class PaymentController extends Controller
 
         $existingPayment = Payment::where('booking_id', $booking->id)
             ->where('payment_status_id', $paymentStatus->id)
-            ->when($returnIssue, function ($query) use ($returnIssue) {
-                $query->where('return_issue_id', $returnIssue->id);
-            }, function ($query) {
-                $query->whereNull('return_issue_id');
-            })
+            ->when(
+                $returnIssue,
+                fn($query) => $query->where('return_issue_id', $returnIssue->id),
+                fn($query) => $query->whereNull('return_issue_id')
+            )
             ->first();
 
         if ($existingPayment) {
             return back()->withErrors([
-                'payment' => 'A pending payment already exists for this payment request.'
+                'payment' => 'A pending payment already exists for this payment request.',
             ]);
         }
 
@@ -198,15 +199,15 @@ class PaymentController extends Controller
             'user_id' => auth()->id(),
             'image_path' => $receiptPath,
             'payment_method' => $validated['payment_method'],
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         $pendingStatus = Status::firstOrCreate([
-            'name' => 'Pending Payment Verification'
+            'name' => 'Pending Payment Verification',
         ]);
 
         $booking->update([
-            'status_id' => $pendingStatus->id
+            'status_id' => $pendingStatus->id,
         ]);
 
         if ($returnIssue) {
@@ -236,12 +237,20 @@ class PaymentController extends Controller
      */
     public function history()
     {
-        $payments = Payment::whereHas('booking', function ($q) {
-            $q->where('user_id', auth()->id());
-        })->latest()->get();
+        $payments = Payment::with([
+            'booking.car.brand',
+            'paymentMethod',
+            'paymentStatus',
+            'returnIssue',
+        ])
+            ->whereHas('booking', function ($q) {
+                $q->where('user_id', auth()->id());
+            })
+            ->latest()
+            ->get();
 
         return view('user.payment-history', [
-            'payments' => $payments
+            'payments' => $payments,
         ]);
     }
 }

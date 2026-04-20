@@ -167,10 +167,7 @@
 </span>
                                                     @endif
 
-                                                    <div class="text-xs text-red-500">
-    return_issue_id: {{ $payment->return_issue_id ?? 'NULL' }}
-</div>
-                                                </div>
+                                         
                                             </td>
 
                                             <td class="px-6 py-4 text-sm text-slate-900">
