@@ -137,6 +137,7 @@
                                             @elseif($booking->status->id == 4) bg-red-100 text-red-800
                                             @elseif($booking->status->id == 5) bg-yellow-100 text-yellow-800
                                             @elseif($booking->status->id == 6) bg-indigo-100 text-indigo-800
+                                            @elseif($booking->status->id == 13) bg-orange-100 text-orange-800
                                             @else bg-gray-100 text-gray-800
                                             @endif">
                                                 {{ $booking->status->name ?? 'Unknown' }}

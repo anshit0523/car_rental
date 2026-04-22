@@ -97,11 +97,11 @@ if (
                 {
                     data: statusData,
                     backgroundColor: [
-                        "#3B82F6",
                         "#EF4444",
                         "#10B981",
-                        "#22C55E",
+                        "#3B82F6",
                         "#FACC15",
+                        "#EF4444",
                         "#6366F1",
                     ],
                     borderWidth: 1,
