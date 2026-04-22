@@ -53,6 +53,7 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 Route::view('/contact', 'contact')->name('contact');
+Route::view('/about-us', 'about-us')->name('about');
 /*
 |--------------------------------------------------------------------------
 | Admin / Staff Auth
