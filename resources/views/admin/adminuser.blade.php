@@ -29,10 +29,10 @@
 
                         <select id="roleFilter"
                             class="w-full lg:w-48 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <option value="">All Roles</option>
-                            <option value="admin">Admin</option>
-                            <option value="user">User</option>
-                            <option value="staff">Staff</option>
+                            <option value="1" {{ old('role_id') == '1' ? 'selected' : '' }}>Admin</option>
+<option value="2" {{ old('role_id') == '2' ? 'selected' : '' }}>Customer</option>
+<option value="3" {{ old('role_id') == '3' ? 'selected' : '' }}>Staff</option>
+<option value="4" {{ old('role_id') == '4' ? 'selected' : '' }}>Manager</option>
                         </select>
 
                     </div>
@@ -59,19 +59,23 @@
                                         <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $user->name }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-600">{{ $user->email }}</td>
                                         <td class="px-6 py-4 text-sm">
-                                            @if($user->role->name === 'Admin')
-                                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 flex items-center gap-1 w-fit">
-                                                    <i class="fas fa-shield-alt"></i> Admin
-                                                </span>
-                                            @elseif($user->role->name === 'Staff')
-                                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 flex items-center gap-1 w-fit">
-                                                    <i class="fas fa-briefcase"></i> Staff
-                                                </span>
-                                            @else
-                                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 flex items-center gap-1 w-fit">
-                                                    <i class="fas fa-user"></i> Customer
-                                                </span>
-                                            @endif
+                                          @if($user->role->name === 'Admin')
+    <span class="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 flex items-center gap-1 w-fit">
+        <i class="fas fa-shield-alt"></i> Admin
+    </span>
+@elseif($user->role->name === 'Manager')
+    <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 flex items-center gap-1 w-fit">
+        <i class="fas fa-user-tie"></i> Manager
+    </span>
+@elseif($user->role->name === 'Staff')
+    <span class="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 flex items-center gap-1 w-fit">
+        <i class="fas fa-briefcase"></i> Staff
+    </span>
+@else
+    <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 flex items-center gap-1 w-fit">
+        <i class="fas fa-user"></i> Customer
+    </span>
+@endif
                                         </td>
 
                                         <td class="px-6 py-4 text-sm text-gray-600">
@@ -139,9 +143,10 @@
 
                         <select id="role" name="role_id" class="border p-2 w-full mb-4">
                             <option value="" disabled {{ old('role_id') ? '' : 'selected' }}>Select Role</option>
-                            <option value="1" {{ old('role_id') == '1' ? 'selected' : '' }}>Admin</option>
-                            <option value="2" {{ old('role_id') == '2' ? 'selected' : '' }}>Customer</option>
-                            <option value="3" {{ old('role_id') == '3' ? 'selected' : '' }}>Staff</option>
+    <option value="1" {{ old('role_id') == '1' ? 'selected' : '' }}>Admin</option>
+    <option value="2" {{ old('role_id') == '2' ? 'selected' : '' }}>Customer</option>
+    <option value="3" {{ old('role_id') == '3' ? 'selected' : '' }}>Staff</option>
+    <option value="4" {{ old('role_id') == '4' ? 'selected' : '' }}>Manager</option>
                         </select>
 
                         <div class="flex justify-end">

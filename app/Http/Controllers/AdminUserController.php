@@ -19,7 +19,7 @@ class AdminUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email',
             'password' => 'required|string|min:6',
-            'role_id' => 'required|in:1,2,3',
+            'role_id' => 'required|in:1,2,3,4',
         ]);
 
         $existingUser = User::withTrashed()
@@ -54,7 +54,7 @@ class AdminUserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email',
-            'role_id' => 'required|in:1,2,3',
+            'role_id' => 'required|in:1,2,3,4',
         ]);
 
         $existingUser = User::withTrashed()

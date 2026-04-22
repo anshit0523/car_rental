@@ -16,6 +16,10 @@ class AdminAuthController extends Controller
                 return redirect()->route('admin.dashboard');
             }
 
+            if ((int) $user->role_id === 4) {
+                return redirect()->route('manager.dashboard');
+            }
+
             if ((int) $user->role_id === 3) {
                 return redirect()->route('staff.dashboard');
             }
@@ -49,7 +53,7 @@ class AdminAuthController extends Controller
 
         $user = Auth::user();
 
-        if (!in_array((int) $user->role_id, [1, 3], true)) {
+        if (!in_array((int) $user->role_id, [1, 3, 4], true)) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -57,12 +61,16 @@ class AdminAuthController extends Controller
             return back()
                 ->withInput($request->only('email'))
                 ->withErrors([
-                    'email' => 'This login is for admin and staff only.',
+                    'email' => 'This login is for admin, manager, and staff only.',
                 ]);
         }
 
         if ((int) $user->role_id === 1) {
             return redirect()->route('admin.dashboard');
+        }
+
+        if ((int) $user->role_id === 4) {
+            return redirect()->route('manager.dashboard');
         }
 
         return redirect()->route('staff.dashboard');

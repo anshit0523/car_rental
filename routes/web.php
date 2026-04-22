@@ -12,6 +12,7 @@ use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\CarsController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LiveMapController;
+use App\Http\Controllers\Manager\ManagerDashboardController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\ReturnIssueController;
@@ -305,4 +306,101 @@ Route::middleware(['auth', 'staff'])
 
         Route::post('/bookings/{booking}/return-issue', [StaffReturnIssueController::class, 'store'])
             ->name('return-issues.store');
+    });
+
+    /*
+|--------------------------------------------------------------------------
+| Protected Manager Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'manager'])
+    ->prefix('manager')
+    ->name('manager.')
+    ->group(function () {
+        Route::get('/dashboard', [ManagerDashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/revenue', [AdminDashboardController::class, 'revenue'])->name('revenue');
+
+        Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
+        Route::get('/bookings/create/{car}', [AdminBookingController::class, 'create'])->name('bookings.create');
+        Route::get('/bookings/search-customer', [AdminBookingController::class, 'searchCustomer'])->name('bookings.search-customer');
+        Route::post('/bookings/check-availability-exact', [AvailabilityController::class, 'check'])->name('bookings.check-availability-exact');
+        Route::post('/bookings', [AdminBookingController::class, 'store'])->name('bookings.store');
+        Route::get('/bookings/{booking}/json', [AdminBookingController::class, 'showJson'])->name('bookings.showJson');
+        Route::get('/bookings/{booking}', [AdminBookingController::class, 'showJson'])->name('bookings.json');
+        Route::put('/bookings/{booking}/update-status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
+        Route::post('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
+
+        Route::get('/calendar', [AdminBookingController::class, 'calendar'])->name('calendar');
+
+        Route::get('/return-issues', [ReturnIssueController::class, 'index'])->name('return-issues.index');
+        Route::get('/bookings/{booking}/return-issue/create', [ReturnIssueController::class, 'create'])->name('return-issues.create');
+        Route::post('/bookings/{booking}/return-issue', [ReturnIssueController::class, 'store'])->name('return-issues.store');
+        Route::patch('/return-issues/{returnIssue}/status', [ReturnIssueController::class, 'updateStatus'])->name('return-issues.update-status');
+
+        Route::get('/cars', [CarsController::class, 'cars'])->name('cars');
+        Route::post('/cars', [CarsController::class, 'store'])->name('cars.store');
+        Route::get('/cars/{id}/edit', [CarsController::class, 'edit'])->name('cars.edit');
+        Route::put('/cars/{id}', [CarsController::class, 'update'])->name('cars.update');
+        Route::delete('/cars/{id}', [CarsController::class, 'destroy'])->name('cars.destroy');
+
+        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+        Route::get('/payments/{payment}', [AdminPaymentController::class, 'show'])->name('payments.show');
+        Route::get('/payments/export/csv', [AdminPaymentController::class, 'export'])->name('payments.export');
+        Route::post('/payments/{id}/approve', [AdminPaymentController::class, 'approve'])->name('payments.approve');
+        Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])->name('payments.reject');
+
+        Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');
+        Route::get('/replay', [LiveMapController::class, 'replayPage'])->name('replay');
+        Route::get('/replay/history', [LiveMapController::class, 'history'])->name('replay.history');
+        Route::get('/live/positions', [LiveMapController::class, 'positions'])->name('live.positions');
+    });
+
+
+    /*
+|--------------------------------------------------------------------------
+| Protected Manager Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'manager'])
+    ->prefix('manager')
+    ->name('manager.')
+    ->group(function () {
+        Route::get('/dashboard', [ManagerDashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/revenue', [AdminDashboardController::class, 'revenue'])->name('revenue');
+
+        Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
+        Route::get('/bookings/create/{car}', [AdminBookingController::class, 'create'])->name('bookings.create');
+        Route::get('/bookings/search-customer', [AdminBookingController::class, 'searchCustomer'])->name('bookings.search-customer');
+        Route::post('/bookings/check-availability-exact', [AvailabilityController::class, 'check'])->name('bookings.check-availability-exact');
+        Route::post('/bookings', [AdminBookingController::class, 'store'])->name('bookings.store');
+        Route::get('/bookings/{booking}/json', [AdminBookingController::class, 'showJson'])->name('bookings.showJson');
+        Route::get('/bookings/{booking}', [AdminBookingController::class, 'showJson'])->name('bookings.json');
+        Route::put('/bookings/{booking}/update-status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
+        Route::post('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
+
+        Route::get('/calendar', [AdminBookingController::class, 'calendar'])->name('calendar');
+
+        Route::get('/return-issues', [ReturnIssueController::class, 'index'])->name('return-issues.index');
+        Route::get('/bookings/{booking}/return-issue/create', [ReturnIssueController::class, 'create'])->name('return-issues.create');
+        Route::post('/bookings/{booking}/return-issue', [ReturnIssueController::class, 'store'])->name('return-issues.store');
+        Route::patch('/return-issues/{returnIssue}/status', [ReturnIssueController::class, 'updateStatus'])->name('return-issues.update-status');
+
+        Route::get('/cars', [CarsController::class, 'cars'])->name('cars');
+        Route::post('/cars', [CarsController::class, 'store'])->name('cars.store');
+        Route::get('/cars/{id}/edit', [CarsController::class, 'edit'])->name('cars.edit');
+        Route::put('/cars/{id}', [CarsController::class, 'update'])->name('cars.update');
+        Route::delete('/cars/{id}', [CarsController::class, 'destroy'])->name('cars.destroy');
+
+        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+        Route::get('/payments/{payment}', [AdminPaymentController::class, 'show'])->name('payments.show');
+        Route::get('/payments/export/csv', [AdminPaymentController::class, 'export'])->name('payments.export');
+        Route::post('/payments/{id}/approve', [AdminPaymentController::class, 'approve'])->name('payments.approve');
+        Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])->name('payments.reject');
+
+        Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');
+        Route::get('/replay', [LiveMapController::class, 'replayPage'])->name('replay');
+        Route::get('/replay/history', [LiveMapController::class, 'history'])->name('replay.history');
+        Route::get('/live/positions', [LiveMapController::class, 'positions'])->name('live.positions');
     });
