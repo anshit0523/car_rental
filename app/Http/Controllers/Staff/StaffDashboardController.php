@@ -16,8 +16,13 @@ class StaffDashboardController extends Controller
 
         $statusIds = Status::whereIn('name', [
             'Pending',
+            'Reserved',
+            'Confirmed',
             'Active',
             'Return',
+            'Completed',
+            'Cancelled',
+            'Failed',
             'Checkup',
             'Damage',
             'Needs Repair',
@@ -51,11 +56,7 @@ class StaffDashboardController extends Controller
             ? Booking::where('status_id', $activeStatusId)->count()
             : 0;
 
-        $returnsToday = $returnStatusId
-            ? Booking::where('status_id', $returnStatusId)
-                ->whereDate('return_at', $today)
-                ->count()
-            : 0;
+        $returnsToday = Booking::whereDate('return_at', $today)->count();
 
         $attentionCars = !empty($attentionStatusIds)
             ? Booking::whereIn('status_id', $attentionStatusIds)->count()
@@ -66,12 +67,47 @@ class StaffDashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $pickupStatusIds = array_values(array_filter([
+            $statusIds['Pending'] ?? null,
+            $statusIds['Reserved'] ?? null,
+            $statusIds['Confirmed'] ?? null,
+            $statusIds['Active'] ?? null,
+        ]));
+
+        $returnStatusTableIds = array_values(array_filter([
+            $statusIds['Active'] ?? null,
+            $statusIds['Return'] ?? null,
+            $statusIds['Completed'] ?? null,
+        ]));
+
+        $processedPickupStatusIds = array_values(array_filter([
+            $statusIds['Active'] ?? null,
+            $statusIds['Completed'] ?? null,
+            $statusIds['Cancelled'] ?? null,
+            $statusIds['Failed'] ?? null,
+        ]));
+
+        $completedStatusId = $statusIds['Completed'] ?? 0;
+
         $todayPickupsBase = Booking::with(['user', 'car.brand', 'status'])
             ->whereDate('pickup_at', $today)
+            ->when(!empty($pickupStatusIds), function ($query) use ($pickupStatusIds) {
+                $query->whereIn('status_id', $pickupStatusIds);
+            })
+            ->orderByRaw(
+                'CASE WHEN pickup_at < NOW() AND status_id NOT IN (' . implode(',', !empty($processedPickupStatusIds) ? $processedPickupStatusIds : [0]) . ') THEN 0 ELSE 1 END'
+            )
             ->orderBy('pickup_at');
 
         $todayReturnsBase = Booking::with(['user', 'car.brand', 'status'])
             ->whereDate('return_at', $today)
+            ->when(!empty($returnStatusTableIds), function ($query) use ($returnStatusTableIds) {
+                $query->whereIn('status_id', $returnStatusTableIds);
+            })
+            ->orderByRaw(
+                'CASE WHEN return_at < NOW() AND status_id != ? THEN 0 ELSE 1 END',
+                [$completedStatusId]
+            )
             ->orderBy('return_at');
 
         $todayPickupsCount = (clone $todayPickupsBase)->count();

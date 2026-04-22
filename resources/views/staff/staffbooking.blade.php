@@ -141,15 +141,7 @@
                                             <i class="fas fa-edit"></i>
                                         </button>
 
-                                        @if(($booking->status->name ?? '') === 'Return')
-                                            <a
-                                                href="{{ route('staff.return-issues.create', $booking->id) }}"
-                                                class="text-rose-600 hover:text-rose-800"
-                                                title="Create return issue"
-                                            >
-                                                <i class="fas fa-file-circle-plus"></i>
-                                            </a>
-                                        @endif
+                                    
                                     </td>
                                 </tr>
                             @empty

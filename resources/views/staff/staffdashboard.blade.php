@@ -43,8 +43,11 @@
 
                 <!-- Today's Pickups -->
                 <div class="bg-white rounded-lg shadow overflow-hidden">
-                    <div class="p-6 border-b border-gray-200">
-                        <h3 class="text-lg font-bold text-gray-900">Today’s Pickups</h3>
+                    <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Today’s Pickups</h3>
+                            <p class="text-sm text-gray-500">{{ $todayPickupsCount }} total today</p>
+                        </div>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -59,19 +62,56 @@
                             </thead>
                             <tbody class="divide-y divide-gray-200">
                                 @forelse($todayPickups as $booking)
+                                    @php
+                                        $statusName = $booking->status->name ?? 'Unknown';
+
+                                        $statusClass = match ($statusName) {
+                                            'Pending' => 'bg-gray-100 text-gray-800',
+                                            'Reserved' => 'bg-yellow-100 text-yellow-800',
+                                            'Confirmed' => 'bg-blue-100 text-blue-800',
+                                            'Active' => 'bg-indigo-100 text-indigo-800',
+                                            'Return' => 'bg-orange-100 text-orange-800',
+                                            'Completed' => 'bg-green-100 text-green-800',
+                                            'Cancelled' => 'bg-red-100 text-red-800',
+                                            'Checkup' => 'bg-purple-100 text-purple-800',
+                                            'Damage' => 'bg-rose-100 text-rose-800',
+                                            'Needs Repair' => 'bg-amber-100 text-amber-800',
+                                            'Failed' => 'bg-gray-300 text-gray-800',
+                                            default => 'bg-gray-100 text-gray-800',
+                                        };
+                                    @endphp
+
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 text-sm text-gray-900">
-                                            {{ $booking->user->name ?? 'N/A' }}
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ $booking->user->name ?? 'N/A' }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                Booking #{{ $booking->id }}
+                                            </div>
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-gray-600">
-                                            {{ $booking->car->brand->name ?? 'N/A' }} {{ $booking->car->model ?? '' }}
+
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-gray-900 font-medium">
+                                                {{ $booking->car->brand->name ?? 'N/A' }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                {{ $booking->car->model ?? 'No model' }}
+                                            </div>
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-gray-600">
-                                            {{ optional($booking->pickup_at)->format('M d, Y h:i A') ?? 'N/A' }}
+
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ optional($booking->pickup_at)->format('h:i A') ?? 'N/A' }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                {{ optional($booking->pickup_at)->format('M d, Y') ?? '' }}
+                                            </div>
                                         </td>
+
                                         <td class="px-6 py-4 text-sm">
-                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                {{ $booking->status->name ?? 'Unknown' }}
+                                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ $statusClass }}">
+                                                {{ $statusName }}
                                             </span>
                                         </td>
                                     </tr>
@@ -87,8 +127,11 @@
 
                 <!-- Today's Returns -->
                 <div class="bg-white rounded-lg shadow overflow-hidden">
-                    <div class="p-6 border-b border-gray-200">
-                        <h3 class="text-lg font-bold text-gray-900">Today’s Returns</h3>
+                    <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Today’s Returns</h3>
+                            <p class="text-sm text-gray-500">{{ $todayReturnsCount }} total today</p>
+                        </div>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -103,19 +146,56 @@
                             </thead>
                             <tbody class="divide-y divide-gray-200">
                                 @forelse($todayReturns as $booking)
+                                    @php
+                                        $statusName = $booking->status->name ?? 'Unknown';
+
+                                        $statusClass = match ($statusName) {
+                                            'Pending' => 'bg-gray-100 text-gray-800',
+                                            'Reserved' => 'bg-yellow-100 text-yellow-800',
+                                            'Confirmed' => 'bg-blue-100 text-blue-800',
+                                            'Active' => 'bg-indigo-100 text-indigo-800',
+                                            'Return' => 'bg-orange-100 text-orange-800',
+                                            'Completed' => 'bg-green-100 text-green-800',
+                                            'Cancelled' => 'bg-red-100 text-red-800',
+                                            'Checkup' => 'bg-purple-100 text-purple-800',
+                                            'Damage' => 'bg-rose-100 text-rose-800',
+                                            'Needs Repair' => 'bg-amber-100 text-amber-800',
+                                            'Failed' => 'bg-gray-300 text-gray-800',
+                                            default => 'bg-gray-100 text-gray-800',
+                                        };
+                                    @endphp
+
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 text-sm text-gray-900">
-                                            {{ $booking->user->name ?? 'N/A' }}
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ $booking->user->name ?? 'N/A' }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                Booking #{{ $booking->id }}
+                                            </div>
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-gray-600">
-                                            {{ $booking->car->brand->name ?? 'N/A' }} {{ $booking->car->model ?? '' }}
+
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-gray-900 font-medium">
+                                                {{ $booking->car->brand->name ?? 'N/A' }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                {{ $booking->car->model ?? 'No model' }}
+                                            </div>
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-gray-600">
-                                            {{ optional($booking->return_at)->format('M d, Y h:i A') ?? 'N/A' }}
+
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ optional($booking->return_at)->format('h:i A') ?? 'N/A' }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                {{ optional($booking->return_at)->format('M d, Y') ?? '' }}
+                                            </div>
                                         </td>
+
                                         <td class="px-6 py-4 text-sm">
-                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                                {{ $booking->status->name ?? 'Unknown' }}
+                                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ $statusClass }}">
+                                                {{ $statusName }}
                                             </span>
                                         </td>
                                     </tr>
