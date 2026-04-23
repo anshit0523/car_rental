@@ -94,35 +94,42 @@ public function searchCustomer(Request $request): JsonResponse
 public function store(Request $request)
 {
     $baseRules = [
-        'car_id' => 'required|exists:cars,id',
-        'pickup_date' => 'required|date',
-        'pickup_time' => 'required|date_format:H:i',
-        'return_date' => 'required|date',
-        'return_time' => 'required|date_format:H:i',
-        'service_type_id' => 'required|exists:service_types,id',
-        'payment_method_code' => 'required|exists:payment_methods,code',
-        'customer_type' => 'required|in:existing,new',
-        'existing_user_id' => 'nullable|exists:users,id',
-        'existing_customer_search' => 'nullable|string|max:255',
-        'customer_name' => 'nullable|string|max:255',
-        'customer_email' => 'nullable|email|max:255',
-        'customer_phone' => 'nullable|string|max:30',
-        'password' => 'nullable|string|min:6|confirmed',
-        'service_location' => 'nullable|string|max:255',
+        'car_id' => ['required', 'exists:cars,id'],
+        'pickup_date' => ['required', 'date'],
+        'pickup_time' => ['required', 'date_format:H:i'],
+        'return_date' => ['required', 'date'],
+        'return_time' => ['required', 'date_format:H:i'],
+        'service_type_id' => ['required', 'exists:service_types,id'],
+        'payment_method_code' => ['required', 'exists:payment_methods,code'],
+        'customer_type' => ['required', 'in:existing,new'],
+        'existing_user_id' => ['nullable', 'exists:users,id'],
+        'existing_customer_search' => ['nullable', 'string', 'max:255'],
+        'customer_name' => ['nullable', 'string', 'max:255'],
+        'customer_email' => ['nullable', 'email', 'max:255'],
+        'customer_phone' => ['nullable', 'string', 'max:30'],
+        'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        'service_location' => ['nullable', 'string', 'max:255'],
     ];
 
-    $validated = $request->validate($baseRules);
+    $validated = $request->validate($baseRules, [
+        'password.min' => 'Password must be at least 8 characters.',
+        'password.confirmed' => 'Password confirmation does not match.',
+    ]);
 
     if ($validated['customer_type'] === 'existing') {
         $request->validate([
-            'existing_user_id' => 'required|exists:users,id',
+            'existing_user_id' => ['required', 'exists:users,id'],
         ]);
     } else {
         $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'customer_email' => 'required|email|max:255|unique:users,email',
-            'customer_phone' => 'required|string|max:30',
-            'password' => 'required|string|min:6|confirmed',
+            'customer_name' => ['required', 'string', 'max:255'],
+            'customer_email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'customer_phone' => ['required', 'string', 'max:30'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'customer_email.unique' => 'This email is already registered.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.confirmed' => 'Password confirmation does not match.',
         ]);
     }
 
@@ -234,7 +241,7 @@ public function store(Request $request)
                 'service_location' => $validated['service_location'] ?? null,
             ]);
 
-            $payment = Payment::create([
+            Payment::create([
                 'booking_id' => $booking->id,
                 'payment_date' => now(),
                 'amount' => $booking->final_total ?? $booking->total_price ?? 0,
@@ -244,16 +251,8 @@ public function store(Request $request)
                 'notes' => $isCash
                     ? 'Cash payment completed during booking creation'
                     : 'Payment submitted and waiting for verification',
-                    'verified_by' => $isCash ? auth()->id() : null,
-    'verified_at' => $isCash ? now() : null,
-            ]);
-
-            \Log::info('Admin booking payment created', [
-                'booking_id' => $booking->id,
-                'payment_id' => $payment->id,
-                'amount' => $payment->amount,
-                'payment_method_id' => $payment->payment_method_id,
-                'payment_status_id' => $payment->payment_status_id,
+                'verified_by' => $isCash ? auth()->id() : null,
+                'verified_at' => $isCash ? now() : null,
             ]);
 
             return $booking;
@@ -275,7 +274,7 @@ public function store(Request $request)
             500
         );
     }
-} 
+}
 
     public function updateStatus(Request $request, Booking $booking)
     {

@@ -591,33 +591,36 @@
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
                                         </div>
 
-                                        <div class="md:col-span-2">
-                                            <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                                            <input
-                                                type="email"
-                                                name="customer_email"
-                                                id="new_customer_email"
-                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
-                                                placeholder="Enter email">
-                                        </div>
+                                        <div>
+    <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+    <input
+        type="email"
+        name="customer_email"
+        id="new_customer_email"
+        class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
+        placeholder="Enter email">
+    <p class="mt-1 text-xs text-gray-500">Email must be unique.</p>
+</div>
+
+                                       <div>
+    <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+    <input
+        type="password"
+        name="password"
+        id="new_customer_password"
+        class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
+        placeholder="Minimum 8 characters">
+</div>
 
                                         <div>
-                                            <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                                            <input
-                                                type="password"
-                                                name="password"
-                                                id="new_customer_password"
-                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
-                                        </div>
-
-                                        <div>
-                                            <label class="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
-                                            <input
-                                                type="password"
-                                                name="password_confirmation"
-                                                id="new_customer_password_confirmation"
-                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
-                                        </div>
+    <label class="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
+    <input
+        type="password"
+        name="password_confirmation"
+        id="new_customer_password_confirmation"
+        class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
+        placeholder="Re-enter password">
+</div>
                                     </div>
                                 </div>
 
