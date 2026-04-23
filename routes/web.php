@@ -64,6 +64,7 @@ Route::view('/about-us', 'about-us')->name('about');
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 });
 
 /*
