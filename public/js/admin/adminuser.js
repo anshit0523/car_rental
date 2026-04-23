@@ -1,39 +1,47 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const userSearch = document.getElementById('userSearch');
-    const roleFilter = document.getElementById('roleFilter');
     const userForm = document.getElementById('userForm');
     const formMethod = document.getElementById('formMethod');
 
-    function filterTable() {
-        const searchValue = userSearch.value.toLowerCase().trim();
-        const roleValue = roleFilter.value.toLowerCase().trim();
+    const filterForm = document.getElementById('filterForm');
+    const userSearch = document.getElementById('userSearch');
+    const roleFilter = document.getElementById('roleFilter');
 
-        document.querySelectorAll('table tbody tr').forEach(row => {
-            if (row.cells.length < 3) return;
+    let searchTimeout;
 
-            const name = row.cells[0].innerText.toLowerCase();
-            const email = row.cells[1].innerText.toLowerCase();
-            const roleBadge = row.cells[2].innerText.toLowerCase();
-
-            const matchesSearch = name.includes(searchValue) || email.includes(searchValue);
-            const matchesRole = roleValue === '' || roleBadge.includes(roleValue);
-
-            row.style.display = (matchesSearch && matchesRole) ? '' : 'none';
-        });
+    function submitFilterForm() {
+        if (filterForm) {
+            filterForm.submit();
+        }
     }
 
     if (userSearch) {
-        userSearch.addEventListener('keyup', filterTable);
+        userSearch.addEventListener('input', function () {
+            clearTimeout(searchTimeout);
+
+            searchTimeout = setTimeout(() => {
+                submitFilterForm();
+            }, 400);
+        });
     }
 
     if (roleFilter) {
-        roleFilter.addEventListener('change', filterTable);
+        roleFilter.addEventListener('change', function () {
+            submitFilterForm();
+        });
     }
 
     window.openAddModal = function () {
         document.getElementById('modalTitle').innerText = 'Add User';
         userForm.action = userForm.dataset.storeRoute;
         formMethod.value = 'POST';
+
+        userForm.reset();
+        document.getElementById('name').value = '';
+        document.getElementById('email').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('password_confirmation').value = '';
+        document.getElementById('role').value = '';
+
         showModal();
     };
 
@@ -46,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('name').value = '';
         document.getElementById('email').value = '';
         document.getElementById('password').value = '';
+        document.getElementById('password_confirmation').value = '';
         document.getElementById('role').value = '';
 
         showModal();
@@ -60,6 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('name').value = user.name ?? '';
         document.getElementById('email').value = user.email ?? '';
         document.getElementById('password').value = '';
+        document.getElementById('password_confirmation').value = '';
         document.getElementById('role').value = user.role_id ?? '';
 
         showModal();
