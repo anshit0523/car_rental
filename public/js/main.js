@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // ========= Version A (your OTHER page) =========
+  // ========= Version A (mobile menu) =========
   const menuToggle = document.getElementById("menuToggle");
   const menuClose  = document.getElementById("menuClose");
   const mobileMenu = document.getElementById("mobileMenu");
@@ -18,9 +18,16 @@ document.addEventListener("DOMContentLoaded", () => {
     mobileMenu.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", () => mobileMenu.classList.add("hidden"));
     });
+
+    // close when clicking outside the side menu
+    mobileMenu.addEventListener("click", (e) => {
+      if (e.target === mobileMenu) {
+        mobileMenu.classList.add("hidden");
+      }
+    });
   }
 
-  // ========= Version B (THIS page) =========
+  // ========= Version B (sidebar) =========
   const toggleSidebar = document.getElementById("toggleSidebar");
   const sidebar = document.getElementById("sidebar");
   const overlay = document.getElementById("sidebarOverlay");
@@ -48,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     sidebar.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", () => {
-        if (window.innerWidth < 1024) close(); // only mobile
+        if (window.innerWidth < 1024) close();
       });
     });
   }

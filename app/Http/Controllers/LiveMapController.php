@@ -33,26 +33,26 @@ class LiveMapController extends Controller
         $now = now();
 
         $data = $cars->map(function ($car) use ($now) {
-            $t = $car->tracker;
-            $p = $t?->latestPosition;
+            $tracker = $car->tracker;
+            $position = $tracker?->latestPosition;
 
-            $fix = $p?->fix_time;
-            $online = $fix ? $fix->diffInSeconds($now) <= 120 : false;
+            $fixTime = $position?->fix_time;
+            $online = $fixTime ? $fixTime->diffInSeconds($now) <= 120 : false;
 
             return [
                 'car_id' => $car->id,
                 'plate_no' => $car->model,
-                'tracker_id' => $t?->id,
-                'traccar_device_id' => $t?->traccar_device_id,
+                'tracker_id' => $tracker?->id,
+                'traccar_device_id' => $tracker?->traccar_device_id,
                 'online' => $online,
-                'lat' => $p?->latitude,
-                'lng' => $p?->longitude,
-                'speed_kmh' => $p?->speed_kmh ?? 0,
-                'battery_level' => $p?->battery_level,
-                'odometer_km' => $p?->odometer_km,
-                'geofence_ids' => $p?->geofence_ids ?? [],
-                'fix_time' => $fix?->toIso8601String(),
-                'address' => $p?->address,
+                'lat' => $position?->latitude,
+                'lng' => $position?->longitude,
+                'speed_kmh' => $position?->speed_kmh ?? 0,
+                'battery_level' => $position?->battery_level,
+                'odometer_km' => $position?->odometer_km,
+                'geofence_ids' => $position?->geofence_ids ?? [],
+                'fix_time' => $fixTime?->toIso8601String(),
+                'address' => $position?->address,
             ];
         })->values();
 
@@ -65,9 +65,9 @@ class LiveMapController extends Controller
     public function history(Request $request, TraccarService $traccarService)
     {
         $validated = $request->validate([
-            'deviceId' => 'required|integer',
-            'from' => 'required|date',
-            'to' => 'required|date',
+            'deviceId' => ['required', 'integer'],
+            'from' => ['required', 'date'],
+            'to' => ['required', 'date', 'after_or_equal:from'],
         ]);
 
         $positions = $traccarService->positionHistory(
@@ -76,19 +76,22 @@ class LiveMapController extends Controller
             $validated['to']
         );
 
-        $data = collect($positions)->map(function ($p) {
+        $data = collect($positions)->map(function ($position) {
+            $latitude = $position['latitude'] ?? null;
+            $longitude = $position['longitude'] ?? null;
+
             return [
-                'id' => $p['id'] ?? null,
-                'lat' => $p['latitude'] ?? null,
-                'lng' => $p['longitude'] ?? null,
-                'speed' => $p['speed'] ?? 0,
-                'course' => $p['course'] ?? 0,
-                'fixTime' => $p['fixTime'] ?? null,
-                'address' => $p['address'] ?? (
-    isset($p['latitude'], $p['longitude'])
-        ? $p['latitude'] . ', ' . $p['longitude']
-        : null
-),
+                'id' => $position['id'] ?? null,
+                'lat' => $latitude,
+                'lng' => $longitude,
+                'speed' => $position['speed'] ?? 0,
+                'course' => $position['course'] ?? 0,
+                'fixTime' => $position['fixTime'] ?? null,
+                'address' => $position['address'] ?? (
+                    isset($latitude, $longitude)
+                        ? $latitude . ', ' . $longitude
+                        : null
+                ),
             ];
         })->values();
 

@@ -1,10 +1,46 @@
 @extends('layouts.adminlayout')
 
 @section('content')
+@php
+    $routePrefix = request()->routeIs('manager.*') ? 'manager' : 'admin';
+
+    $liveMapUrl = route($routePrefix . '.live-map');
+    $historyUrl = route($routePrefix . '.replay.history');
+@endphp
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
+    #map {
+        width: 100%;
+        height: 68vh;
+        min-height: 340px;
+        border-radius: 0.75rem;
+        z-index: 1;
+    }
+
+    @media (max-width: 1024px) {
+        #map {
+            height: 62vh;
+            min-height: 320px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        #map {
+            height: 54vh;
+            min-height: 300px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        #map {
+            height: 48vh;
+            min-height: 280px;
+        }
+    }
+
     #replaySeek {
         -webkit-appearance: none;
         appearance: none;
@@ -38,14 +74,15 @@
     }
 
     .replay-btn {
-        width: 38px;
-        height: 38px;
+        width: 40px;
+        height: 40px;
         border-radius: 9999px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: transparent;
+        background: white;
         color: #111827;
+        border: 1px solid #e5e7eb;
         font-size: 16px;
         transition: 0.2s ease;
     }
@@ -55,20 +92,21 @@
     }
 
     .replay-btn:disabled {
-        opacity: 0.35;
+        opacity: 0.4;
         cursor: not-allowed;
     }
 </style>
 
-<div class="h-screen overflow-y-auto bg-gray-50">
-    <div class="max-w-7xl mx-auto p-4 pb-8">
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto p-3 sm:p-4 pb-8">
 
         <div class="mb-3 text-sm text-gray-600">
-    <a href="{{ route('admin.live-map') }}" class="hover:text-blue-600">Live Map</a>
-    <span class="mx-1">/</span>
-    <span class="text-gray-900 font-medium">Replay History</span>
-</div>
-        <div class="flex items-center justify-between mb-4">
+            <a href="{{ $liveMapUrl }}" class="hover:text-blue-600">Live Map</a>
+            <span class="mx-1">/</span>
+            <span class="text-gray-900 font-medium">Replay History</span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
             <div>
                 <h1 class="text-xl font-semibold text-gray-900">Replay History</h1>
                 <p class="text-sm text-gray-500">View past routes and replay vehicle movement.</p>
@@ -76,23 +114,23 @@
             <div id="historyStatus" class="text-sm text-gray-500">Ready</div>
         </div>
 
-        {{-- Map --}}
-        <div id="map" class="h-[68vh] rounded-xl border border-gray-200 shadow-sm mb-4"></div>
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden mb-4">
+            <div id="map"></div>
+        </div>
 
-        {{-- Replay Player --}}
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-4">
             <div class="px-1 py-1">
-                <div id="replayDeviceName" class="text-center text-xl md:text-1xl font-semibold text-gray-900">
+                <div id="replayDeviceName" class="text-center text-lg sm:text-xl font-semibold text-gray-900">
                     No vehicle selected
                 </div>
 
-                <div class="mt-2">
+                <div class="mt-3">
                     <input id="replaySeek" type="range" min="0" max="0" value="0" disabled>
                 </div>
 
-                <div class="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <div class="flex flex-wrap items-center gap-1 md:gap-2">
-                        <div id="replayCounter" class="text-gray-900 text-1xl md:text-1xl font-semibold tracking-tight mr-1">
+                <div class="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div id="replayCounter" class="text-gray-900 text-lg font-semibold tracking-tight mr-1">
                             0/0
                         </div>
 
@@ -113,16 +151,15 @@
                         </button>
                     </div>
 
-                    <div id="replayCurrentTime" class="text-gray-900 text-lg md:text-1xl font-medium">
+                    <div id="replayCurrentTime" class="text-gray-900 text-sm sm:text-base font-medium break-all">
                         —
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Filter Card --}}
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-4">
-            <div class="grid md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Vehicle</label>
                     <select id="deviceSelect" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -162,7 +199,7 @@
                     <button
                         id="loadReplay"
                         type="button"
-                        class="w-full inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                        class="w-full inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
                     >
                         Load Replay
                     </button>
@@ -170,33 +207,40 @@
             </div>
         </div>
 
-        {{-- Info Cards --}}
-        <div class="mt-4 grid md:grid-cols-4 gap-4 text-sm">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 text-sm">
             <div class="rounded-lg border border-gray-200 p-3 bg-white shadow-sm">
                 <div class="text-gray-500">Points</div>
                 <div id="pointCount" class="text-lg font-semibold text-gray-900">0</div>
             </div>
+
             <div class="rounded-lg border border-gray-200 p-3 bg-white shadow-sm">
                 <div class="text-gray-500">Current Time</div>
-                <div id="currentFixTime" class="text-sm font-medium text-gray-900">—</div>
+                <div id="currentFixTime" class="text-sm font-medium text-gray-900 break-words">—</div>
             </div>
+
             <div class="rounded-lg border border-gray-200 p-3 bg-white shadow-sm">
                 <div class="text-gray-500">Speed</div>
-                <div id="currentSpeed" class="text-lg font-semibold text-gray-900">0</div>
+                <div id="currentSpeed" class="text-lg font-semibold text-gray-900">0 km/h</div>
             </div>
+
             <div class="rounded-lg border border-gray-200 p-3 bg-white shadow-sm">
                 <div class="text-gray-500">Address</div>
-                <div id="currentAddress" class="text-sm font-medium text-gray-900 truncate">—</div>
+                <div id="currentAddress" class="text-sm font-medium text-gray-900 break-words">—</div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const map = L.map('map').setView([14.5995, 120.9842], 11);
+    const historyUrl = @json($historyUrl);
+
+    const map = L.map('map', {
+        zoomControl: true
+    }).setView([14.5995, 120.9842], 11);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     let replayPoints = [];
@@ -206,8 +250,6 @@
     let replayIndex = 0;
     let startMarker = null;
     let endMarker = null;
-
-    // optional follow mode while replay plays
     let followMarker = true;
 
     const statusEl = document.getElementById('historyStatus');
@@ -246,7 +288,7 @@
         if (isNaN(date.getTime())) return value;
 
         return date.toLocaleString([], {
-            month: '2-digit',
+            month: 'short',
             day: '2-digit',
             year: 'numeric',
             hour: '2-digit',
@@ -295,7 +337,7 @@
     function updateInfo(point) {
         currentFixTimeEl.textContent = formatFixTime(point.fixTime);
         replayCurrentTimeEl.textContent = formatFixTime(point.fixTime);
-        currentSpeedEl.textContent = point.speed ?? 0;
+        currentSpeedEl.textContent = `${point.speed ?? 0} km/h`;
         currentAddressEl.textContent = point.address ?? '—';
     }
 
@@ -314,7 +356,7 @@
 
         replayMarker.setLatLng(pos);
         replayMarker.setPopupContent(`
-            <div style="font-size:12px">
+            <div style="font-size:12px; line-height:1.5; min-width:180px;">
                 <b>Replay</b><br>
                 Time: ${formatFixTime(point.fixTime)}<br>
                 Speed: ${point.speed ?? 0} km/h<br>
@@ -355,7 +397,7 @@
 
         pointCountEl.textContent = '0';
         currentFixTimeEl.textContent = '—';
-        currentSpeedEl.textContent = '0';
+        currentSpeedEl.textContent = '0 km/h';
         currentAddressEl.textContent = '—';
         replayCurrentTimeEl.textContent = '—';
         replayDeviceNameEl.textContent = 'No vehicle selected';
@@ -392,9 +434,12 @@
             const fromIso = new Date(from).toISOString();
             const toIso = new Date(to).toISOString();
 
-            const res = await fetch(`{{ route('admin.replay.history') }}?deviceId=${encodeURIComponent(deviceId)}&from=${encodeURIComponent(fromIso)}&to=${encodeURIComponent(toIso)}`, {
-                headers: { 'Accept': 'application/json' }
-            });
+            const res = await fetch(
+                `${historyUrl}?deviceId=${encodeURIComponent(deviceId)}&from=${encodeURIComponent(fromIso)}&to=${encodeURIComponent(toIso)}`,
+                {
+                    headers: { 'Accept': 'application/json' }
+                }
+            );
 
             if (!res.ok) {
                 throw new Error('Failed to load history.');
@@ -413,7 +458,6 @@
 
             if (!replayPoints.length) {
                 statusEl.textContent = 'No history found for the selected range.';
-                replayDeviceNameEl.textContent = selectedOption?.dataset?.label || 'Vehicle';
                 return;
             }
 
@@ -428,13 +472,13 @@
                 .bindPopup(`End<br>${formatFixTime(replayPoints[replayPoints.length - 1].fixTime)}`);
 
             replayMarker = L.marker(latlngs[0]).addTo(map).bindPopup(`
-    <div style="font-size:12px">
-        <b>Replay</b><br>
-        Time: ${formatFixTime(replayPoints[0].fixTime)}<br>
-        Speed: ${replayPoints[0].speed ?? 0} km/h<br>
-        Address: ${replayPoints[0].address ?? '-'}
-    </div>
-`);
+                <div style="font-size:12px; line-height:1.5; min-width:180px;">
+                    <b>Replay</b><br>
+                    Time: ${formatFixTime(replayPoints[0].fixTime)}<br>
+                    Speed: ${replayPoints[0].speed ?? 0} km/h<br>
+                    Address: ${replayPoints[0].address ?? '-'}
+                </div>
+            `);
 
             replayIndex = 0;
             replaySeekEl.max = replayPoints.length - 1;
@@ -443,12 +487,13 @@
             updateCounter();
             setPlaybackControlsDisabled(false);
 
-            // auto-center
             renderPoint(0, false);
-            map.setView(latlngs[0], 16);
+            map.fitBounds(L.latLngBounds(latlngs), { padding: [30, 30] });
 
-            // auto-open popup for replay marker
-            replayMarker.openPopup();
+            setTimeout(() => {
+                replayMarker.openPopup();
+                map.invalidateSize();
+            }, 150);
 
             statusEl.textContent = `Loaded ${replayPoints.length} points`;
         } catch (error) {
@@ -538,7 +583,14 @@
     updateSliderProgress();
     setPlaybackControlsDisabled(true);
 
-    // auto-load from deviceId
+    window.addEventListener('load', () => {
+        setTimeout(() => map.invalidateSize(), 300);
+    });
+
+    window.addEventListener('resize', () => {
+        setTimeout(() => map.invalidateSize(), 150);
+    });
+
     @if(request('deviceId'))
         document.getElementById('deviceSelect').value = "{{ request('deviceId') }}";
 
