@@ -103,31 +103,35 @@ class AuthController extends Controller
     }
 
     public function register(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'nullable|string|max:20',
-            'password' => 'required|min:6|confirmed',
-        ]);
+{
+    $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'email', 'unique:users,email'],
+        'phone' => ['nullable', 'string', 'max:20'],
+        'password' => ['required', 'string', 'min:8', 'confirmed'],
+    ], [
+        'email.unique' => 'This email is already registered.',
+        'password.confirmed' => 'The password confirmation does not match.',
+        'password.min' => 'The password must be at least 8 characters.',
+    ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone ?? null,
-            'password' => Hash::make($request->password),
-            'role_id' => 2,
-        ]);
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'phone' => $request->phone ?? null,
+        'password' => Hash::make($request->password),
+        'role_id' => 2,
+    ]);
 
-        Auth::login($user);
-        $request->session()->regenerate();
+    Auth::login($user);
+    $request->session()->regenerate();
 
-        if (session()->has('guest_booking_payload')) {
-            return redirect()->route('user.booking.continue');
-        }
-
-        return redirect()->route('user.browse');
+    if (session()->has('guest_booking_payload')) {
+        return redirect()->route('user.booking.continue');
     }
+
+    return redirect()->route('user.browse');
+}
 
     public function logout(Request $request)
     {
