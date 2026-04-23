@@ -1,7 +1,10 @@
 @extends('layouts.adminlayout')
 
 @section('content')
-<div class="min-h-screen bg-gray-100 py-8">
+<div class="flex h-screen overflow-hidden">
+
+        <div class="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100">
+
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -235,5 +238,7 @@
             </div>
         </div>
     </div>
+</div>
+ </div>
 </div>
 @endsection
