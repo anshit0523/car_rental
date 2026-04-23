@@ -602,24 +602,41 @@
     <p class="mt-1 text-xs text-gray-500">Email must be unique.</p>
 </div>
 
-                                       <div>
+
+   <div>
     <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-    <input
-        type="password"
-        name="password"
-        id="new_customer_password"
-        class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
-        placeholder="Minimum 8 characters">
+    <div class="relative">
+        <input
+            type="password"
+            name="password"
+            id="new_customer_password"
+            class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl text-sm"
+            placeholder="Minimum 8 characters">
+        <button
+            type="button"
+            onclick="window.togglePassword('new_customer_password', this)"
+            class="absolute inset-y-0 right-0 px-4 text-gray-500 hover:text-gray-700">
+            <i class="fas fa-eye"></i>
+        </button>
+    </div>
 </div>
 
-                                        <div>
+<div>
     <label class="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
-    <input
-        type="password"
-        name="password_confirmation"
-        id="new_customer_password_confirmation"
-        class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm"
-        placeholder="Re-enter password">
+    <div class="relative">
+        <input
+            type="password"
+            name="password_confirmation"
+            id="new_customer_password_confirmation"
+            class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl text-sm"
+            placeholder="Re-enter password">
+        <button
+            type="button"
+            onclick="window.togglePassword('new_customer_password_confirmation', this)"
+            class="absolute inset-y-0 right-0 px-4 text-gray-500 hover:text-gray-700">
+            <i class="fas fa-eye"></i>
+        </button>
+    </div>
 </div>
                                     </div>
                                 </div>

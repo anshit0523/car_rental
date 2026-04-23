@@ -654,6 +654,29 @@ async function submitCreateBookingForm(e) {
     }
 }
 
+function togglePassword(inputId, button) {
+    const input = document.getElementById(inputId);
+    const icon = button.querySelector('i');
+
+    if (!input) return;
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        }
+    } else {
+        input.type = 'password';
+        if (icon) {
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+}
+
+
+
 function bindStaticEvents() {
     const form = qs('#filterForm');
     const searchInput = form?.querySelector('input[name="search"]');
@@ -747,6 +770,7 @@ window.openCreateBookingModal = openCreateBookingModal;
 window.closeCreateBookingModal = closeCreateBookingModal;
 window.openCreateFromBookingModal = openCreateFromBookingModal;
 window.toggleCustomerType = toggleCustomerType;
+window.togglePassword = togglePassword;
 
 document.addEventListener('DOMContentLoaded', () => {
     bindStaticEvents();

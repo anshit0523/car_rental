@@ -62,6 +62,7 @@
     border-radius: 14px;
     color: #000000;
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+    width: 100%;
   }
 
   .form-control::placeholder {
@@ -124,6 +125,40 @@
     padding: 12px 14px;
     margin-bottom: 18px;
     font-size: 14px;
+  }
+
+  .password-field {
+    position: relative;
+  }
+
+  .password-field .form-control {
+    padding-right: 50px;
+  }
+
+ .password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #fc8734;
+  cursor: pointer;
+  padding: 0;
+  z-index: 3;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:hover {
+  color: #ff8c2a;
+}
+
+  .password-toggle:focus {
+    outline: none;
   }
 </style>
 
@@ -192,13 +227,23 @@
 
       <div class="mb-3">
         <label class="form-label">Password</label>
-        <input
-          type="password"
-          name="password"
-          class="form-control"
-          placeholder="Create a password"
-          required
-        >
+        <div class="password-field">
+          <input
+            type="password"
+            name="password"
+            id="register_password"
+            class="form-control"
+            placeholder="Create a password"
+            required
+          >
+          <button
+            type="button"
+            class="password-toggle"
+            data-target="register_password"
+            aria-label="Toggle password visibility">
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
         @error('password')
           <p class="input-error">{{ $message }}</p>
         @enderror
@@ -206,13 +251,26 @@
 
       <div class="mb-4">
         <label class="form-label">Confirm Password</label>
-        <input
-          type="password"
-          name="password_confirmation"
-          class="form-control"
-          placeholder="Confirm your password"
-          required
-        >
+        <div class="password-field">
+          <input
+            type="password"
+            name="password_confirmation"
+            id="register_password_confirmation"
+            class="form-control"
+            placeholder="Confirm your password"
+            required
+          >
+          <button
+            type="button"
+            class="password-toggle"
+            data-target="register_password_confirmation"
+            aria-label="Toggle password confirmation visibility">
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
+        @error('password_confirmation')
+          <p class="input-error">{{ $message }}</p>
+        @enderror
       </div>
 
       <button class="btn btn-auth w-100" type="submit">Register</button>
@@ -224,5 +282,33 @@
     </form>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.password-toggle').forEach(function (button) {
+      button.addEventListener('click', function () {
+        const targetId = this.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        const icon = this.querySelector('i');
+
+        if (!input) return;
+
+        if (input.type === 'password') {
+          input.type = 'text';
+          if (icon) {
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+          }
+        } else {
+          input.type = 'password';
+          if (icon) {
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+          }
+        }
+      });
+    });
+  });
+</script>
 
 @endsection
