@@ -2,31 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Middleware\CheckRole;
 use App\Models\Booking;
-use App\Models\Brand;
-use App\Models\CarType;
 use App\Models\Car;
-use App\Models\FuelType;
-use App\Models\Tracker;
-use App\Models\Transmission;
 use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
 {
-
-
     public function index()
     {
-      $currentMonthStr = now()->format('Y-m');
-    $lastMonthStr = now()->startOfMonth()->subMonth()->format('Y-m');
+        $currentMonthStr = now()->format('Y-m');
+        $lastMonthStr = now()->startOfMonth()->subMonth()->format('Y-m');
 
-    $startOfMonth = now()->startOfMonth();
-    $endOfMonth = now()->endOfMonth();
-
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
 
         $totalBookings = Booking::whereBetween('pickup_at', [$startOfMonth, $endOfMonth])->count();
         $totalCars = Car::count();
@@ -35,9 +24,22 @@ class AdminDashboardController extends Controller
         $totalRevenue = Booking::whereBetween('pickup_at', [$startOfMonth, $endOfMonth])->sum('total_price');
 
         $monthlyData = DB::table('bookings')
-            ->selectRaw('YEAR(pickup_at) as year, MONTH(pickup_at) as month_num, DATE_FORMAT(pickup_at, "%b %Y") as month_label, COUNT(*) as bookings, COALESCE(SUM(total_price), 0) as revenue')
-            ->groupByRaw('YEAR(pickup_at), MONTH(pickup_at), DATE_FORMAT(pickup_at, "%b %Y")')
-            ->orderByRaw('YEAR(pickup_at) DESC, MONTH(pickup_at) DESC')
+            ->selectRaw("
+                EXTRACT(YEAR FROM pickup_at) as year,
+                EXTRACT(MONTH FROM pickup_at) as month_num,
+                TO_CHAR(pickup_at, 'Mon YYYY') as month_label,
+                COUNT(*) as bookings,
+                COALESCE(SUM(total_price), 0) as revenue
+            ")
+            ->groupByRaw("
+                EXTRACT(YEAR FROM pickup_at),
+                EXTRACT(MONTH FROM pickup_at),
+                TO_CHAR(pickup_at, 'Mon YYYY')
+            ")
+            ->orderByRaw("
+                EXTRACT(YEAR FROM pickup_at) DESC,
+                EXTRACT(MONTH FROM pickup_at) DESC
+            ")
             ->limit(8)
             ->get()
             ->reverse()
@@ -48,11 +50,11 @@ class AdminDashboardController extends Controller
         $revenueData = $monthlyData->pluck('revenue')->toArray();
 
         $bookingsThisMonth = DB::table('bookings')
-            ->whereRaw('DATE_FORMAT(pickup_at, "%Y-%m") = ?', [$currentMonthStr])
+            ->whereRaw("TO_CHAR(pickup_at, 'YYYY-MM') = ?", [$currentMonthStr])
             ->count();
 
         $bookingsLastMonth = DB::table('bookings')
-            ->whereRaw('DATE_FORMAT(pickup_at, "%Y-%m") = ?', [$lastMonthStr])
+            ->whereRaw("TO_CHAR(pickup_at, 'YYYY-MM') = ?", [$lastMonthStr])
             ->count();
 
         $bookingsTrend = $bookingsLastMonth > 0
@@ -60,13 +62,11 @@ class AdminDashboardController extends Controller
             : 0;
 
         $revenueThisMonth = DB::table('bookings')
-            ->whereRaw('DATE_FORMAT(pickup_at, "%Y-%m") = ?', [$currentMonthStr])
+            ->whereRaw("TO_CHAR(pickup_at, 'YYYY-MM') = ?", [$currentMonthStr])
             ->sum('total_price') ?? 0;
-       
-
 
         $revenueLastMonth = DB::table('bookings')
-            ->whereRaw('DATE_FORMAT(pickup_at, "%Y-%m") = ?', [$lastMonthStr])
+            ->whereRaw("TO_CHAR(pickup_at, 'YYYY-MM') = ?", [$lastMonthStr])
             ->sum('total_price') ?? 0;
 
         $revenueTrend = $revenueLastMonth > 0
@@ -78,8 +78,9 @@ class AdminDashboardController extends Controller
             ? 'text-green-600'
             : ($revenueTrend < 0 ? 'text-red-600' : 'text-gray-600');
 
-        $usersThisMonth = User::whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonthStr])->count();
-        $usersLastMonth = User::whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$lastMonthStr])->count();
+        $usersThisMonth = User::whereRaw("TO_CHAR(created_at, 'YYYY-MM') = ?", [$currentMonthStr])->count();
+        $usersLastMonth = User::whereRaw("TO_CHAR(created_at, 'YYYY-MM') = ?", [$lastMonthStr])->count();
+
         $usersTrend = $usersLastMonth > 0
             ? round((($usersThisMonth - $usersLastMonth) / $usersLastMonth) * 100, 1)
             : 0;
@@ -125,40 +126,47 @@ class AdminDashboardController extends Controller
         ]);
     }
 
-    
-
     public function users()
     {
         $users = User::with('role')->paginate(15);
-        return view('admin.adminuser', ['users' => $users]);
+
+        return view('admin.adminuser', [
+            'users' => $users,
+        ]);
     }
 
     public function revenue()
-{
-    $monthlyRevenue = DB::table('bookings')
-        ->selectRaw('
-            YEAR(pickup_at) as year,
-            MONTH(pickup_at) as month_num,
-            DATE_FORMAT(MIN(pickup_at), "%b %Y") as month_label,
-            SUM(total_price) as total
-        ')
-        ->groupByRaw('YEAR(pickup_at), MONTH(pickup_at)')
-        ->orderByRaw('YEAR(pickup_at) DESC, MONTH(pickup_at) DESC')
-        ->limit(6)
-        ->get();
+    {
+        $monthlyRevenue = DB::table('bookings')
+            ->selectRaw("
+                EXTRACT(YEAR FROM pickup_at) as year,
+                EXTRACT(MONTH FROM pickup_at) as month_num,
+                TO_CHAR(MIN(pickup_at), 'Mon YYYY') as month_label,
+                COALESCE(SUM(total_price), 0) as total
+            ")
+            ->groupByRaw("
+                EXTRACT(YEAR FROM pickup_at),
+                EXTRACT(MONTH FROM pickup_at)
+            ")
+            ->orderByRaw("
+                EXTRACT(YEAR FROM pickup_at) DESC,
+                EXTRACT(MONTH FROM pickup_at) DESC
+            ")
+            ->limit(6)
+            ->get();
 
-    $revenueWithGrowth = $monthlyRevenue->map(function ($row, $index) use ($monthlyRevenue) {
-        $prevTotal = $monthlyRevenue->get($index + 1)?->total ?? null;
+        $revenueWithGrowth = $monthlyRevenue->map(function ($row, $index) use ($monthlyRevenue) {
+            $prevTotal = $monthlyRevenue->get($index + 1)?->total ?? null;
 
-        $row->growth = ($prevTotal && $prevTotal > 0)
-            ? round((($row->total - $prevTotal) / $prevTotal) * 100, 1)
-            : null;
+            $row->growth = ($prevTotal && $prevTotal > 0)
+                ? round((($row->total - $prevTotal) / $prevTotal) * 100, 1)
+                : null;
 
-        return $row;
-    });
+            return $row;
+        });
 
-    return view('admin.adminrevenue', [
-        'monthlyRevenue' => $revenueWithGrowth,
-    ]);
-}
+        return view('admin.adminrevenue', [
+            'monthlyRevenue' => $revenueWithGrowth,
+        ]);
+    }
 }
