@@ -32,6 +32,10 @@
         flex-wrap: wrap;
     }
 
+    .user-logo-wrapper {
+        flex-shrink: 0;
+    }
+
     .user-logo-link {
         display: flex;
         align-items: center;
@@ -203,8 +207,14 @@
     @media (max-width: 768px) {
         .user-header-inner {
             justify-content: center;
-            gap: 16px;
-            padding: 16px 0;
+            gap: 10px;
+            padding: 14px 0;
+        }
+
+        .user-logo-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
         }
 
         .user-logo-link {
@@ -212,32 +222,33 @@
         }
 
         .user-logo-img {
-            height: 50px;
+            height: 48px;
         }
 
         .user-logo-text {
-            font-size: 30px;
+            font-size: 29px;
         }
 
         .user-center-nav {
             order: 2;
-            width: 100%;
             flex: unset;
+            width: auto;
             justify-content: center;
         }
 
         .user-center-nav ul {
-            gap: 12px;
+            gap: 8px;
             white-space: nowrap;
         }
 
         .user-center-nav a {
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
+            width: 52px;
+            height: 52px;
+            border-radius: 15px;
             background: #f8f8f8;
             color: #444 !important;
             font-size: 0;
+            padding: 0;
         }
 
         .user-center-nav a.mobile-active {
@@ -256,35 +267,36 @@
         }
 
         .nav-icon svg {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
         }
 
         .user-right-area {
-            order: 3;
-            width: 100%;
+            order: 2;
+            width: auto;
             justify-content: center;
-            gap: 12px;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
         .notification-btn {
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
+            width: 52px;
+            height: 52px;
+            border-radius: 15px;
         }
 
         .user-dropdown-btn {
-            width: 56px;
-            height: 56px;
+            width: 52px;
+            height: 52px;
             padding: 0;
             justify-content: center;
-            border-radius: 16px;
+            border-radius: 15px;
         }
 
         .user-avatar {
-            width: 44px;
-            height: 44px;
-            font-size: 18px;
+            width: 40px;
+            height: 40px;
+            font-size: 17px;
         }
 
         .user-dropdown-info,
@@ -297,35 +309,42 @@
             position: fixed;
             left: 16px;
             right: 16px;
-            top: 280px;
+            top: 175px;
             width: auto;
         }
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 420px) {
         .user-logo-text {
             font-size: 27px;
         }
 
         .user-logo-img {
-            height: 46px;
+            height: 45px;
         }
 
-        .user-center-nav ul {
-            gap: 10px;
+        .user-center-nav ul,
+        .user-right-area {
+            gap: 7px;
         }
 
         .user-center-nav a,
         .notification-btn,
         .user-dropdown-btn {
-            width: 52px;
-            height: 52px;
-            border-radius: 15px;
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
         }
 
         .nav-icon svg {
-            width: 24px;
-            height: 24px;
+            width: 23px;
+            height: 23px;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            font-size: 16px;
         }
     }
 
@@ -338,22 +357,28 @@
             height: 42px;
         }
 
-        .user-center-nav ul {
-            gap: 8px;
+        .user-center-nav ul,
+        .user-right-area {
+            gap: 6px;
         }
 
         .user-center-nav a,
         .notification-btn,
         .user-dropdown-btn {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
+            width: 46px;
+            height: 46px;
+            border-radius: 13px;
+        }
+
+        .nav-icon svg {
+            width: 22px;
+            height: 22px;
         }
 
         .user-avatar {
-            width: 38px;
-            height: 38px;
-            font-size: 16px;
+            width: 36px;
+            height: 36px;
+            font-size: 15px;
         }
     }
 </style>
@@ -363,7 +388,7 @@
         <div class="user-header-inner">
 
             <!-- Logo -->
-            <div style="flex-shrink:0;">
+            <div class="user-logo-wrapper">
                 <a href="{{ route('user.browse') }}" class="user-logo-link">
                     <img src="{{ asset('storage/cars/ezelogo.png') }}"
                          alt="Logo"
@@ -381,6 +406,7 @@
                     <li>
                         <a href="{{ route('user.browse') }}"
                            title="Browse Cars"
+                           aria-label="Browse Cars"
                            class="{{ request()->routeIs('user.browse') || request()->routeIs('user.search') ? 'mobile-active' : '' }}"
                            style="{{ request()->routeIs('user.browse') || request()->routeIs('user.search') ? 'color:#ff5a1f; font-weight:700;' : 'color:#222; font-weight:500;' }}">
 
@@ -399,13 +425,14 @@
                         <li>
                             <a href="{{ route('user.rentals.index') }}"
                                title="My Rentals"
+                               aria-label="My Rentals"
                                class="{{ request()->routeIs('user.rentals.*') ? 'mobile-active' : '' }}"
                                style="{{ request()->routeIs('user.rentals.*') ? 'color:#ff5a1f; font-weight:700;' : 'color:#222; font-weight:500;' }}">
 
                                 <span class="nav-icon">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5h6M9 3h6a2 2 0 012 2v1h1a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h1V5a2 2 0 012-2zM8 12h8M8 16h5" />
+                                              d="M15 7h3a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h3m6 0V5a3 3 0 00-6 0v2m6 0H9m3 5v4" />
                                     </svg>
                                 </span>
 
@@ -416,6 +443,7 @@
                         <li>
                             <a href="{{ route('user.payments') }}"
                                title="Payments"
+                               aria-label="Payments"
                                class="{{ request()->routeIs('user.payments') ? 'mobile-active' : '' }}"
                                style="{{ request()->routeIs('user.payments') ? 'color:#ff5a1f; font-weight:700;' : 'color:#222; font-weight:500;' }}">
 
@@ -443,7 +471,8 @@
                                 type="button"
                                 onclick="toggleNotifications(event)"
                                 class="notification-btn"
-                                title="Notifications">
+                                title="Notifications"
+                                aria-label="Notifications">
                             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002
@@ -514,7 +543,8 @@
                                 type="button"
                                 onclick="toggleUserDropdown(event)"
                                 class="user-dropdown-btn"
-                                title="Account">
+                                title="Account"
+                                aria-label="Account">
 
                             <div class="user-avatar">
                                 {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
