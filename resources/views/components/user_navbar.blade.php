@@ -54,13 +54,6 @@
                                 Payments
                             </a>
                         </li>
-
-                        <li>
-                            <a href="{{ route('user.profile') }}"
-                               style="text-decoration:none; font-size:17px; {{ request()->routeIs('user.profile') ? 'color:#ff5a1f; font-weight:700;' : 'color:#222; font-weight:500;' }}">
-                                Profile
-                            </a>
-                        </li>
                     @endauth
                 </ul>
             </nav>
@@ -70,12 +63,12 @@
 
                 @auth
                     <!-- Notification -->
-                    <div class="relative" style="position:relative;">
+                    <div style="position:relative;">
                         <button id="notificationBell"
                                 type="button"
                                 onclick="toggleNotifications(event)"
                                 style="width:44px; height:44px; border:none; background:#f8f8f8; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; color:#444;">
-                            <svg class="w-6 h-6" width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002
                                          6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165
@@ -91,15 +84,12 @@
                         </button>
 
                         <div id="notificationDropdown"
-                             class="hidden"
                              style="display:none; position:absolute; right:0; top:54px; width:340px; background:#fff; border:1px solid #ececec; border-radius:16px; box-shadow:0 14px 32px rgba(0,0,0,0.10); z-index:9999; overflow:hidden;">
 
                             <div style="padding:16px 18px; border-bottom:1px solid #f1f1f1; display:flex; align-items:center; justify-content:space-between; gap:12px;">
                                 <div style="font-size:15px; font-weight:700; color:#111;">
                                     Notifications
                                 </div>
-
-                               
                             </div>
 
                             <div class="notification-list" style="max-height:320px; overflow-y:auto;">
@@ -144,29 +134,60 @@
                         </div>
                     </div>
 
-                    <!-- User Info -->
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:44px; height:44px; border-radius:50%; background:#ff5a1f; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px;">
-                            {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
-                        </div>
+                    <!-- User Dropdown -->
+                    <div style="position:relative;">
+                        <button id="userDropdownButton"
+                                type="button"
+                                onclick="toggleUserDropdown(event)"
+                                style="border:none; background:#f8f8f8; border-radius:14px; padding:8px 12px; display:flex; align-items:center; gap:12px; cursor:pointer;">
 
-                        <div>
-                            <div style="font-size:15px; font-weight:600; color:#111; line-height:1.2;">
-                                {{ auth()->user()->name ?? 'User' }}
+                            <div style="width:44px; height:44px; border-radius:50%; background:#ff5a1f; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px;">
+                                {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                             </div>
-                            <div style="font-size:13px; color:#777; line-height:1.2;">
-                                Customer
+
+                            <div style="text-align:left;">
+                                <div style="font-size:15px; font-weight:600; color:#111; line-height:1.2;">
+                                    {{ auth()->user()->name ?? 'User' }}
+                                </div>
+                                <div style="font-size:13px; color:#777; line-height:1.2;">
+                                    Customer
+                                </div>
                             </div>
+
+                            <svg width="18" height="18" fill="none" stroke="#555" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div id="userDropdown"
+                             style="display:none; position:absolute; right:0; top:58px; width:230px; background:#fff; border:1px solid #ececec; border-radius:16px; box-shadow:0 14px 32px rgba(0,0,0,0.12); z-index:9999; overflow:hidden;">
+
+                            <div style="padding:16px 18px; border-bottom:1px solid #f1f1f1;">
+                                <div style="font-size:14px; font-weight:700; color:#111;">
+                                    {{ auth()->user()->name ?? 'User' }}
+                                </div>
+                                <div style="font-size:12px; color:#777; margin-top:3px;">
+                                    Customer Account
+                                </div>
+                            </div>
+
+                            <a href="{{ route('user.profile') }}"
+                               style="display:flex; align-items:center; gap:10px; padding:14px 18px; text-decoration:none; color:#222; font-size:14px; font-weight:600; border-bottom:1px solid #f5f5f5; background:{{ request()->routeIs('user.profile') ? '#fff3ed' : '#fff' }};">
+                                <span>👤</span>
+                                <span>Profile</span>
+                            </a>
+
+                            <form action="{{ route('logout') }}?clear=1" method="POST" style="margin:0;">
+                                @csrf
+                                <button type="submit"
+                                        style="width:100%; display:flex; align-items:center; gap:10px; padding:14px 18px; background:#fff; border:none; color:#ef4444; font-size:14px; font-weight:700; cursor:pointer; text-align:left;">
+                                    <span>🚪</span>
+                                    <span>Logout</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
-
-                    <form action="{{ route('logout') }}?clear=1" method="POST" style="margin:0;">
-                        @csrf
-                        <button type="submit"
-                                style="background:#ff2c3b; color:#fff; border:none; border-radius:10px; padding:12px 22px; font-size:15px; font-weight:600; line-height:1; cursor:pointer;">
-                            Logout
-                        </button>
-                    </form>
                 @else
                     <a href="{{ route('login') }}"
                        style="background:#fff; color:#111; border:1px solid #ececec; border-radius:10px; padding:12px 22px; font-size:15px; font-weight:600; line-height:1; text-decoration:none;">
