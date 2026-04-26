@@ -27,16 +27,23 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
     
-        StatusSeeder::class,
-        BrandSeeder::class,
-        TransmissionSeeder::class,
+         BrandSeeder::class,
+         CarSeeder::class,
+        CarTypeSeeder::class,
         FuelTypeSeeder::class,
-        CarSeeder::class,
-        RoleSeeder::class,
-        PaymentMethodsSeeder::class,
-        PaymentStatusesSeeder::class,
-         CarTypeSeeder::class,
          IssueStatusSeeder::class,
+           PaymentMethodsSeeder::class,
+        PaymentStatusesSeeder::class,
+        PointsTransactionTypeSeeder::class,
+        RoleSeeder::class,
+        ServiceTypeSeeder::class,
+        StatusSeeder::class,
+        TransmissionSeeder::class,
+  
+        
+      
+      
+        
     ]);
 
     $this->call(RoleSeeder::class);
