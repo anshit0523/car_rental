@@ -570,9 +570,7 @@
                                 <div style="font-size:14px; font-weight:700; color:#111;">
                                     {{ auth()->user()->name ?? 'User' }}
                                 </div>
-                                <div style="font-size:12px; color:#777; margin-top:3px;">
-                                    Customer Account
-                                </div>
+                              
                             </div>
 
                             <a href="{{ route('user.profile') }}"
