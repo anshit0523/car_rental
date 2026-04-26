@@ -248,7 +248,6 @@
             }
         }
 
-        /* How it works cards */
         .work-step-card-light {
             background: #ffffff;
             border: 1px solid #e5e7eb;
@@ -293,12 +292,9 @@
             line-height: 1.6;
         }
 
-        /* Navbar only */
-        #navbarContainer {
-            transition: all 0.3s ease;
-        }
-
-        #navbarShell {
+        #navbarContainer,
+        #navbarShell,
+        #siteHeader .main-navbar-wrap {
             transition: all 0.3s ease;
         }
 
@@ -317,6 +313,16 @@
             box-shadow: 0 20px 50px rgba(15, 23, 42, 0.28);
         }
 
+        #siteHeader.scrolled .main-navbar-wrap {
+            background: rgba(15, 23, 42, 0.92);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.28);
+        }
+
+        .topbar-link:hover {
+            color: #ff5a1f;
+        }
+
         .nav-link {
             position: relative;
         }
@@ -333,62 +339,28 @@
             transition: width 0.3s ease;
         }
 
-        .nav-link:hover::after {
+        .nav-link:hover::after,
+        .nav-link.active::after {
             width: 100%;
         }
 
-        /* Navbar inspired by reference header */
-        .topbar-link:hover {
-            color: #ff5a1f;
+        .nav-link.active {
+            color: #ffffff;
         }
-
-        #siteHeader .main-navbar-wrap {
-            transition: all 0.3s ease;
-        }
-
-        #siteHeader.scrolled .main-navbar-wrap {
-            background: rgba(15, 23, 42, 0.92);
-            border-color: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.28);
-        }
-.nav-link {
-    position: relative;
-}
-
-.nav-link::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -7px;
-    width: 0;
-    height: 2px;
-    background: #ff5a1f;
-    border-radius: 9999px;
-    transition: width 0.3s ease;
-}
-
-.nav-link:hover::after,
-.nav-link.active::after {
-    width: 100%;
-}
-
-.nav-link.active {
-    color: #ffffff;
-}
     </style>
 </head>
 
 <body class="text-slate-800">
 
-     <!-- Header -->
-<x-header />
+    <!-- Header -->
+    <x-header />
 
     <!-- HERO -->
     <section class="hero-overlay min-h-[92vh] flex items-center">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div class="grid lg:grid-cols-2 gap-10 items-center pt-28 pb-16">
                 <div class="text-white">
-                    <p class="section-subtitle mb-4 text-orange-400"> Eze Car Rental</p>
+                    <p class="section-subtitle mb-4 text-orange-400">Eze Car Rental</p>
                     <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-5">
                         Drive Dumaguete with
                         <span class="text-orange-400">Comfort & Confidence</span>
@@ -410,7 +382,6 @@
                     </div>
                 </div>
 
-                <!-- Search / Booking Style Box -->
                 <div class="glass rounded-3xl p-6 md:p-8 shadow-2xl">
                     <h3 class="text-white text-2xl font-bold mb-6">Quick Booking Preview</h3>
 
@@ -449,13 +420,12 @@
                         class="mt-6 block w-full rounded-xl bg-brand-orange px-5 py-3 text-center text-white font-semibold hover:opacity-90 transition">
                         Search Available Cars
                     </button>
-
                 </div>
             </div>
         </div>
     </section>
 
-
+    <!-- HOW IT WORKS -->
     <section class="py-16 bg-white">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
@@ -510,17 +480,38 @@
             <div class="grid sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                 @forelse ($cars as $car)
                     @php
-                        $images = is_string($car->images) ? json_decode($car->images, true) : $car->images;
+                        $images = [];
+
+                        if (is_array($car->images)) {
+                            $images = $car->images;
+                        } elseif (is_string($car->images)) {
+                            $decodedImages = json_decode($car->images, true);
+
+                            if (json_last_error() === JSON_ERROR_NONE && is_array($decodedImages)) {
+                                $images = $decodedImages;
+                            } elseif (!empty($car->images)) {
+                                $images = [$car->images];
+                            }
+                        }
+
+                        $firstImage = $images[0] ?? null;
+                        $imageUrl = null;
+
+                        if ($firstImage) {
+                            $cleanImagePath = ltrim(str_replace('storage/', '', $firstImage), '/');
+
+                            $imageUrl = config('filesystems.default') === 's3'
+                                ? \Illuminate\Support\Facades\Storage::disk('s3')->url($cleanImagePath)
+                                : asset('storage/' . $cleanImagePath);
+                        }
                     @endphp
 
                     <div class="popular-showcase-card">
                         <div class="popular-showcase-image-wrap">
-                            @if($images && count($images) > 0)
-                                <img src="{{ asset('storage/' . $images[0]) }}" alt="{{ $car->model }}"
-                                    class="popular-showcase-image">
+                            @if($imageUrl)
+                                <img src="{{ $imageUrl }}" alt="{{ $car->model }}" class="popular-showcase-image">
                             @else
-                                <div
-                                    class="popular-showcase-image flex items-center justify-center bg-slate-200 text-slate-500">
+                                <div class="popular-showcase-image flex items-center justify-center bg-slate-200 text-slate-500">
                                     No Image
                                 </div>
                             @endif
@@ -535,8 +526,6 @@
                                 <h3 class="popular-showcase-title">
                                     {{ $car->brand->name ?? '' }} {{ $car->model }}
                                 </h3>
-
-
                             </div>
 
                             <ul class="popular-showcase-info">
@@ -664,36 +653,35 @@
         </div>
     </section>
 
-     <x-footer />
+    <x-footer />
 
+    <script>
+        function saveAndRedirect() {
+            const pickupDate = document.getElementById('pickup_date').value;
+            const returnDate = document.getElementById('return_date').value;
+            const carTypeId = document.getElementById('car_type_id').value;
+
+            const params = new URLSearchParams();
+
+            if (pickupDate) params.append('pickup_date', pickupDate);
+            if (returnDate) params.append('return_date', returnDate);
+            if (carTypeId) params.append('car_type_id[]', carTypeId);
+
+            if (pickupDate || returnDate || carTypeId) {
+                sessionStorage.setItem('browseCarFilters', JSON.stringify({
+                    pickup_date: pickupDate,
+                    return_date: returnDate,
+                    'car_type_id[]': carTypeId
+                }));
+            }
+
+            if (pickupDate && returnDate) {
+                window.location.href = "{{ route('user.search') }}" + '?' + params.toString();
+            } else {
+                window.location.href = "{{ route('user.browse') }}" + (params.toString() ? '?' + params.toString() : '');
+            }
+        }
+    </script>
 </body>
 
 </html>
-
-<script>
-function saveAndRedirect() {
-    const pickupDate = document.getElementById('pickup_date').value;
-    const returnDate = document.getElementById('return_date').value;
-    const carTypeId = document.getElementById('car_type_id').value;
-
-    const params = new URLSearchParams();
-
-    if (pickupDate) params.append('pickup_date', pickupDate);
-    if (returnDate) params.append('return_date', returnDate);
-    if (carTypeId) params.append('car_type_id[]', carTypeId);
-
-    if (pickupDate || returnDate || carTypeId) {
-        sessionStorage.setItem('browseCarFilters', JSON.stringify({
-            pickup_date: pickupDate,
-            return_date: returnDate,
-            'car_type_id[]': carTypeId
-        }));
-    }
-
-    if (pickupDate && returnDate) {
-        window.location.href = "{{ route('user.search') }}" + '?' + params.toString();
-    } else {
-        window.location.href = "{{ route('user.browse') }}" + (params.toString() ? '?' + params.toString() : '');
-    }
-}
-</script>

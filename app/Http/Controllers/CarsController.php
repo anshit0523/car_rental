@@ -13,29 +13,33 @@ use Illuminate\Support\Facades\Storage;
 
 class CarsController extends Controller
 {
+    private function carDisk(): string
+    {
+        return config('filesystems.default') === 's3' ? 's3' : 'public';
+    }
 
+    public function cars()
+    {
+        $brands = Brand::all();
+        $carTypes = CarType::all();
+        $transmissions = Transmission::all();
+        $fuelTypes = FuelType::all();
+        $trackers = Tracker::orderBy('imei')->get();
 
-public function cars()
-{
-    $brands = Brand::all();
-    $carTypes = CarType::all();  
-    $transmissions = Transmission::all();
-    $fuelTypes = FuelType::all();
-    $trackers = Tracker::orderBy('imei')->get();
+        $cars = Car::with(['brand', 'carType', 'transmission', 'fuelType', 'tracker'])
+            ->withCount('bookings')
+            ->paginate(9);
 
-    $cars = Car::with(['brand', 'carType', 'transmission', 'fuelType', 'tracker'])
-        ->withCount('bookings')
-        ->paginate(9);
+        return view('admin.admincars', compact(
+            'brands',
+            'carTypes',
+            'transmissions',
+            'fuelTypes',
+            'trackers',
+            'cars'
+        ));
+    }
 
-    return view('admin.admincars', compact(
-        'brands',
-        'carTypes',      
-        'transmissions',
-        'fuelTypes',
-        'trackers',
-        'cars'
-    ));
-}
     public function create()
     {
         $brands = Brand::all();
@@ -70,7 +74,7 @@ public function cars()
             'price_per_day' => 'required|numeric|min:0.01',
             'description' => 'nullable|string',
             'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'active' => 'nullable|boolean',
             'tracker_id' => 'nullable|exists:trackers,id',
         ]);
@@ -86,10 +90,11 @@ public function cars()
         }
 
         $images = [];
+        $disk = $this->carDisk();
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
-                $path = $image->store('cars', 'public');
+                $path = $image->store('cars', $disk);
                 $images[] = $path;
             }
         }
@@ -116,7 +121,7 @@ public function cars()
             'price_per_day' => 'required|numeric|min:0.01',
             'description' => 'nullable|string',
             'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'active' => 'nullable|boolean',
             'tracker_id' => 'nullable|exists:trackers,id',
         ]);
@@ -133,27 +138,31 @@ public function cars()
             }
         }
 
-        $images = [];
+        $disk = $this->carDisk();
 
         if ($request->hasFile('images')) {
             if ($car->images) {
                 $oldImages = json_decode($car->images, true);
+
                 if (is_array($oldImages)) {
                     foreach ($oldImages as $oldImage) {
-                        Storage::disk('public')->delete($oldImage);
+                        Storage::disk($disk)->delete($oldImage);
                     }
                 }
             }
 
+            $images = [];
+
             foreach ($request->file('images') as $image) {
-                $path = $image->store('cars', 'public');
+                $path = $image->store('cars', $disk);
                 $images[] = $path;
             }
+
+            $validated['images'] = json_encode($images);
         } else {
-            $images = $car->images ? json_decode($car->images, true) : [];
+            unset($validated['images']);
         }
 
-        $validated['images'] = json_encode($images);
         $validated['active'] = $request->has('active') ? 1 : 0;
 
         $car->update($validated);
@@ -164,12 +173,14 @@ public function cars()
     public function destroy($id)
     {
         $car = Car::findOrFail($id);
+        $disk = $this->carDisk();
 
         if ($car->images) {
             $oldImages = json_decode($car->images, true);
+
             if (is_array($oldImages)) {
                 foreach ($oldImages as $oldImage) {
-                    Storage::disk('public')->delete($oldImage);
+                    Storage::disk($disk)->delete($oldImage);
                 }
             }
         }

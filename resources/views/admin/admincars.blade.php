@@ -38,8 +38,7 @@
                         <table class="w-full">
                             <thead>
                                 <tr class="bg-gray-50 border-b border-gray-200">
-                                    <th class="px-6 py-4 text-left">
-                                    </th>
+                                    <th class="px-6 py-4 text-left"></th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Photo</th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Tracker</th>
@@ -52,13 +51,38 @@
                             <tbody>
                                 @forelse($cars as $car)
                                     <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
-                                        <td class="px-6 py-4">
-                                        </td>
+                                        <td class="px-6 py-4"></td>
 
                                         <td class="px-6 py-4">
-                                            @if($car->images && count(json_decode($car->images, true) ?? []) > 0)
-                                                <img src="{{ asset('storage/' . json_decode($car->images, true)[0]) }}"
-                                                    alt="{{ $car->model }}" class="w-16 h-10 object-cover rounded">
+                                            @php
+                                                $images = [];
+
+                                                if (is_array($car->images)) {
+                                                    $images = $car->images;
+                                                } elseif (is_string($car->images)) {
+                                                    $decodedImages = json_decode($car->images, true);
+
+                                                    if (json_last_error() === JSON_ERROR_NONE && is_array($decodedImages)) {
+                                                        $images = $decodedImages;
+                                                    } elseif (!empty($car->images)) {
+                                                        $images = [$car->images];
+                                                    }
+                                                }
+
+                                                $firstImage = $images[0] ?? null;
+                                                $imageUrl = null;
+
+                                                if ($firstImage) {
+                                                    $cleanImagePath = ltrim(str_replace('storage/', '', $firstImage), '/');
+
+                                                    $imageUrl = config('filesystems.default') === 's3'
+                                                        ? \Illuminate\Support\Facades\Storage::disk('s3')->url($cleanImagePath)
+                                                        : asset('storage/' . $cleanImagePath);
+                                                }
+                                            @endphp
+
+                                            @if($imageUrl)
+                                                <img src="{{ $imageUrl }}" alt="{{ $car->model }}" class="w-16 h-10 object-cover rounded">
                                             @else
                                                 <div class="w-16 h-10 bg-gray-200 rounded flex items-center justify-center">
                                                     <i class="fas fa-image text-gray-400"></i>
@@ -107,23 +131,23 @@
 
                                         <td class="px-6 py-4">
                                             <div class="flex justify-center gap-2">
-<button
-    type="button"
-    class="editCarBtn w-8 h-8 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded flex items-center justify-center transition"
-    title="Edit"
-    data-id="{{ $car->id }}"
-    data-brand-id="{{ $car->brand_id }}"
-    data-car-type-id="{{ $car->car_type_id }}"
-    data-model="{{ $car->model }}"
-    data-transmission-id="{{ $car->transmission_id }}"
-    data-fuel-type-id="{{ $car->fuel_type_id }}"
-    data-seats="{{ $car->seats }}"
-    data-price-per-day="{{ $car->price_per_day }}"
-    data-description="{{ $car->description }}"
-    data-active="{{ $car->active ? 1 : 0 }}"
-    data-tracker-id="{{ $car->tracker_id }}">
-    <i class="fas fa-pen text-sm"></i>
-</button>
+                                                <button
+                                                    type="button"
+                                                    class="editCarBtn w-8 h-8 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded flex items-center justify-center transition"
+                                                    title="Edit"
+                                                    data-id="{{ $car->id }}"
+                                                    data-brand-id="{{ $car->brand_id }}"
+                                                    data-car-type-id="{{ $car->car_type_id }}"
+                                                    data-model="{{ $car->model }}"
+                                                    data-transmission-id="{{ $car->transmission_id }}"
+                                                    data-fuel-type-id="{{ $car->fuel_type_id }}"
+                                                    data-seats="{{ $car->seats }}"
+                                                    data-price-per-day="{{ $car->price_per_day }}"
+                                                    data-description="{{ $car->description }}"
+                                                    data-active="{{ $car->active ? 1 : 0 }}"
+                                                    data-tracker-id="{{ $car->tracker_id }}">
+                                                    <i class="fas fa-pen text-sm"></i>
+                                                </button>
 
                                                 <form id="deleteForm-{{ $car->id }}"
                                                     action="{{ route('admin.cars.destroy', $car->id) }}" method="POST">
