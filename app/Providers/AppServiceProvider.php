@@ -23,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        config(['filesystems.default' => 's3']);
+
         View::composer('*', function ($view) {
             $pendingPaymentsCount = 0;
 
