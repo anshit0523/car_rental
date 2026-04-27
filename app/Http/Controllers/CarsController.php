@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Car;
 use App\Models\Brand;
-use App\Models\Tracker;
+use App\Models\Car;
 use App\Models\CarType;
 use App\Models\FuelType;
+use App\Models\Tracker;
 use App\Models\Transmission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -16,6 +16,13 @@ class CarsController extends Controller
     private function carDisk(): string
     {
         return config('filesystems.default') === 's3' ? 's3' : 'public';
+    }
+
+    private function shouldDeleteStoredImage($image): bool
+    {
+        return is_string($image)
+            && $image !== ''
+            && ! filter_var($image, FILTER_VALIDATE_URL);
     }
 
     public function cars()
@@ -146,7 +153,9 @@ class CarsController extends Controller
 
                 if (is_array($oldImages)) {
                     foreach ($oldImages as $oldImage) {
-                        Storage::disk($disk)->delete($oldImage);
+                        if ($this->shouldDeleteStoredImage($oldImage)) {
+                            Storage::disk($disk)->delete($oldImage);
+                        }
                     }
                 }
             }
@@ -180,7 +189,9 @@ class CarsController extends Controller
 
             if (is_array($oldImages)) {
                 foreach ($oldImages as $oldImage) {
-                    Storage::disk($disk)->delete($oldImage);
+                    if ($this->shouldDeleteStoredImage($oldImage)) {
+                        Storage::disk($disk)->delete($oldImage);
+                    }
                 }
             }
         }
