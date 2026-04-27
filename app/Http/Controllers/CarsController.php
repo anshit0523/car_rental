@@ -71,11 +71,7 @@ class CarsController extends Controller
 
     public function store(Request $request)
     {
-        dd(
-    config('filesystems.default'),
-    $request->hasFile('images'),
-    $request->file('images')
-);
+  
         $validated = $request->validate([
             'brand_id' => 'required|exists:brands,id',
             'car_type_id' => 'required|exists:car_types,id',
