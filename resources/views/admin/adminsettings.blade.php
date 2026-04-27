@@ -1,6 +1,28 @@
 @extends('layouts.adminlayout')
 
 @section('content')
+@php
+    $buildImageUrl = function ($path) {
+        if (! is_string($path) || empty($path)) {
+            return null;
+        }
+
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+
+        $cleanPath = ltrim(str_replace('storage/', '', $path), '/');
+
+        return config('filesystems.default') === 's3'
+            ? \Illuminate\Support\Facades\Storage::disk('s3')->url($cleanPath)
+            : asset('storage/' . $cleanPath);
+    };
+
+    $gcashQrUrl = $setting->gcash_qr_image
+        ? $buildImageUrl($setting->gcash_qr_image)
+        : null;
+@endphp
+
 <div class="h-screen overflow-y-auto bg-gray-50">
     <div class="max-w-4xl mx-auto px-6 py-10 pb-8">
 
@@ -58,15 +80,17 @@
                         <input
                             type="file"
                             name="gcash_qr_image"
+                            accept="image/*"
                             class="w-full border rounded-lg px-4 py-2"
                         >
 
-                        @if($setting->gcash_qr_image)
+                        @if($gcashQrUrl)
                             <div class="mt-4">
                                 <img
-                                    src="{{ asset('storage/' . $setting->gcash_qr_image) }}"
+                                    src="{{ $gcashQrUrl }}"
                                     alt="GCash QR"
                                     class="w-40 border rounded-lg p-2 bg-white"
+                                    onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';"
                                 >
                             </div>
                         @endif
