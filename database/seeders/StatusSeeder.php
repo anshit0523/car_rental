@@ -11,14 +11,15 @@ class StatusSeeder extends Seeder
     {
         $statuses = [
             ['name' => 'Reserved'],
+            ['name' => 'Confirmed'],
             ['name' => 'Active'],
             ['name' => 'Completed'],
             ['name' => 'Cancelled'],
             ['name' => 'Return'],
             ['name' => 'Checkup'],
             ['name' => 'Damage'],
-            ['name' => 'Needs Repair'], 
-            ['name' => 'Failed'], 
+            ['name' => 'Needs Repair'],
+            ['name' => 'Failed'],
         ];
 
         foreach ($statuses as $status) {
