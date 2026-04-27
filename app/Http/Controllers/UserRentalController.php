@@ -3,9 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
-use App\Models\Status;
-use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 
 class UserRentalController extends Controller
 {
@@ -16,7 +13,7 @@ class UserRentalController extends Controller
 
     public function upcoming()
     {
-        // if your system uses "Confirmed" for upcoming
+        // After admin approves payment
         return $this->listByStatus('Confirmed');
     }
 
@@ -30,37 +27,32 @@ class UserRentalController extends Controller
         return $this->listByStatus('Cancelled');
     }
 
-  public function pending()
-{
-    $bookings = Booking::where('user_id', auth()->id())
-        ->whereIn('status_id', [5,17]) 
-        ->with(['car.brand', 'car.fuelType', 'car.transmission', 'status'])
-        ->orderBy('pickup_at', 'desc')
-        ->paginate(10);
+    public function pending()
+    {
+        $bookings = Booking::where('user_id', auth()->id())
+            ->whereHas('status', function ($q) {
+                $q->where('name', 'Pending Payment Verification');
+            })
+            ->with([
+                'car.brand',
+                'car.fuelType',
+                'car.transmission',
+                'status',
+                'photoReceipt',
+            ])
+            ->orderBy('pickup_at', 'desc')
+            ->paginate(10);
 
-    return view('user.userrentals', [
-        'bookings' => $bookings,
-        'status' => 'Pending Payment Verification',
-    ]);
-}
+        return view('user.userrentals', [
+            'bookings' => $bookings,
+            'status' => 'Pending Payment Verification',
+        ]);
+    }
 
-public function failed()
-{
-    $failedStatus = \App\Models\Status::where('name', 'Failed')->firstOrFail();
-
-    $bookings = \App\Models\Booking::with([
-            'car.brand',
-            'car.fuelType',
-            'car.transmission',
-            'photoReceipt',
-        ])
-        ->where('user_id', auth()->id())
-        ->where('status_id', $failedStatus->id)
-        ->latest()
-        ->paginate(10);
-
-    return view('user.userrentals', compact('bookings'));
-}
+    public function failed()
+    {
+        return $this->listByStatus('Failed');
+    }
 
     private function listByStatus(string $statusName)
     {
@@ -68,7 +60,13 @@ public function failed()
             ->whereHas('status', function ($q) use ($statusName) {
                 $q->where('name', $statusName);
             })
-            ->with(['car.brand', 'car.fuelType', 'car.transmission', 'status'])
+            ->with([
+                'car.brand',
+                'car.fuelType',
+                'car.transmission',
+                'status',
+                'photoReceipt',
+            ])
             ->orderBy('pickup_at', 'desc')
             ->paginate(10);
 
@@ -77,6 +75,4 @@ public function failed()
             'status' => $statusName,
         ]);
     }
-
-   
 }
