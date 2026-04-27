@@ -530,8 +530,27 @@
         $statusNoteClass = $statusNoteClassMap[$issueStatusName] ?? 'note-pending';
         $statusContent = $statusMessages[$issueStatusName] ?? $statusMessages['pending'];
 
+        $buildImageUrl = function ($path) {
+            if (! is_string($path) || empty($path)) {
+                return asset('images/no-car-image.png');
+            }
+
+            if (filter_var($path, FILTER_VALIDATE_URL)) {
+                return $path;
+            }
+
+            $cleanPath = ltrim(str_replace('storage/', '', $path), '/');
+
+            return config('filesystems.default') === 's3'
+                ? \Illuminate\Support\Facades\Storage::disk('s3')->url($cleanPath)
+                : asset('storage/' . $cleanPath);
+        };
+
         $photoUrls = $returnIssue->photos
-            ? $returnIssue->photos->map(fn($photo) => asset('storage/' . $photo->photo_path))->values()->toArray()
+            ? $returnIssue->photos
+                ->map(fn($photo) => $buildImageUrl($photo->photo_path))
+                ->values()
+                ->toArray()
             : [];
 
         $finalCharge = (float) ($returnIssue->final_charge ?? 0);
@@ -608,8 +627,10 @@
                                 @foreach($returnIssue->photos as $photoIndex => $photo)
                                     <div class="issue-photo-box" data-gallery='@json($photoUrls)'
                                         data-photo-index="{{ $photoIndex }}" onclick="openUserIssuePhotoModal(this)">
-                                        <img src="{{ asset('storage/' . $photo->photo_path) }}" alt="Issue Photo"
-                                            class="issue-photo">
+                                        <img src="{{ $photoUrls[$photoIndex] ?? asset('images/no-car-image.png') }}"
+                                            alt="Issue Photo"
+                                            class="issue-photo"
+                                            onerror="this.onerror=null;this.src='{{ asset('images/no-car-image.png') }}';">
                                     </div>
                                 @endforeach
                             </div>
