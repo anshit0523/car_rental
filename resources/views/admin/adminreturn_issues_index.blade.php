@@ -91,6 +91,22 @@
 
             $reviewingStatus = $issueStatuses->firstWhere('name', 'reviewing');
             $reviewingStatusId = $reviewingStatus?->id;
+
+            $buildImageUrl = function ($path) {
+                if (! is_string($path) || empty($path)) {
+                    return asset('images/no-car-image.png');
+                }
+
+                if (filter_var($path, FILTER_VALIDATE_URL)) {
+                    return $path;
+                }
+
+                $cleanPath = ltrim(str_replace('storage/', '', $path), '/');
+
+                return config('filesystems.default') === 's3'
+                    ? \Illuminate\Support\Facades\Storage::disk('s3')->url($cleanPath)
+                    : asset('storage/' . $cleanPath);
+            };
         @endphp
 
         <!-- Reports List -->
@@ -99,8 +115,12 @@
                 @php
                     $currentIssueStatusName = optional($issue->issueStatus)->name;
                     $currentIssueStatusLabel = optional($issue->issueStatus)->label ?? ucfirst($currentIssueStatusName ?? 'No Status');
+
                     $photoUrls = $issue->photos
-                        ? $issue->photos->map(fn ($photo) => asset('storage/' . $photo->photo_path))->values()->toArray()
+                        ? $issue->photos
+                            ->map(fn ($photo) => $buildImageUrl($photo->photo_path))
+                            ->values()
+                            ->toArray()
                         : [];
                 @endphp
 
@@ -256,7 +276,7 @@
                                         <button
                                             type="button"
                                             class="group relative aspect-square block overflow-hidden rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-all"
-                                            data-photo-url="{{ asset('storage/' . $photo->photo_path) }}"
+                                            data-photo-url="{{ $photoUrls[$photoIndex] ?? asset('images/no-car-image.png') }}"
                                             data-photo-index="{{ $photoIndex }}"
                                             data-gallery='@json($photoUrls)'
                                             data-issue-id="{{ $issue->id }}"
@@ -265,9 +285,10 @@
                                             onclick="openIssuePhotoModal(this)"
                                         >
                                             <img
-                                                src="{{ asset('storage/' . $photo->photo_path) }}"
+                                                src="{{ $photoUrls[$photoIndex] ?? asset('images/no-car-image.png') }}"
                                                 alt="Issue Photo"
                                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                onerror="this.onerror=null;this.src='{{ asset('images/no-car-image.png') }}';"
                                             >
                                             <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
                                             <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
