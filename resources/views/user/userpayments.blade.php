@@ -539,7 +539,40 @@
                 ? (float) $booking->final_total
                 : max(0, $rentalCost - $pointsDiscount);
 
-            $images = $booking->car->images ? json_decode($booking->car->images) : [];
+            $fallbackImage = asset('images/no-car-image.png');
+
+            $buildImageUrl = function ($path) use ($fallbackImage) {
+                if (! is_string($path) || empty($path)) {
+                    return null;
+                }
+
+                if (filter_var($path, FILTER_VALIDATE_URL)) {
+                    return $path;
+                }
+
+                $cleanPath = ltrim(str_replace('storage/', '', $path), '/');
+
+                return config('filesystems.default') === 's3'
+                    ? \Illuminate\Support\Facades\Storage::disk('s3')->url($cleanPath)
+                    : asset('storage/' . $cleanPath);
+            };
+
+            $carImages = [];
+
+            if (!empty($booking->car->images)) {
+                $decodedCarImages = json_decode($booking->car->images, true);
+
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decodedCarImages)) {
+                    $carImages = $decodedCarImages;
+                }
+            }
+
+            $firstCarImage = $carImages[0] ?? null;
+            $carImageUrl = $buildImageUrl($firstCarImage) ?? $fallbackImage;
+
+            $gcashQrUrl = $paymentSetting && $paymentSetting->gcash_qr_image
+                ? ($buildImageUrl($paymentSetting->gcash_qr_image) ?? asset('images/no-image.png'))
+                : asset('images/no-image.png');
         @endphp
 
         <div class="payment-grid">
@@ -622,8 +655,9 @@
 
                             <div class="payment-qr-wrap">
                                 <img
-                                    src="{{ $paymentSetting && $paymentSetting->gcash_qr_image ? asset('storage/' . $paymentSetting->gcash_qr_image) : asset('images/no-image.png') }}"
+                                    src="{{ $gcashQrUrl }}"
                                     alt="GCash QR"
+                                    onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';"
                                 >
 
                                 <div class="payment-qr-name">
@@ -683,18 +717,11 @@
                     <h2 class="summary-title">Booking Summary</h2>
 
                     <div class="summary-car">
-                        @if($images && count($images) > 0)
-                            <img
-                                src="{{ asset('storage/' . $images[0]) }}"
-                                alt="{{ $booking->car->model }}"
-                                onerror="this.onerror=null;this.src='{{ asset('images/no-car-image.png') }}';"
-                            >
-                        @else
-                            <img
-                                src="{{ asset('images/no-car-image.png') }}"
-                                alt="No image"
-                            >
-                        @endif
+                        <img
+                            src="{{ $carImageUrl }}"
+                            alt="{{ $booking->car->model }}"
+                            onerror="this.onerror=null;this.src='{{ $fallbackImage }}';"
+                        >
 
                         <div>
                             <div class="summary-car-name">
