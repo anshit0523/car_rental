@@ -186,8 +186,6 @@
         }
 
         .rental-meta-card {
-
-
             border-radius: 12px;
             padding: 10px 12px;
             display: flex;
@@ -461,17 +459,44 @@
             <div class="rentals-content">
                 @forelse ($bookings as $booking)
                     @php
-                        $images = $booking->car->images ? json_decode($booking->car->images, true) : [];
+                        $images = [];
+
+                        if ($booking->car && is_array($booking->car->images)) {
+                            $images = $booking->car->images;
+                        } elseif ($booking->car && is_string($booking->car->images)) {
+                            $decodedImages = json_decode($booking->car->images, true);
+
+                            if (json_last_error() === JSON_ERROR_NONE && is_array($decodedImages)) {
+                                $images = $decodedImages;
+                            } elseif (!empty($booking->car->images)) {
+                                $images = [$booking->car->images];
+                            }
+                        }
+
                         $firstImage = $images[0] ?? null;
+                        $fallbackImage = asset('images/no-car-image.png');
+                        $imageUrl = $fallbackImage;
+
+                        if (is_string($firstImage) && !empty($firstImage)) {
+                            if (filter_var($firstImage, FILTER_VALIDATE_URL)) {
+                                $imageUrl = $firstImage;
+                            } else {
+                                $cleanImagePath = ltrim(str_replace('storage/', '', $firstImage), '/');
+
+                                $imageUrl = config('filesystems.default') === 's3'
+                                    ? \Illuminate\Support\Facades\Storage::disk('s3')->url($cleanImagePath)
+                                    : asset('storage/' . $cleanImagePath);
+                            }
+                        }
                     @endphp
 
                     <div class="rental-card">
                         <div class="rental-card-inner">
 
                             <div class="rental-image-wrap">
-                                <img src="{{ $firstImage ? asset('storage/' . $firstImage) : asset('images/no-car-image.png') }}"
-                                    alt="{{ $booking->car->model }}" class="rental-image"
-                                    onerror="this.onerror=null;this.src='{{ asset('images/no-car-image.png') }}';">
+                                <img src="{{ $imageUrl }}"
+                                    alt="{{ $booking->car->model ?? 'Car image' }}" class="rental-image"
+                                    onerror="this.onerror=null;this.src='{{ $fallbackImage }}';">
                             </div>
 
                             <div class="rental-body">
@@ -479,17 +504,16 @@
                                     <div class="rental-top">
                                         <div>
                                             <h3 class="rental-title">
-                                                {{ $booking->car->brand->name }} {{ $booking->car->model }}
+                                                {{ $booking->car->brand->name ?? 'N/A' }} {{ $booking->car->model ?? '' }}
                                             </h3>
                                             <p class="rental-subtitle">
-                                                {{ $booking->car->fuelType->type }} • {{ $booking->car->transmission->type }}
+                                                {{ $booking->car->fuelType->type ?? 'N/A' }} • {{ $booking->car->transmission->type ?? 'N/A' }}
                                             </p>
                                         </div>
 
                                         <div class="rental-price">
-                                            <strong>₱{{ number_format($booking->car->price_per_day) }}</strong>
+                                            <strong>₱{{ number_format($booking->car->price_per_day ?? 0) }}</strong>
                                             <span>/day</span>
-
                                         </div>
                                     </div>
 
