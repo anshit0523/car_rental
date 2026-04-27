@@ -496,22 +496,49 @@
                             <div class="col-lg-6 col-md-6 col-sm-12 car-block">
                                 <div class="car-two-grid-card">
                                     <div class="car-two-grid-image-wrap">
-                                        @if($car->images && count(json_decode($car->images)) > 0)
-                                            @php
-                                                $images = json_decode($car->images);
-                                                $firstImage = $images[0];
-                                            @endphp
-                                            <img
-                                                src="{{ asset('storage/' . $firstImage) }}"
-                                                alt="{{ $car->model }}"
-                                                class="car-two-grid-image"
-                                                onerror="this.onerror=null;this.src='{{ asset('images/no-car-image.png') }}';"
-                                            >
-                                        @else
-                                            <div class="car-two-grid-image d-flex align-items-center justify-content-center" style="background:#e5e7eb; color:#64748b;">
-                                                No Image
-                                            </div>
-                                        @endif
+                                      @php
+    $images = [];
+
+    if (is_array($car->images)) {
+        $images = $car->images;
+    } elseif (is_string($car->images)) {
+        $decodedImages = json_decode($car->images, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decodedImages)) {
+            $images = $decodedImages;
+        } elseif (!empty($car->images)) {
+            $images = [$car->images];
+        }
+    }
+
+    $firstImage = $images[0] ?? null;
+    $imageUrl = null;
+
+    if (is_string($firstImage) && !empty($firstImage)) {
+        if (filter_var($firstImage, FILTER_VALIDATE_URL)) {
+            $imageUrl = $firstImage;
+        } else {
+            $cleanImagePath = ltrim(str_replace('storage/', '', $firstImage), '/');
+
+            $imageUrl = config('filesystems.default') === 's3'
+                ? \Illuminate\Support\Facades\Storage::disk('s3')->url($cleanImagePath)
+                : asset('storage/' . $cleanImagePath);
+        }
+    }
+@endphp
+
+@if($imageUrl)
+    <img
+        src="{{ $imageUrl }}"
+        alt="{{ $car->model }}"
+        class="car-two-grid-image"
+        onerror="this.onerror=null;this.src='{{ asset('images/no-car-image.png') }}';"
+    >
+@else
+    <div class="car-two-grid-image d-flex align-items-center justify-content-center" style="background:#e5e7eb; color:#64748b;">
+        No Image
+    </div>
+@endif
 
                                         <div class="car-two-grid-price">
                                             <span>₱{{ number_format($car->price_per_day, 0) }}</span> / Day
