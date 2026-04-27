@@ -40,7 +40,7 @@ class UserRentalController extends Controller
 
     return view('user.userrentals', [
         'bookings' => $bookings,
-        'status' => 'Pending',
+        'status' => 'Pending Payment Verification',
     ]);
 }
 
