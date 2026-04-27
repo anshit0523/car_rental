@@ -665,31 +665,57 @@
             <!-- Left Content -->
             <div>
                 <div class="car-panel">
+                    @php
+                        $images = [];
+
+                        if (is_array($car->images)) {
+                            $images = $car->images;
+                        } elseif (is_string($car->images)) {
+                            $decodedImages = json_decode($car->images, true);
+
+                            if (json_last_error() === JSON_ERROR_NONE && is_array($decodedImages)) {
+                                $images = $decodedImages;
+                            } elseif (!empty($car->images)) {
+                                $images = [$car->images];
+                            }
+                        }
+
+                        $imageUrls = [];
+
+                        foreach ($images as $image) {
+                            if (is_string($image) && !empty($image)) {
+                                if (filter_var($image, FILTER_VALIDATE_URL)) {
+                                    $imageUrls[] = $image;
+                                } else {
+                                    $cleanImagePath = ltrim(str_replace('storage/', '', $image), '/');
+
+                                    $imageUrls[] = config('filesystems.default') === 's3'
+                                        ? \Illuminate\Support\Facades\Storage::disk('s3')->url($cleanImagePath)
+                                        : asset('storage/' . $cleanImagePath);
+                                }
+                            }
+                        }
+
+                        $fallbackImage = asset('images/no-car-image.png');
+                        $mainImageUrl = $imageUrls[0] ?? $fallbackImage;
+                    @endphp
+
                     <div class="relative">
-                        @if($car->images && count(json_decode($car->images)) > 0)
-                            @php $images = json_decode($car->images); @endphp
-                            <img id="mainCarImage"
-                                 src="{{ asset('storage/' . $images[0]) }}"
-                                 alt="{{ $car->model }}"
-                                 class="car-main-image"
-                                 onerror="this.onerror=null;this.src='{{ asset('images/no-car-image.png') }}';">
-                        @else
-                            <img id="mainCarImage"
-                                 src="https://images.unsplash.com/photo-1567818735868-e71b99932e29?w=1200&h=700&fit=crop"
-                                 alt="Car"
-                                 class="car-main-image">
-                        @endif
+                        <img id="mainCarImage"
+                             src="{{ $mainImageUrl }}"
+                             alt="{{ $car->model }}"
+                             class="car-main-image"
+                             onerror="this.onerror=null;this.src='{{ $fallbackImage }}';">
                     </div>
 
                     <div class="car-thumbs">
-                        @if($car->images && count(json_decode($car->images)) > 0)
-                            @php $images = json_decode($car->images); @endphp
-                            @foreach($images as $index => $image)
+                        @if(count($imageUrls) > 0)
+                            @foreach($imageUrls as $index => $imageUrl)
                                 <div class="car-thumb {{ $index === 0 ? 'active' : '' }}"
-                                     onclick="document.getElementById('mainCarImage').src='{{ asset('storage/' . $image) }}'; document.querySelectorAll('.car-thumb').forEach(el=>el.classList.remove('active')); this.classList.add('active');">
-                                    <img src="{{ asset('storage/' . $image) }}"
+                                     onclick="document.getElementById('mainCarImage').src='{{ $imageUrl }}'; document.querySelectorAll('.car-thumb').forEach(el=>el.classList.remove('active')); this.classList.add('active');">
+                                    <img src="{{ $imageUrl }}"
                                          alt="Thumbnail"
-                                         onerror="this.onerror=null;this.src='{{ asset('images/no-car-image.png') }}';">
+                                         onerror="this.onerror=null;this.src='{{ $fallbackImage }}';">
                                 </div>
                             @endforeach
                         @else
