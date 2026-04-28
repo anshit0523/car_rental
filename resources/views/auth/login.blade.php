@@ -59,9 +59,19 @@
         color: #000000;
     }
 
-    .is-invalid {
-        border: 2px solid #dc3545 !important;
-    }
+   .is-invalid {
+    border: 2px solid #dc3545 !important;
+}
+
+.form-control.is-invalid {
+    background-image: none !important;
+    padding-right: 15px !important;
+}
+
+.password-field .form-control.is-invalid {
+    background-image: none !important;
+    padding-right: 50px !important;
+}
 
     .btn-login {
         background: #ffffff;
