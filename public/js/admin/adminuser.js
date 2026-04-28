@@ -8,12 +8,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let searchTimeout;
 
+    // Submit filter form
     function submitFilterForm() {
         if (filterForm) {
             filterForm.submit();
         }
     }
 
+    // Search input with debounce
     if (userSearch) {
         userSearch.addEventListener('input', function () {
             clearTimeout(searchTimeout);
@@ -24,38 +26,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Role filter change
     if (roleFilter) {
         roleFilter.addEventListener('change', function () {
             submitFilterForm();
         });
     }
 
-    function updatePasswordToggleVisibility(input, button, icon) {
-        if (!input || !button || !icon) return;
-
-        const hasValue = input.value.trim().length > 0;
-
-        if (hasValue) {
-            button.classList.remove('hidden');
-        } else {
-            button.classList.add('hidden');
-
-            input.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-        }
-    }
-
-    function refreshPasswordToggles() {
-        document.querySelectorAll('.password-toggle').forEach(function (button) {
-            const targetId = button.getAttribute('data-target');
-            const input = document.getElementById(targetId);
-            const icon = button.querySelector('i');
-
-            updatePasswordToggleVisibility(input, button, icon);
-        });
-    }
-
+    // Password toggle functionality
     document.querySelectorAll('.password-toggle').forEach(function (button) {
         const targetId = button.getAttribute('data-target');
         const input = document.getElementById(targetId);
@@ -63,15 +41,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!input || !icon) return;
 
-        updatePasswordToggleVisibility(input, button, icon);
-
-        input.addEventListener('input', function () {
-            updatePasswordToggleVisibility(input, button, icon);
-        });
-
         button.addEventListener('click', function () {
-            if (input.value.trim().length === 0) return;
-
+            // Toggle password visibility
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.classList.remove('fa-eye');
@@ -84,6 +55,22 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Reset password icons when opening add modal
+    function resetPasswordIcons() {
+        document.querySelectorAll('.password-toggle').forEach(function (button) {
+            const targetId = button.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = button.querySelector('i');
+
+            if (input && icon) {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    }
+
+    // Open Add User Modal
     window.openAddModal = function () {
         document.getElementById('modalTitle').innerText = 'Add User';
         userForm.action = userForm.dataset.storeRoute;
@@ -96,10 +83,11 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('password_confirmation').value = '';
         document.getElementById('role').value = '';
 
-        refreshPasswordToggles();
+        resetPasswordIcons();
         showModal();
     };
 
+    // Reset and Open Add Modal
     window.resetAndOpenAddModal = function () {
         document.getElementById('modalTitle').innerText = 'Add User';
         userForm.action = userForm.dataset.storeRoute;
@@ -112,10 +100,11 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('password_confirmation').value = '';
         document.getElementById('role').value = '';
 
-        refreshPasswordToggles();
+        resetPasswordIcons();
         showModal();
     };
 
+    // Open Edit User Modal
     window.openEditModal = function (user) {
         document.getElementById('modalTitle').innerText = 'Edit User';
 
@@ -128,10 +117,11 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('password_confirmation').value = '';
         document.getElementById('role').value = user.role_id ?? '';
 
-        refreshPasswordToggles();
+        resetPasswordIcons();
         showModal();
     };
 
+    // Show Modal
     function showModal() {
         const modal = document.getElementById('userModal');
         const modalContent = document.getElementById('modalContent');
@@ -145,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 10);
     }
 
+    // Close Modal
     window.closeModal = function () {
         const modal = document.getElementById('userModal');
         const modalContent = document.getElementById('modalContent');
@@ -158,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     };
 
+    // Show Success Message
     window.showSuccess = function (message) {
         const modal = document.getElementById('successModal');
         const content = document.getElementById('successContent');
@@ -177,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 2500);
     };
 
+    // Close Success Modal
     window.closeSuccess = function () {
         const modal = document.getElementById('successModal');
         const content = document.getElementById('successContent');
@@ -190,6 +183,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     };
 
+    // Open Delete Modal
     window.openDeleteModal = function (id) {
         const modal = document.getElementById('deleteModal');
         const content = document.getElementById('deleteContent');
@@ -205,6 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 10);
     };
 
+    // Close Delete Modal
     window.closeDeleteModal = function () {
         const modal = document.getElementById('deleteModal');
         const content = document.getElementById('deleteContent');
@@ -218,6 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     };
 
+    // Show Error Message
     window.showError = function (message) {
         const modal = document.getElementById('errorModal');
         const content = document.getElementById('errorContent');
@@ -237,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 2500);
     };
 
+    // Close Error Modal
     window.closeError = function () {
         const modal = document.getElementById('errorModal');
         const content = document.getElementById('errorContent');
