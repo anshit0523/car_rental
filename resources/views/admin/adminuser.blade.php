@@ -42,7 +42,7 @@
                                 <option value="4" {{ request('role_id') == '4' ? 'selected' : '' }}>Manager</option>
                             </select>
 
-                            
+                            <a
                                 href="{{ route('admin.users.index') }}"
                                 class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2 rounded-lg font-medium text-center"
                             >
@@ -140,7 +140,6 @@
                 </div>
             </div>
 
-            <!-- User Add/Edit Modal -->
             <div id="userModal"
                 class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0">
 
@@ -181,7 +180,6 @@
                             <p class="text-red-500 text-sm -mt-2 mb-3">{{ $message }}</p>
                         @enderror
 
-                        <!-- Password Field -->
                         <div class="relative mb-4">
                             <input
                                 type="password"
@@ -193,7 +191,7 @@
 
                             <button
                                 type="button"
-                                class="password-toggle absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-green-600 transition"
+                                class="password-toggle hidden absolute inset-y-0 right-3 items-center text-gray-500 hover:text-green-600 transition"
                                 data-target="password"
                                 aria-label="Toggle password visibility"
                             >
@@ -204,7 +202,6 @@
                             <p class="text-red-500 text-sm -mt-2 mb-3">{{ $message }}</p>
                         @enderror
 
-                        <!-- Password Confirmation Field -->
                         <div class="relative mb-4">
                             <input
                                 type="password"
@@ -216,7 +213,7 @@
 
                             <button
                                 type="button"
-                                class="password-toggle absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-green-600 transition"
+                                class="password-toggle hidden absolute inset-y-0 right-3 items-center text-gray-500 hover:text-green-600 transition"
                                 data-target="password_confirmation"
                                 aria-label="Toggle password visibility"
                             >
@@ -252,7 +249,6 @@
                 </div>
             </div>
 
-            <!-- Success Modal -->
             <div id="successModal"
                 class="hidden fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0">
 
@@ -263,7 +259,6 @@
                 </div>
             </div>
 
-            <!-- Error Modal -->
             <div id="errorModal"
                 class="hidden fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 opacity-0 transition-opacity duration-300">
 
@@ -274,7 +269,6 @@
                 </div>
             </div>
 
-            <!-- Delete Confirmation Modal -->
             <div id="deleteModal"
                 class="hidden fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center opacity-0 transition-opacity duration-300">
 
@@ -310,7 +304,7 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/admin/adminuser.js') }}"></script>
+    <script src="{{ asset('js/admin/adminuser.js') }}?v={{ time() }}"></script>
 
     @if(session('success'))
         <script>
