@@ -83,7 +83,7 @@ class StaffPaymentController extends Controller
             ? Payment::where('payment_status_id', $completedStatusId)->count()
             : 0;
 
-        return view('staff.staffpayments', [
+        return view('staff.staffpayment', [
             'payments' => $payments,
             'totalReceived' => $totalReceived,
             'thisMonth' => $thisMonth,
