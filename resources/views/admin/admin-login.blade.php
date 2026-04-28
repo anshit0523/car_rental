@@ -57,10 +57,7 @@
                         class="rounded-full border border-white/40 px-5 py-2 text-sm md:text-base text-white hover:bg-white hover:text-slate-900 transition">
                         Customer Login
                     </a>
-                    <a href="{{ route('register') }}"
-                        class="rounded-full bg-brand-orange px-5 py-2 text-sm md:text-base text-white hover:opacity-90 transition">
-                        Register
-                    </a>
+                   
                 </div>
             </div>
         </div>
@@ -126,17 +123,47 @@
                         >
                     </div>
 
-                    <div>
-                        <label for="password" class="block text-white/85 text-sm mb-2">Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            id="password"
-                            required
-                            class="w-full rounded-xl bg-white px-4 py-3 text-slate-800 outline-none border border-transparent focus:border-orange-400"
-                            placeholder="Enter your password"
-                        >
-                    </div>
+                  <div>
+    <label for="password" class="block text-white/85 text-sm mb-2">Password</label>
+
+    <div class="relative">
+        <input
+            type="password"
+            name="password"
+            id="password"
+            required
+            class="w-full rounded-xl bg-white px-4 py-3 pr-12 text-slate-800 outline-none border border-transparent focus:border-orange-400"
+            placeholder="Enter your password"
+        >
+
+        <button
+            type="button"
+            id="togglePassword"
+            class="absolute inset-y-0 right-3 flex items-center text-slate-500 hover:text-orange-500 transition"
+            aria-label="Show password"
+        >
+            {{-- Eye Icon --}}
+            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7
+                    -1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+
+            {{-- Eye Off Icon --}}
+            <svg id="eyeOffIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7
+                    a9.97 9.97 0 012.223-3.592m3.31-2.13A9.956 9.956 0 0112 5
+                    c4.478 0 8.268 2.943 9.543 7a9.973 9.973 0 01-4.132 5.411M15 12
+                    a3 3 0 00-3-3m0 0a3 3 0 00-3 3m3-3L3 3m18 18l-6-6" />
+            </svg>
+        </button>
+    </div>
+</div>
 
                     <button
                         type="submit"
@@ -157,4 +184,29 @@
     </main>
 
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const eyeIcon = document.getElementById('eyeIcon');
+        const eyeOffIcon = document.getElementById('eyeOffIcon');
+
+        if (passwordInput && togglePassword && eyeIcon && eyeOffIcon) {
+            togglePassword.addEventListener('click', function () {
+                const isPassword = passwordInput.type === 'password';
+
+                passwordInput.type = isPassword ? 'text' : 'password';
+
+                eyeIcon.classList.toggle('hidden', isPassword);
+                eyeOffIcon.classList.toggle('hidden', !isPassword);
+
+                togglePassword.setAttribute(
+                    'aria-label',
+                    isPassword ? 'Hide password' : 'Show password'
+                );
+            });
+        }
+    });
+</script>
+
 </html>
