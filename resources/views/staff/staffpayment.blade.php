@@ -1,6 +1,24 @@
 @extends('layouts.adminlayout')
 
 @section('content')
+@php
+    $buildImageUrl = function ($path) {
+        if (! is_string($path) || empty($path)) {
+            return asset('images/no-image.png');
+        }
+
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+
+        $cleanPath = ltrim(str_replace('storage/', '', $path), '/');
+
+        return config('filesystems.default') === 's3'
+            ? \Illuminate\Support\Facades\Storage::disk('s3')->url($cleanPath)
+            : asset('storage/' . $cleanPath);
+    };
+@endphp
+
 <div class="flex h-screen overflow-hidden">
     <div class="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100">
         <div class="p-6">
@@ -138,14 +156,20 @@
                                 @forelse($payments as $payment)
                                     @php
                                         $status = $payment->paymentStatus->name ?? 'Unknown';
+
                                         $colors = [
                                             'Completed' => 'bg-green-100 text-green-800',
                                             'Pending' => 'bg-yellow-100 text-yellow-800',
                                             'Failed' => 'bg-red-100 text-red-800',
                                             'Cancelled' => 'bg-slate-100 text-slate-800',
                                         ];
+
                                         $isCompleted = strtolower($status) === 'completed';
                                         $paymentType = $payment->return_issue_id ? 'issue' : 'booking';
+
+                                        $receiptUrl = $payment->booking && $payment->booking->photoReceipt
+                                            ? $buildImageUrl($payment->booking->photoReceipt->image_path)
+                                            : null;
                                     @endphp
 
                                     <tr class="hover:bg-slate-50 transition-colors">
@@ -203,9 +227,10 @@
 
                                         <td class="px-6 py-4 text-sm text-center">
                                             <div class="inline-flex items-center gap-3">
-                                                @if($payment->booking->photoReceipt)
+                                                @if($receiptUrl)
                                                     <button
-                                                        onclick="openReceiptModal('{{ asset('storage/' . $payment->booking->photoReceipt->image_path) }}')"
+                                                        type="button"
+                                                        onclick="openReceiptModal(@js($receiptUrl))"
                                                         class="text-blue-600 hover:text-blue-800"
                                                         title="View Receipt">
                                                         <i class="fas fa-eye"></i>
@@ -219,9 +244,10 @@
                                                         type="button"
                                                         onclick="openApproveModal(
                                                             {{ $payment->id }},
-                                                            '{{ $payment->booking_id }}',
-                                                            '{{ $paymentType }}',
-                                                            @js($payment->returnIssue->title ?? '')
+                                                            @js($payment->booking_id),
+                                                            @js($paymentType),
+                                                            @js($payment->returnIssue->title ?? ''),
+                                                            @js(route('staff.payments.approve', $payment->id))
                                                         )"
                                                         class="text-green-600 hover:text-green-800"
                                                         title="Approve Payment">
@@ -238,9 +264,10 @@
                                                         type="button"
                                                         onclick="openRejectModal(
                                                             {{ $payment->id }},
-                                                            '{{ $payment->booking_id }}',
-                                                            '{{ $paymentType }}',
-                                                            @js($payment->returnIssue->title ?? '')
+                                                            @js($payment->booking_id),
+                                                            @js($paymentType),
+                                                            @js($payment->returnIssue->title ?? ''),
+                                                            @js(route('staff.payments.reject', $payment->id))
                                                         )"
                                                         class="text-red-600 hover:text-red-800"
                                                         title="Reject Payment">
@@ -283,7 +310,13 @@
         </button>
 
         <h3 class="text-lg font-bold mb-4">Payment Receipt</h3>
-        <img id="receiptImage" class="w-full max-h-[500px] object-contain rounded border">
+
+        <img
+            id="receiptImage"
+            class="w-full max-h-[500px] object-contain rounded border"
+            alt="Payment Receipt"
+            onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';"
+        >
     </div>
 </div>
 
