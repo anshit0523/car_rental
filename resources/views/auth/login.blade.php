@@ -128,6 +128,10 @@
     .password-toggle:focus {
         outline: none;
     }
+
+    .password-toggle.is-hidden {
+        display: none;
+    }
 </style>
 
 <div class="auth-wrapper">
@@ -163,6 +167,7 @@
 
             <div class="mb-4">
                 <label class="form-label">Password</label>
+
                 <div class="password-field">
                     <input 
                         type="password" 
@@ -171,9 +176,10 @@
                         class="form-control @error('email') is-invalid @enderror"
                         required
                     >
+
                     <button
                         type="button"
-                        class="password-toggle"
+                        class="password-toggle is-hidden"
                         data-target="login_password"
                         aria-label="Toggle password visibility">
                         <i class="fa-regular fa-eye"></i>
@@ -197,21 +203,46 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.password-toggle').forEach(function (button) {
-            button.addEventListener('click', function () {
-                const targetId = this.getAttribute('data-target');
-                const input = document.getElementById(targetId);
-                const icon = this.querySelector('i');
+            const targetId = button.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = button.querySelector('i');
 
-                if (!input) return;
+            if (!input) return;
+
+            function updateToggleVisibility() {
+                const hasValue = input.value.trim().length > 0;
+
+                if (hasValue) {
+                    button.classList.remove('is-hidden');
+                } else {
+                    button.classList.add('is-hidden');
+
+                    input.type = 'password';
+
+                    if (icon) {
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                }
+            }
+
+            updateToggleVisibility();
+
+            input.addEventListener('input', updateToggleVisibility);
+
+            button.addEventListener('click', function () {
+                if (input.value.trim().length === 0) return;
 
                 if (input.type === 'password') {
                     input.type = 'text';
+
                     if (icon) {
                         icon.classList.remove('fa-eye');
                         icon.classList.add('fa-eye-slash');
                     }
                 } else {
                     input.type = 'password';
+
                     if (icon) {
                         icon.classList.remove('fa-eye-slash');
                         icon.classList.add('fa-eye');
