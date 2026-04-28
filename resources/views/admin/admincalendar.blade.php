@@ -5,7 +5,8 @@
 @endphp
 
 @section('content')
-    <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+<div class="w-full min-w-0 overflow-x-hidden">
+    <div class="min-h-full bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
         <div class="max-w-7xl mx-auto">
             <div class="mb-4">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -703,6 +704,7 @@
             </div>
         </div>
     </div>
+</div>
 @endsection
 
 @section('scripts')
