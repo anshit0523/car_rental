@@ -405,13 +405,19 @@
 
                         <div>
                             <label class="block text-white/80 text-sm mb-2">Start Date</label>
-                            <input type="date" id="pickup_date"
+                            <input
+                                type="date"
+                                id="pickup_date"
+                                min="{{ now()->format('Y-m-d') }}"
                                 class="w-full rounded-xl bg-white px-4 py-3 text-slate-800 outline-none">
                         </div>
 
                         <div>
                             <label class="block text-white/80 text-sm mb-2">End Date</label>
-                            <input type="date" id="return_date"
+                            <input
+                                type="date"
+                                id="return_date"
+                                min="{{ now()->format('Y-m-d') }}"
                                 class="w-full rounded-xl bg-white px-4 py-3 text-slate-800 outline-none">
                         </div>
                     </div>
@@ -656,10 +662,60 @@
     <x-footer />
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const pickupDateInput = document.getElementById('pickup_date');
+            const returnDateInput = document.getElementById('return_date');
+
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const todayDate = `${yyyy}-${mm}-${dd}`;
+
+            if (pickupDateInput) {
+                pickupDateInput.min = todayDate;
+            }
+
+            if (returnDateInput) {
+                returnDateInput.min = todayDate;
+            }
+
+            if (pickupDateInput && returnDateInput) {
+                pickupDateInput.addEventListener('change', function () {
+                    returnDateInput.min = pickupDateInput.value || todayDate;
+
+                    if (returnDateInput.value && returnDateInput.value < returnDateInput.min) {
+                        returnDateInput.value = returnDateInput.min;
+                    }
+                });
+            }
+        });
+
         function saveAndRedirect() {
             const pickupDate = document.getElementById('pickup_date').value;
             const returnDate = document.getElementById('return_date').value;
             const carTypeId = document.getElementById('car_type_id').value;
+
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const todayDate = `${yyyy}-${mm}-${dd}`;
+
+            if (pickupDate && pickupDate < todayDate) {
+                alert('Start date cannot be in the past.');
+                return;
+            }
+
+            if (returnDate && returnDate < todayDate) {
+                alert('End date cannot be in the past.');
+                return;
+            }
+
+            if (pickupDate && returnDate && returnDate < pickupDate) {
+                alert('End date cannot be before start date.');
+                return;
+            }
 
             const params = new URLSearchParams();
 
