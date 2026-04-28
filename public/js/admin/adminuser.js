@@ -30,6 +30,60 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function updatePasswordToggleVisibility(input, button, icon) {
+        if (!input || !button || !icon) return;
+
+        const hasValue = input.value.trim().length > 0;
+
+        if (hasValue) {
+            button.classList.remove('hidden');
+        } else {
+            button.classList.add('hidden');
+
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function refreshPasswordToggles() {
+        document.querySelectorAll('.password-toggle').forEach(function (button) {
+            const targetId = button.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = button.querySelector('i');
+
+            updatePasswordToggleVisibility(input, button, icon);
+        });
+    }
+
+    document.querySelectorAll('.password-toggle').forEach(function (button) {
+        const targetId = button.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        const icon = button.querySelector('i');
+
+        if (!input || !icon) return;
+
+        updatePasswordToggleVisibility(input, button, icon);
+
+        input.addEventListener('input', function () {
+            updatePasswordToggleVisibility(input, button, icon);
+        });
+
+        button.addEventListener('click', function () {
+            if (input.value.trim().length === 0) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
     window.openAddModal = function () {
         document.getElementById('modalTitle').innerText = 'Add User';
         userForm.action = userForm.dataset.storeRoute;
@@ -42,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('password_confirmation').value = '';
         document.getElementById('role').value = '';
 
+        refreshPasswordToggles();
         showModal();
     };
 
@@ -57,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('password_confirmation').value = '';
         document.getElementById('role').value = '';
 
+        refreshPasswordToggles();
         showModal();
     };
 
@@ -72,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('password_confirmation').value = '';
         document.getElementById('role').value = user.role_id ?? '';
 
+        refreshPasswordToggles();
         showModal();
     };
 

@@ -180,24 +180,46 @@
                             <p class="text-red-500 text-sm -mt-2 mb-3">{{ $message }}</p>
                         @enderror
 
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            placeholder="Password"
-                            class="border p-2 w-full mb-4 rounded-lg"
-                        >
+                        <div class="relative mb-4">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Password"
+                                class="border p-2 pr-10 w-full rounded-lg"
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle hidden absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-green-600 transition"
+                                data-target="password"
+                                aria-label="Toggle password visibility"
+                            >
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                         @error('password')
                             <p class="text-red-500 text-sm -mt-2 mb-3">{{ $message }}</p>
                         @enderror
 
-                        <input
-                            type="password"
-                            id="password_confirmation"
-                            name="password_confirmation"
-                            placeholder="Confirm Password"
-                            class="border p-2 w-full mb-4 rounded-lg"
-                        >
+                        <div class="relative mb-4">
+                            <input
+                                type="password"
+                                id="password_confirmation"
+                                name="password_confirmation"
+                                placeholder="Confirm Password"
+                                class="border p-2 pr-10 w-full rounded-lg"
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle hidden absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-green-600 transition"
+                                data-target="password_confirmation"
+                                aria-label="Toggle password visibility"
+                            >
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
 
                         <select id="role" name="role_id" class="border p-2 w-full mb-4 rounded-lg">
                             <option value="" disabled {{ old('role_id') ? '' : 'selected' }}>Select Role</option>
