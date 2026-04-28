@@ -19,6 +19,13 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminBookingController extends Controller
 {
+    private function panelPrefix(): string
+    {
+        $roleName = strtolower(auth()->user()->role->name ?? '');
+
+        return $roleName === 'manager' ? 'manager' : 'admin';
+    }
+
     public function index(Request $request)
     {
         $query = Booking::with(['user', 'car.brand', 'status']);
@@ -41,240 +48,239 @@ class AdminBookingController extends Controller
 
         $bookings = $query->latest()->paginate(10)->onEachSide(1);
         $statuses = Status::all();
+        $panelPrefix = $this->panelPrefix();
 
-        return view('admin.adminbooking', compact('bookings', 'statuses'));
+        return view('admin.adminbooking', compact('bookings', 'statuses', 'panelPrefix'));
     }
 
     public function create(Car $car)
     {
         return redirect()
-            ->route('admin.calendar')
+            ->route($this->panelPrefix() . '.calendar')
             ->with('info', 'Use the available slot in the calendar to create a walk-in booking for ' . ($car->brand->name ?? 'selected car') . ' ' . $car->model . '.');
     }
 
-public function searchCustomer(Request $request): JsonResponse
-{
-    $request->validate([
-        'keyword' => 'required|string|min:1|max:255',
-    ]);
+    public function searchCustomer(Request $request): JsonResponse
+    {
+        $request->validate([
+            'keyword' => 'required|string|min:1|max:255',
+        ]);
 
-    $keyword = trim($request->keyword);
-    $keywordLower = strtolower($keyword);
+        $keyword = trim($request->keyword);
+        $keywordLower = strtolower($keyword);
 
-    $users = User::query()
-        ->where('role_id', 2)
-        ->where(function ($q) use ($keyword, $keywordLower) {
-            $q->whereRaw('LOWER(name) LIKE ?', ["{$keywordLower}%"])
-              ->orWhereRaw('LOWER(name) LIKE ?', ["% {$keywordLower}%"])
-              ->orWhereRaw('LOWER(email) LIKE ?', ["{$keywordLower}%"])
-              ->orWhereRaw('LOWER(email) LIKE ?', ["%{$keywordLower}%"])
-              ->orWhere('phone', 'like', "{$keyword}%")
-              ->orWhere('phone', 'like', "%{$keyword}%");
-        })
-        ->orderBy('name')
-        ->limit(10)
-        ->get(['id', 'name', 'email', 'phone']);
+        $users = User::query()
+            ->where('role_id', 2)
+            ->where(function ($q) use ($keyword, $keywordLower) {
+                $q->whereRaw('LOWER(name) LIKE ?', ["{$keywordLower}%"])
+                    ->orWhereRaw('LOWER(name) LIKE ?', ["% {$keywordLower}%"])
+                    ->orWhereRaw('LOWER(email) LIKE ?', ["{$keywordLower}%"])
+                    ->orWhereRaw('LOWER(email) LIKE ?', ["%{$keywordLower}%"])
+                    ->orWhere('phone', 'like', "{$keyword}%")
+                    ->orWhere('phone', 'like', "%{$keyword}%");
+            })
+            ->orderBy('name')
+            ->limit(10)
+            ->get(['id', 'name', 'email', 'phone']);
 
-    if ($users->isEmpty()) {
+        if ($users->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found.',
+                'users' => [],
+            ], 404);
+        }
+
         return response()->json([
-            'success' => false,
-            'message' => 'Customer not found.',
-            'users' => [],
-        ], 404);
+            'success' => true,
+            'users' => $users,
+        ]);
     }
 
-    return response()->json([
-        'success' => true,
-        'users' => $users,
-    ]);
-}
+    public function store(Request $request)
+    {
+        $baseRules = [
+            'car_id' => ['required', 'exists:cars,id'],
+            'pickup_date' => ['required', 'date'],
+            'pickup_time' => ['required', 'date_format:H:i'],
+            'return_date' => ['required', 'date'],
+            'return_time' => ['required', 'date_format:H:i'],
+            'service_type_id' => ['required', 'exists:service_types,id'],
+            'payment_method_code' => ['required', 'exists:payment_methods,code'],
+            'customer_type' => ['required', 'in:existing,new'],
+            'existing_user_id' => ['nullable', 'exists:users,id'],
+            'existing_customer_search' => ['nullable', 'string', 'max:255'],
+            'customer_name' => ['nullable', 'string', 'max:255'],
+            'customer_email' => ['nullable', 'email', 'max:255'],
+            'customer_phone' => ['nullable', 'string', 'max:30'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'service_location' => ['nullable', 'string', 'max:255'],
+        ];
 
-
-
-public function store(Request $request)
-{
-    $baseRules = [
-        'car_id' => ['required', 'exists:cars,id'],
-        'pickup_date' => ['required', 'date'],
-        'pickup_time' => ['required', 'date_format:H:i'],
-        'return_date' => ['required', 'date'],
-        'return_time' => ['required', 'date_format:H:i'],
-        'service_type_id' => ['required', 'exists:service_types,id'],
-        'payment_method_code' => ['required', 'exists:payment_methods,code'],
-        'customer_type' => ['required', 'in:existing,new'],
-        'existing_user_id' => ['nullable', 'exists:users,id'],
-        'existing_customer_search' => ['nullable', 'string', 'max:255'],
-        'customer_name' => ['nullable', 'string', 'max:255'],
-        'customer_email' => ['nullable', 'email', 'max:255'],
-        'customer_phone' => ['nullable', 'string', 'max:30'],
-        'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-        'service_location' => ['nullable', 'string', 'max:255'],
-    ];
-
-    $validated = $request->validate($baseRules, [
-        'password.min' => 'Password must be at least 8 characters.',
-        'password.confirmed' => 'Password confirmation does not match.',
-    ]);
-
-    if ($validated['customer_type'] === 'existing') {
-        $request->validate([
-            'existing_user_id' => ['required', 'exists:users,id'],
-        ]);
-    } else {
-        $request->validate([
-            'customer_name' => ['required', 'string', 'max:255'],
-            'customer_email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'customer_phone' => ['required', 'string', 'max:30'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ], [
-            'customer_email.unique' => 'This email is already registered.',
+        $validated = $request->validate($baseRules, [
             'password.min' => 'Password must be at least 8 characters.',
             'password.confirmed' => 'Password confirmation does not match.',
         ]);
-    }
 
-    try {
-        $pickupAt = Carbon::createFromFormat(
-            'Y-m-d H:i',
-            $validated['pickup_date'] . ' ' . $validated['pickup_time']
-        );
-
-        $returnAt = Carbon::createFromFormat(
-            'Y-m-d H:i',
-            $validated['return_date'] . ' ' . $validated['return_time']
-        );
-
-        if ($returnAt->lte($pickupAt)) {
-            return $this->bookingErrorResponse(
-                $request,
-                'Return date/time must be after pickup date/time.',
-                422
-            );
+        if ($validated['customer_type'] === 'existing') {
+            $request->validate([
+                'existing_user_id' => ['required', 'exists:users,id'],
+            ]);
+        } else {
+            $request->validate([
+                'customer_name' => ['required', 'string', 'max:255'],
+                'customer_email' => ['required', 'email', 'max:255', 'unique:users,email'],
+                'customer_phone' => ['required', 'string', 'max:30'],
+                'password' => ['required', 'string', 'min:8', 'confirmed'],
+            ], [
+                'customer_email.unique' => 'This email is already registered.',
+                'password.min' => 'Password must be at least 8 characters.',
+                'password.confirmed' => 'Password confirmation does not match.',
+            ]);
         }
 
-        $car = Car::findOrFail($validated['car_id']);
-
-        $serviceTypeName = DB::table('service_types')
-            ->where('id', $validated['service_type_id'])
-            ->value('name');
-
-        if (
-            stripos((string) $serviceTypeName, 'deliver') !== false &&
-            empty($validated['service_location'])
-        ) {
-            return $this->bookingErrorResponse(
-                $request,
-                'Location is required for delivery bookings.',
-                422
+        try {
+            $pickupAt = Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $validated['pickup_date'] . ' ' . $validated['pickup_time']
             );
-        }
 
-        $blockingStatusIds = Status::whereIn('name', [
-            'Pending',
-            'Confirmed',
-            'Reserved',
-            'Approved',
-            'Active',
-            'Pending Payment Verification',
-        ])->pluck('id')->toArray();
-
-        $hasConflict = Booking::where('car_id', $car->id)
-            ->whereIn('status_id', $blockingStatusIds)
-            ->where(function ($query) use ($pickupAt, $returnAt) {
-                $query->where('pickup_at', '<', $returnAt)
-                    ->where('return_at', '>', $pickupAt);
-            })
-            ->exists();
-
-        if ($hasConflict) {
-            return $this->bookingErrorResponse(
-                $request,
-                'This car is not available for the selected date and time.',
-                422
+            $returnAt = Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $validated['return_date'] . ' ' . $validated['return_time']
             );
-        }
 
-        $paymentMethod = PaymentMethods::where('code', $validated['payment_method_code'])->firstOrFail();
-        $isCash = $paymentMethod->code === 'cash';
-
-        $bookingStatus = Status::firstOrCreate([
-            'name' => $isCash ? 'Confirmed' : 'Pending Payment Verification',
-        ]);
-
-        $paymentStatus = PaymentStatus::where('code', $isCash ? 'completed' : 'pending')->firstOrFail();
-
-        $days = max(1, (int) ceil($pickupAt->diffInMinutes($returnAt) / 1440));
-        $total = (float) $car->price_per_day * $days;
-
-        $booking = DB::transaction(function () use (
-            $validated,
-            $pickupAt,
-            $returnAt,
-            $car,
-            $total,
-            $paymentMethod,
-            $bookingStatus,
-            $paymentStatus,
-            $isCash
-        ) {
-            if ($validated['customer_type'] === 'existing') {
-                $user = User::where('role_id', 2)->findOrFail($validated['existing_user_id']);
-            } else {
-                $user = User::create([
-                    'name' => $validated['customer_name'],
-                    'email' => strtolower(trim($validated['customer_email'])),
-                    'phone' => $validated['customer_phone'],
-                    'password' => Hash::make($validated['password']),
-                    'role_id' => 2,
-                ]);
+            if ($returnAt->lte($pickupAt)) {
+                return $this->bookingErrorResponse(
+                    $request,
+                    'Return date/time must be after pickup date/time.',
+                    422
+                );
             }
 
-            $booking = Booking::create([
-                'car_id' => $car->id,
-                'user_id' => $user->id,
-                'pickup_at' => $pickupAt,
-                'return_at' => $returnAt,
-                'total_price' => $total,
-                'final_total' => $total,
-                'status_id' => $bookingStatus->id,
-                'service_type_id' => $validated['service_type_id'],
-                'service_location' => $validated['service_location'] ?? null,
+            $car = Car::findOrFail($validated['car_id']);
+
+            $serviceTypeName = DB::table('service_types')
+                ->where('id', $validated['service_type_id'])
+                ->value('name');
+
+            if (
+                stripos((string) $serviceTypeName, 'deliver') !== false &&
+                empty($validated['service_location'])
+            ) {
+                return $this->bookingErrorResponse(
+                    $request,
+                    'Location is required for delivery bookings.',
+                    422
+                );
+            }
+
+            $blockingStatusIds = Status::whereIn('name', [
+                'Pending',
+                'Confirmed',
+                'Reserved',
+                'Approved',
+                'Active',
+                'Pending Payment Verification',
+            ])->pluck('id')->toArray();
+
+            $hasConflict = Booking::where('car_id', $car->id)
+                ->whereIn('status_id', $blockingStatusIds)
+                ->where(function ($query) use ($pickupAt, $returnAt) {
+                    $query->where('pickup_at', '<', $returnAt)
+                        ->where('return_at', '>', $pickupAt);
+                })
+                ->exists();
+
+            if ($hasConflict) {
+                return $this->bookingErrorResponse(
+                    $request,
+                    'This car is not available for the selected date and time.',
+                    422
+                );
+            }
+
+            $paymentMethod = PaymentMethods::where('code', $validated['payment_method_code'])->firstOrFail();
+            $isCash = $paymentMethod->code === 'cash';
+
+            $bookingStatus = Status::firstOrCreate([
+                'name' => $isCash ? 'Confirmed' : 'Pending Payment Verification',
             ]);
 
-            Payment::create([
-                'booking_id' => $booking->id,
-                'payment_date' => now(),
-                'amount' => $booking->final_total ?? $booking->total_price ?? 0,
-                'payment_method_id' => $paymentMethod->id,
-                'payment_status_id' => $paymentStatus->id,
-                'transaction_id' => null,
-                'notes' => $isCash
-                    ? 'Cash payment completed during booking creation'
-                    : 'Payment submitted and waiting for verification',
-                'verified_by' => $isCash ? auth()->id() : null,
-                'verified_at' => $isCash ? now() : null,
+            $paymentStatus = PaymentStatus::where('code', $isCash ? 'completed' : 'pending')->firstOrFail();
+
+            $days = max(1, (int) ceil($pickupAt->diffInMinutes($returnAt) / 1440));
+            $total = (float) $car->price_per_day * $days;
+
+            $booking = DB::transaction(function () use (
+                $validated,
+                $pickupAt,
+                $returnAt,
+                $car,
+                $total,
+                $paymentMethod,
+                $bookingStatus,
+                $paymentStatus,
+                $isCash
+            ) {
+                if ($validated['customer_type'] === 'existing') {
+                    $user = User::where('role_id', 2)->findOrFail($validated['existing_user_id']);
+                } else {
+                    $user = User::create([
+                        'name' => $validated['customer_name'],
+                        'email' => strtolower(trim($validated['customer_email'])),
+                        'phone' => $validated['customer_phone'],
+                        'password' => Hash::make($validated['password']),
+                        'role_id' => 2,
+                    ]);
+                }
+
+                $booking = Booking::create([
+                    'car_id' => $car->id,
+                    'user_id' => $user->id,
+                    'pickup_at' => $pickupAt,
+                    'return_at' => $returnAt,
+                    'total_price' => $total,
+                    'final_total' => $total,
+                    'status_id' => $bookingStatus->id,
+                    'service_type_id' => $validated['service_type_id'],
+                    'service_location' => $validated['service_location'] ?? null,
+                ]);
+
+                Payment::create([
+                    'booking_id' => $booking->id,
+                    'payment_date' => now(),
+                    'amount' => $booking->final_total ?? $booking->total_price ?? 0,
+                    'payment_method_id' => $paymentMethod->id,
+                    'payment_status_id' => $paymentStatus->id,
+                    'transaction_id' => null,
+                    'notes' => $isCash
+                        ? 'Cash payment completed during booking creation'
+                        : 'Payment submitted and waiting for verification',
+                    'verified_by' => $isCash ? auth()->id() : null,
+                    'verified_at' => $isCash ? now() : null,
+                ]);
+
+                return $booking;
+            });
+
+            return $this->bookingSuccessResponse(
+                $request,
+                'Walk-in booking created successfully.',
+                $booking->id
+            );
+        } catch (\Throwable $e) {
+            \Log::error('Admin walk-in booking error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return $booking;
-        });
-
-        return $this->bookingSuccessResponse(
-            $request,
-            'Walk-in booking created successfully.',
-            $booking->id
-        );
-    } catch (\Throwable $e) {
-        \Log::error('Admin walk-in booking error: ' . $e->getMessage(), [
-            'trace' => $e->getTraceAsString(),
-        ]);
-
-        return $this->bookingErrorResponse(
-            $request,
-            'Failed to create booking.',
-            500
-        );
+            return $this->bookingErrorResponse(
+                $request,
+                'Failed to create booking.',
+                500
+            );
+        }
     }
-}
 
     public function updateStatus(Request $request, Booking $booking)
     {
@@ -301,13 +307,13 @@ public function store(Request $request)
 
         if (!array_key_exists($currentStatus, $allowedTransitions)) {
             return redirect()
-                ->route('admin.bookings.index')
+                ->route($this->panelPrefix() . '.bookings.index')
                 ->with('error', 'Invalid current booking status.');
         }
 
         if (!in_array($newStatus->name, $allowedTransitions[$currentStatus])) {
             return redirect()
-                ->route('admin.bookings.index')
+                ->route($this->panelPrefix() . '.bookings.index')
                 ->with('error', "Cannot change status from {$currentStatus} to {$newStatus->name}.");
         }
 
@@ -343,7 +349,7 @@ public function store(Request $request)
         }
 
         return redirect()
-            ->route('admin.bookings.index')
+            ->route($this->panelPrefix() . '.bookings.index')
             ->with('success', 'Booking status updated successfully.');
     }
 
@@ -353,7 +359,7 @@ public function store(Request $request)
 
         if (($booking->status->name ?? '') === 'Cancelled') {
             return redirect()
-                ->route('admin.bookings.index')
+                ->route($this->panelPrefix() . '.bookings.index')
                 ->with('error', 'Booking is already cancelled.');
         }
 
@@ -373,7 +379,7 @@ public function store(Request $request)
         ]);
 
         return redirect()
-            ->route('admin.bookings.index')
+            ->route($this->panelPrefix() . '.bookings.index')
             ->with('success', 'Booking cancelled successfully.');
     }
 
@@ -421,16 +427,16 @@ public function store(Request $request)
                         'Pending Payment Verification',
                     ]);
                 })
-                ->where(function ($date) use ($startDate, $endDate) {
-                    $date->whereBetween('pickup_at', [$startDate, $endDate])
-                        ->orWhereBetween('return_at', [$startDate, $endDate])
-                        ->orWhere(function ($overlap) use ($startDate, $endDate) {
-                            $overlap->where('pickup_at', '<=', $startDate)
-                                ->where('return_at', '>=', $endDate);
-                        });
-                })
-                ->with('status')
-                ->orderBy('pickup_at');
+                    ->where(function ($date) use ($startDate, $endDate) {
+                        $date->whereBetween('pickup_at', [$startDate, $endDate])
+                            ->orWhereBetween('return_at', [$startDate, $endDate])
+                            ->orWhere(function ($overlap) use ($startDate, $endDate) {
+                                $overlap->where('pickup_at', '<=', $startDate)
+                                    ->where('return_at', '>=', $endDate);
+                            });
+                    })
+                    ->with('status')
+                    ->orderBy('pickup_at');
             }
         ])->where('active', true);
 
@@ -454,6 +460,7 @@ public function store(Request $request)
         $brands = Brand::all();
         $serviceTypes = DB::table('service_types')->orderBy('id')->get();
         $paymentMethods = PaymentMethods::orderBy('name')->get();
+        $panelPrefix = $this->panelPrefix();
 
         $data = [
             'cars' => $cars,
@@ -466,6 +473,7 @@ public function store(Request $request)
             'view' => $view,
             'serviceTypes' => $serviceTypes,
             'paymentMethods' => $paymentMethods,
+            'panelPrefix' => $panelPrefix,
         ];
 
         if ($request->ajax()) {
@@ -542,7 +550,7 @@ public function store(Request $request)
         }
 
         return redirect()
-            ->route('admin.bookings.index')
+            ->route($this->panelPrefix() . '.bookings.index')
             ->with('success', $message);
     }
 }

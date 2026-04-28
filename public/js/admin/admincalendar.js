@@ -1,9 +1,11 @@
+const currentPanel = window.location.pathname.startsWith('/manager') ? 'manager' : 'admin';
+
 const CONFIG = window.AdminCalendarConfig || {
-    calendarUrl: '/admin/calendar',
-    bookingStoreUrl: '/admin/bookings',
-    bookingDetailsBaseUrl: '/admin/bookings',
-    checkAvailabilityUrl: '/admin/bookings/check-availability-exact',
-    searchCustomerUrl: '/admin/bookings/search-customer',
+    calendarUrl: `/${currentPanel}/calendar`,
+    bookingStoreUrl: `/${currentPanel}/bookings`,
+    bookingDetailsBaseUrl: `/${currentPanel}/bookings`,
+    checkAvailabilityUrl: `/${currentPanel}/bookings/check-availability-exact`,
+    searchCustomerUrl: `/${currentPanel}/bookings/search-customer`,
 };
 
 function qs(selector, root = document) {
@@ -17,6 +19,7 @@ function qsa(selector, root = document) {
 function getTodayStr() {
     const d = new Date();
     const pad = (n) => String(n).padStart(2, '0');
+
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
@@ -30,7 +33,10 @@ function hideLoading() {
 
 function buildFilterUrl() {
     const form = qs('#filterForm');
-    if (!form) return CONFIG.calendarUrl;
+
+    if (!form) {
+        return CONFIG.calendarUrl;
+    }
 
     const formData = new FormData(form);
     const newParams = new URLSearchParams(formData);
@@ -56,7 +62,7 @@ async function fetchFilteredData() {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'text/html',
-            }
+            },
         });
 
         if (!res.ok) {
@@ -69,12 +75,14 @@ async function fetchFilteredData() {
 
         const newWrapper = doc.querySelector('.overflow-x-auto');
         const curWrapper = document.querySelector('.overflow-x-auto');
+
         if (newWrapper && curWrapper) {
             curWrapper.innerHTML = newWrapper.innerHTML;
         }
 
         const newNav = doc.querySelector('.min-w-fit');
         const curNav = document.querySelector('.min-w-fit');
+
         if (newNav && curNav) {
             curNav.textContent = newNav.textContent;
         }
@@ -121,10 +129,14 @@ function toggleCustomerType() {
         const dropdown = qs('#existingCustomerDropdown');
 
         if (existingUserId) existingUserId.value = '';
+
         resultBox?.classList.add('hidden');
         notFoundBox?.classList.add('hidden');
         dropdown?.classList.add('hidden');
-        if (dropdown) dropdown.innerHTML = '';
+
+        if (dropdown) {
+            dropdown.innerHTML = '';
+        }
     }
 }
 
@@ -252,8 +264,8 @@ async function checkExactAvailability() {
                 pickup_date: pickupDate,
                 pickup_time: pickupTime,
                 return_date: returnDate,
-                return_time: returnTime
-            })
+                return_time: returnTime,
+            }),
         });
 
         const data = await res.json();
@@ -277,6 +289,7 @@ async function checkExactAvailability() {
         saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
     } catch (error) {
         console.error('Availability check failed:', error);
+
         box.classList.add('bg-red-50', 'border-red-200', 'text-red-700');
         box.textContent = 'Failed to check exact availability.';
         saveBtn.disabled = true;
@@ -286,6 +299,7 @@ async function checkExactAvailability() {
 
 function renderExistingCustomerDropdown(users) {
     const dropdown = qs('#existingCustomerDropdown');
+
     if (!dropdown) return;
 
     if (!users.length) {
@@ -298,6 +312,7 @@ function renderExistingCustomerDropdown(users) {
 
     users.forEach((user) => {
         const btn = document.createElement('button');
+
         btn.type = 'button';
         btn.className = 'w-full text-left px-4 py-3 hover:bg-slate-50 border-b last:border-b-0 border-gray-100';
 
@@ -345,6 +360,7 @@ async function searchExistingCustomers(keyword) {
     const existingUserId = qs('#existing_user_id');
 
     if (existingUserId) existingUserId.value = '';
+
     resultBox?.classList.add('hidden');
     notFoundBox?.classList.add('hidden');
 
@@ -353,6 +369,7 @@ async function searchExistingCustomers(keyword) {
             dropdown.innerHTML = '';
             dropdown.classList.add('hidden');
         }
+
         return;
     }
 
@@ -361,7 +378,7 @@ async function searchExistingCustomers(keyword) {
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
-            }
+            },
         });
 
         const data = await response.json();
@@ -371,20 +388,24 @@ async function searchExistingCustomers(keyword) {
                 dropdown.innerHTML = '';
                 dropdown.classList.add('hidden');
             }
+
             if (notFoundBox) {
                 notFoundBox.textContent = data.message || 'Customer not found.';
                 notFoundBox.classList.remove('hidden');
             }
+
             return;
         }
 
         renderExistingCustomerDropdown(data.users);
     } catch (error) {
         console.error('Customer search failed:', error);
+
         if (dropdown) {
             dropdown.innerHTML = '';
             dropdown.classList.add('hidden');
         }
+
         if (notFoundBox) {
             notFoundBox.textContent = 'Failed to search customer.';
             notFoundBox.classList.remove('hidden');
@@ -418,10 +439,14 @@ function openBookingModal(bookingId) {
     }
 
     fetch(`${CONFIG.bookingDetailsBaseUrl}/${bookingId}`, {
-        headers: { 'Accept': 'application/json' }
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
     })
         .then(res => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
             return res.json();
         })
         .then(data => {
@@ -487,6 +512,7 @@ function openBookingModal(bookingId) {
         })
         .catch((error) => {
             console.error('Booking modal load failed:', error);
+
             if (content) {
                 content.innerHTML = `
                     <div class="text-red-500 text-center py-4">
@@ -503,6 +529,7 @@ function closeBookingModal() {
 
 function openCreateFromBookingModal() {
     const addBtn = qs('#openAddBookingFromDetailsBtn');
+
     if (!addBtn) return;
 
     closeBookingModal();
@@ -553,7 +580,11 @@ function openCreateBookingModal(
     qs('#createBookingModal')?.classList.remove('hidden');
 
     const defaultRadio = qs('input[name="customer_type"][value="new"]');
-    if (defaultRadio) defaultRadio.checked = true;
+
+    if (defaultRadio) {
+        defaultRadio.checked = true;
+    }
+
     toggleCustomerType();
 
     setTimeout(checkExactAvailability, 100);
@@ -574,7 +605,10 @@ function closeCreateBookingModal() {
     qs('#existingCustomerNotFound')?.classList.add('hidden');
 
     const existingUserId = qs('#existing_user_id');
-    if (existingUserId) existingUserId.value = '';
+
+    if (existingUserId) {
+        existingUserId.value = '';
+    }
 
     if (dropdown) {
         dropdown.classList.add('hidden');
@@ -596,7 +630,10 @@ function closeCreateBookingModal() {
     }
 
     const defaultRadio = qs('input[name="customer_type"][value="new"]');
-    if (defaultRadio) defaultRadio.checked = true;
+
+    if (defaultRadio) {
+        defaultRadio.checked = true;
+    }
 
     syncReturnMinDate();
     toggleCustomerType();
@@ -623,7 +660,7 @@ async function submitCreateBookingForm(e) {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
-            body: formData
+            body: formData,
         });
 
         const data = await res.json();
@@ -633,6 +670,7 @@ async function submitCreateBookingForm(e) {
                 errorBox.textContent = data.message || 'Failed to create booking.';
                 errorBox.classList.remove('hidden');
             }
+
             return;
         }
 
@@ -647,6 +685,7 @@ async function submitCreateBookingForm(e) {
         }, 900);
     } catch (error) {
         console.error('Create booking failed:', error);
+
         if (errorBox) {
             errorBox.textContent = 'Something went wrong while creating the booking.';
             errorBox.classList.remove('hidden');
@@ -662,20 +701,20 @@ function togglePassword(inputId, button) {
 
     if (input.type === 'password') {
         input.type = 'text';
+
         if (icon) {
             icon.classList.remove('fa-eye');
             icon.classList.add('fa-eye-slash');
         }
     } else {
         input.type = 'password';
+
         if (icon) {
             icon.classList.remove('fa-eye-slash');
             icon.classList.add('fa-eye');
         }
     }
 }
-
-
 
 function bindStaticEvents() {
     const form = qs('#filterForm');
@@ -695,6 +734,7 @@ function bindStaticEvents() {
     });
 
     let debounceTimer;
+
     searchInput?.addEventListener('input', () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(fetchFilteredData, 400);
@@ -717,14 +757,19 @@ function bindStaticEvents() {
     serviceTypeSelect?.addEventListener('change', toggleServiceLocation);
 
     modal?.addEventListener('click', function (e) {
-        if (e.target === this) closeBookingModal();
+        if (e.target === this) {
+            closeBookingModal();
+        }
     });
 
     createModal?.addEventListener('click', function (e) {
-        if (e.target === this) closeCreateBookingModal();
+        if (e.target === this) {
+            closeCreateBookingModal();
+        }
     });
 
     let existingCustomerDebounce;
+
     existingCustomerSearchInput?.addEventListener('input', function () {
         const keyword = this.value.trim();
 
@@ -735,9 +780,14 @@ function bindStaticEvents() {
                 existingCustomerDropdown.classList.add('hidden');
                 existingCustomerDropdown.innerHTML = '';
             }
+
             qs('#existingCustomerResult')?.classList.add('hidden');
             qs('#existingCustomerNotFound')?.classList.add('hidden');
-            if (qs('#existing_user_id')) qs('#existing_user_id').value = '';
+
+            if (qs('#existing_user_id')) {
+                qs('#existing_user_id').value = '';
+            }
+
             return;
         }
 

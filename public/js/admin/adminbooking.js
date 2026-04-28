@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
+    const currentPanel = window.location.pathname.startsWith('/manager') ? 'manager' : 'admin';
+
+    const CONFIG = window.AdminBookingConfig || {
+        bookingDetailsBaseUrl: `/${currentPanel}/bookings`,
+        updateStatusBaseUrl: `/${currentPanel}/bookings`,
+        returnIssueCreateBaseUrl: `/${currentPanel}/bookings`,
+    };
+
     const form = document.getElementById('filterForm');
     const searchInput = form?.querySelector('input[name="search"]');
     const statusSelect = form?.querySelector('select[name="status_id"]');
@@ -16,23 +24,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const viewModal = document.getElementById('viewModal');
     const closeViewModalBtn = document.getElementById('closeViewModal');
 
-    
-
     let typingTimer;
 
-    if (searchInput) {
+    if (searchInput && form) {
         searchInput.addEventListener('keyup', () => {
             clearTimeout(typingTimer);
             typingTimer = setTimeout(() => form.submit(), 500);
         });
     }
 
-    if (statusSelect) {
+    if (statusSelect && form) {
         statusSelect.addEventListener('change', () => form.submit());
     }
 
     const allowedTransitions = {
         Pending: ['Cancelled'],
+        'Pending Payment Verification': ['Cancelled'],
         Confirmed: ['Cancelled'],
         Return: ['Completed', 'Checkup', 'Damage', 'Needs Repair'],
         Active: [],
@@ -56,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
             adminMessageWrapper.classList.remove('hidden');
         } else {
             adminMessageWrapper.classList.add('hidden');
+
             if (adminMessage) {
                 adminMessage.value = '';
             }
@@ -64,10 +72,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.editBookingBtn').forEach(btn => {
         btn.addEventListener('click', () => {
+            if (!modal || !statusDropdown || !updateForm || !statusHelpText) return;
+
             const bookingId = btn.getAttribute('data-booking-id');
             const currentStatusName = (btn.getAttribute('data-status-name') || '').trim();
 
-            updateForm.action = `/admin/bookings/${bookingId}/update-status`;
+            updateForm.action = `${CONFIG.updateStatusBaseUrl}/${bookingId}/update-status`;
+            updateForm.dataset.bookingId = bookingId;
 
             const allowed = allowedTransitions[currentStatusName] || [];
 
@@ -121,6 +132,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function closeModal() {
+        if (!modal || !statusDropdown || !statusHelpText) return;
+
         modal.classList.add('hidden');
         modal.classList.remove('flex');
 
@@ -137,6 +150,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (adminMessageWrapper) adminMessageWrapper.classList.add('hidden');
         if (adminMessage) adminMessage.value = '';
+        if (updateForm) updateForm.dataset.bookingId = '';
     }
 
     if (closeModalBtn) {
@@ -153,6 +167,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.viewBookingBtn').forEach(btn => {
         btn.addEventListener('click', async () => {
+            if (!viewModal) return;
+
             const bookingId = btn.getAttribute('data-booking-id');
             const serviceLocationWrapper = document.getElementById('viewServiceLocationWrapper');
 
@@ -171,7 +187,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             try {
-                const response = await fetch(`/admin/bookings/${bookingId}/json`);
+                const response = await fetch(`${CONFIG.bookingDetailsBaseUrl}/${bookingId}/json`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                });
 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
@@ -218,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function closeViewModal() {
         if (!viewModal) return;
+
         viewModal.classList.add('hidden');
         viewModal.classList.remove('flex');
     }
@@ -236,21 +258,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const issueStatuses = ['Checkup', 'Damage', 'Needs Repair'];
 
-updateForm.addEventListener('submit', function (e) {
-    if (!statusDropdown) return;
+    if (updateForm) {
+        updateForm.addEventListener('submit', function (e) {
+            if (!statusDropdown) return;
 
-    const selectedText = statusDropdown.options[statusDropdown.selectedIndex]?.text?.trim() || '';
-    const action = updateForm.action || '';
-    const bookingIdMatch = action.match(/\/admin\/bookings\/(\d+)\/update-status/);
+            const selectedText = statusDropdown.options[statusDropdown.selectedIndex]?.text?.trim() || '';
+            const bookingId = updateForm.dataset.bookingId;
 
-    if (!bookingIdMatch) return;
+            if (!bookingId) return;
 
-    const bookingId = bookingIdMatch[1];
+            if (issueStatuses.includes(selectedText)) {
+                e.preventDefault();
 
-    if (issueStatuses.includes(selectedText)) {
-        e.preventDefault();
-        window.location.href = `/admin/bookings/${bookingId}/return-issue/create?status=${encodeURIComponent(selectedText)}`;
+                window.location.href = `${CONFIG.returnIssueCreateBaseUrl}/${bookingId}/return-issue/create?status=${encodeURIComponent(selectedText)}`;
+            }
+        });
     }
-});
-
 });

@@ -43,6 +43,7 @@ Route::get('/', [LandingController::class, 'index'])->name('landing');
 | Customer Auth
 |--------------------------------------------------------------------------
 */
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -52,8 +53,10 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/about-us', 'about-us')->name('about');
+
 /*
 |--------------------------------------------------------------------------
 | Admin / Staff Auth
@@ -61,6 +64,7 @@ Route::view('/about-us', 'about-us')->name('about');
 | Do NOT put these inside auth/admin middleware.
 |--------------------------------------------------------------------------
 */
+
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
@@ -74,6 +78,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 | Guests can browse cars and start booking before login/register.
 |--------------------------------------------------------------------------
 */
+
 Route::prefix('user')
     ->name('user.')
     ->group(function () {
@@ -96,6 +101,7 @@ Route::prefix('user')
 | Authenticated User Routes
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth', 'user'])
     ->prefix('user')
     ->name('user.')
@@ -105,7 +111,7 @@ Route::middleware(['auth', 'user'])
         Route::get('/booking/continue', [UserBookingController::class, 'continueGuestBooking'])
             ->name('booking.continue');
 
-            Route::get('/notifications', [UserNotificationController::class, 'index'])
+        Route::get('/notifications', [UserNotificationController::class, 'index'])
             ->name('notifications.index');
 
         Route::get('/notifications/{id}/read', [UserNotificationController::class, 'markRead'])
@@ -116,6 +122,7 @@ Route::middleware(['auth', 'user'])
 
         Route::get('/notifications/latest', [UserNotificationController::class, 'latestNotifications'])
             ->name('notifications.latest');
+
         Route::get('/profile', [UserProfileController::class, 'edit'])->name('profile');
         Route::post('/profile/update', [UserProfileController::class, 'updateInfo'])->name('profile.update');
         Route::post('/profile/password', [UserProfileController::class, 'updatePassword'])->name('profile.password');
@@ -138,6 +145,7 @@ Route::middleware(['auth', 'user'])
             ->name('booking.cancel');
 
         Route::get('/my-bookings', [UserBookingController::class, 'myBookings'])->name('my-bookings');
+
         Route::get('/booking/{id}/confirmation', [UserBookingController::class, 'confirmation'])
             ->name('booking.confirmation');
 
@@ -161,15 +169,11 @@ Route::middleware(['auth', 'user'])
 | Protected Admin Routes
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        /*
-        |--------------------------------------------------------------------------
-        | Dashboard
-        |--------------------------------------------------------------------------
-        */
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/revenue', [AdminDashboardController::class, 'revenue'])->name('revenue');
 
@@ -178,17 +182,21 @@ Route::middleware(['auth', 'admin'])
         | Bookings
         |--------------------------------------------------------------------------
         */
+
         Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/create/{car}', [AdminBookingController::class, 'create'])->name('bookings.create');
         Route::get('/bookings/search-customer', [AdminBookingController::class, 'searchCustomer'])
             ->name('bookings.search-customer');
+
         Route::post('/bookings/check-availability-exact', [AvailabilityController::class, 'check'])
             ->name('bookings.check-availability-exact');
+
         Route::post('/bookings', [AdminBookingController::class, 'store'])->name('bookings.store');
         Route::get('/bookings/{booking}/json', [AdminBookingController::class, 'showJson'])->name('bookings.showJson');
         Route::get('/bookings/{booking}', [AdminBookingController::class, 'showJson'])->name('bookings.json');
         Route::put('/bookings/{booking}/update-status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
         Route::post('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
+
         Route::get('/calendar', [AdminBookingController::class, 'calendar'])->name('calendar');
 
         /*
@@ -196,6 +204,7 @@ Route::middleware(['auth', 'admin'])
         | Return Issues / Damage Reports
         |--------------------------------------------------------------------------
         */
+
         Route::get('/return-issues', [ReturnIssueController::class, 'index'])
             ->name('return-issues.index');
 
@@ -213,6 +222,7 @@ Route::middleware(['auth', 'admin'])
         | Cars / Fleet
         |--------------------------------------------------------------------------
         */
+
         Route::get('/cars', [CarsController::class, 'cars'])->name('cars');
         Route::post('/cars', [CarsController::class, 'store'])->name('cars.store');
         Route::get('/cars/{id}/edit', [CarsController::class, 'edit'])->name('cars.edit');
@@ -224,6 +234,7 @@ Route::middleware(['auth', 'admin'])
         | Users
         |--------------------------------------------------------------------------
         */
+
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
@@ -234,6 +245,7 @@ Route::middleware(['auth', 'admin'])
         | Payments
         |--------------------------------------------------------------------------
         */
+
         Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/{payment}', [AdminPaymentController::class, 'show'])->name('payments.show');
         Route::get('/payments/export/csv', [AdminPaymentController::class, 'export'])->name('payments.export');
@@ -245,6 +257,7 @@ Route::middleware(['auth', 'admin'])
         | Payment Settings
         |--------------------------------------------------------------------------
         */
+
         Route::get('/payment-settings', [AdminPaymentSettingController::class, 'edit'])->name('payment-settings.edit');
         Route::put('/payment-settings', [AdminPaymentSettingController::class, 'update'])->name('payment-settings.update');
 
@@ -253,6 +266,7 @@ Route::middleware(['auth', 'admin'])
         | Live Tracking
         |--------------------------------------------------------------------------
         */
+
         Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');
         Route::get('/replay', [LiveMapController::class, 'replayPage'])->name('replay');
         Route::get('/replay/history', [LiveMapController::class, 'history'])->name('replay.history');
@@ -263,46 +277,48 @@ Route::middleware(['auth', 'admin'])
         | Trackers
         |--------------------------------------------------------------------------
         */
+
         Route::get('/trackers/create', [AdminTrackerController::class, 'create'])->name('trackers.create');
         Route::post('/trackers', [AdminTrackerController::class, 'store'])->name('trackers.store');
     });
-
-
 
 /*
 |--------------------------------------------------------------------------
 | Protected Staff Routes
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth', 'staff'])
     ->prefix('staff')
     ->name('staff.')
     ->group(function () {
         Route::get('/dashboard', [StaffDashboardController::class, 'index'])->name('dashboard');
 
-        // Calendar
         Route::get('/calendar', [StaffCalendarController::class, 'index'])->name('calendar');
 
-        // Staff bookings
         Route::get('/bookings', [StaffBookingController::class, 'index'])->name('bookings.index');
         Route::post('/bookings', [StaffBookingController::class, 'store'])->name('bookings.store');
-        Route::post('/bookings/check-availability-exact', [StaffBookingController::class, 'checkAvailabilityExact'])->name('bookings.check-availability-exact');
-        Route::get('/bookings/search-customer', [StaffBookingController::class, 'searchCustomer'])->name('bookings.search-customer');
-        Route::get('/bookings/{booking}/json', [StaffBookingController::class, 'showJson'])->name('bookings.show-json');
-        Route::put('/bookings/{booking}/update-status', [StaffBookingController::class, 'updateStatus'])->name('bookings.update-status');
+        Route::post('/bookings/check-availability-exact', [StaffBookingController::class, 'checkAvailabilityExact'])
+            ->name('bookings.check-availability-exact');
 
-        // Staff payments
+        Route::get('/bookings/search-customer', [StaffBookingController::class, 'searchCustomer'])
+            ->name('bookings.search-customer');
+
+        Route::get('/bookings/{booking}/json', [StaffBookingController::class, 'showJson'])
+            ->name('bookings.show-json');
+
+        Route::put('/bookings/{booking}/update-status', [StaffBookingController::class, 'updateStatus'])
+            ->name('bookings.update-status');
+
         Route::get('/payments', [StaffPaymentController::class, 'index'])->name('payments.index');
         Route::post('/payments/{payment}/approve', [StaffPaymentController::class, 'approve'])->name('payments.approve');
         Route::post('/payments/{payment}/reject', [StaffPaymentController::class, 'reject'])->name('payments.reject');
 
-        // Staff map
         Route::get('/live-map', [StaffMapController::class, 'index'])->name('live-map');
         Route::get('/live/positions', [StaffMapController::class, 'positions'])->name('live.positions');
         Route::get('/replay', [StaffMapController::class, 'replayPage'])->name('replay');
         Route::get('/replay/history', [StaffMapController::class, 'history'])->name('replay.history');
 
-        // Return issues
         Route::get('/bookings/{booking}/return-issue/create', [StaffReturnIssueController::class, 'create'])
             ->name('return-issues.create');
 
@@ -310,23 +326,36 @@ Route::middleware(['auth', 'staff'])
             ->name('return-issues.store');
     });
 
-    /*
+/*
 |--------------------------------------------------------------------------
 | Protected Manager Routes
 |--------------------------------------------------------------------------
+| Manager reuses admin booking/calendar/payment pages, but with manager URLs.
+|--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth', 'manager'])
     ->prefix('manager')
     ->name('manager.')
     ->group(function () {
         Route::get('/dashboard', [ManagerDashboardController::class, 'index'])->name('dashboard');
-
         Route::get('/revenue', [AdminDashboardController::class, 'revenue'])->name('revenue');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Bookings
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/create/{car}', [AdminBookingController::class, 'create'])->name('bookings.create');
-        Route::get('/bookings/search-customer', [AdminBookingController::class, 'searchCustomer'])->name('bookings.search-customer');
-        Route::post('/bookings/check-availability-exact', [AvailabilityController::class, 'check'])->name('bookings.check-availability-exact');
+
+        Route::get('/bookings/search-customer', [AdminBookingController::class, 'searchCustomer'])
+            ->name('bookings.search-customer');
+
+        Route::post('/bookings/check-availability-exact', [AvailabilityController::class, 'check'])
+            ->name('bookings.check-availability-exact');
+
         Route::post('/bookings', [AdminBookingController::class, 'store'])->name('bookings.store');
         Route::get('/bookings/{booking}/json', [AdminBookingController::class, 'showJson'])->name('bookings.showJson');
         Route::get('/bookings/{booking}', [AdminBookingController::class, 'showJson'])->name('bookings.json');
@@ -335,10 +364,29 @@ Route::middleware(['auth', 'manager'])
 
         Route::get('/calendar', [AdminBookingController::class, 'calendar'])->name('calendar');
 
-        Route::get('/return-issues', [ReturnIssueController::class, 'index'])->name('return-issues.index');
-        Route::get('/bookings/{booking}/return-issue/create', [ReturnIssueController::class, 'create'])->name('return-issues.create');
-        Route::post('/bookings/{booking}/return-issue', [ReturnIssueController::class, 'store'])->name('return-issues.store');
-        Route::patch('/return-issues/{returnIssue}/status', [ReturnIssueController::class, 'updateStatus'])->name('return-issues.update-status');
+        /*
+        |--------------------------------------------------------------------------
+        | Return Issues
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/return-issues', [ReturnIssueController::class, 'index'])
+            ->name('return-issues.index');
+
+        Route::get('/bookings/{booking}/return-issue/create', [ReturnIssueController::class, 'create'])
+            ->name('return-issues.create');
+
+        Route::post('/bookings/{booking}/return-issue', [ReturnIssueController::class, 'store'])
+            ->name('return-issues.store');
+
+        Route::patch('/return-issues/{returnIssue}/status', [ReturnIssueController::class, 'updateStatus'])
+            ->name('return-issues.update-status');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Cars / Fleet
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/cars', [CarsController::class, 'cars'])->name('cars');
         Route::post('/cars', [CarsController::class, 'store'])->name('cars.store');
@@ -346,60 +394,23 @@ Route::middleware(['auth', 'manager'])
         Route::put('/cars/{id}', [CarsController::class, 'update'])->name('cars.update');
         Route::delete('/cars/{id}', [CarsController::class, 'destroy'])->name('cars.destroy');
 
-        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
-        Route::get('/payments/{payment}', [AdminPaymentController::class, 'show'])->name('payments.show');
-        Route::get('/payments/export/csv', [AdminPaymentController::class, 'export'])->name('payments.export');
-        Route::post('/payments/{id}/approve', [AdminPaymentController::class, 'approve'])->name('payments.approve');
-        Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])->name('payments.reject');
-
-        Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');
-        Route::get('/replay', [LiveMapController::class, 'replayPage'])->name('replay');
-        Route::get('/replay/history', [LiveMapController::class, 'history'])->name('replay.history');
-        Route::get('/live/positions', [LiveMapController::class, 'positions'])->name('live.positions');
-    });
-
-
-    /*
-|--------------------------------------------------------------------------
-| Protected Manager Routes
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'manager'])
-    ->prefix('manager')
-    ->name('manager.')
-    ->group(function () {
-        Route::get('/dashboard', [ManagerDashboardController::class, 'index'])->name('dashboard');
-
-        Route::get('/revenue', [AdminDashboardController::class, 'revenue'])->name('revenue');
-
-        Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
-        Route::get('/bookings/create/{car}', [AdminBookingController::class, 'create'])->name('bookings.create');
-        Route::get('/bookings/search-customer', [AdminBookingController::class, 'searchCustomer'])->name('bookings.search-customer');
-        Route::post('/bookings/check-availability-exact', [AvailabilityController::class, 'check'])->name('bookings.check-availability-exact');
-        Route::post('/bookings', [AdminBookingController::class, 'store'])->name('bookings.store');
-        Route::get('/bookings/{booking}/json', [AdminBookingController::class, 'showJson'])->name('bookings.showJson');
-        Route::get('/bookings/{booking}', [AdminBookingController::class, 'showJson'])->name('bookings.json');
-        Route::put('/bookings/{booking}/update-status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
-        Route::post('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
-
-        Route::get('/calendar', [AdminBookingController::class, 'calendar'])->name('calendar');
-
-        Route::get('/return-issues', [ReturnIssueController::class, 'index'])->name('return-issues.index');
-        Route::get('/bookings/{booking}/return-issue/create', [ReturnIssueController::class, 'create'])->name('return-issues.create');
-        Route::post('/bookings/{booking}/return-issue', [ReturnIssueController::class, 'store'])->name('return-issues.store');
-        Route::patch('/return-issues/{returnIssue}/status', [ReturnIssueController::class, 'updateStatus'])->name('return-issues.update-status');
-
-        Route::get('/cars', [CarsController::class, 'cars'])->name('cars');
-        Route::post('/cars', [CarsController::class, 'store'])->name('cars.store');
-        Route::get('/cars/{id}/edit', [CarsController::class, 'edit'])->name('cars.edit');
-        Route::put('/cars/{id}', [CarsController::class, 'update'])->name('cars.update');
-        Route::delete('/cars/{id}', [CarsController::class, 'destroy'])->name('cars.destroy');
+        /*
+        |--------------------------------------------------------------------------
+        | Payments
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/{payment}', [AdminPaymentController::class, 'show'])->name('payments.show');
         Route::get('/payments/export/csv', [AdminPaymentController::class, 'export'])->name('payments.export');
         Route::post('/payments/{id}/approve', [AdminPaymentController::class, 'approve'])->name('payments.approve');
         Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])->name('payments.reject');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Live Tracking
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/live-map', [LiveMapController::class, 'page'])->name('live-map');
         Route::get('/replay', [LiveMapController::class, 'replayPage'])->name('replay');
