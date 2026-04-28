@@ -9,28 +9,45 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function showLoginForm()
+    private function redirectByRole($user)
     {
-        if (auth()->check()) {
-            $user = auth()->user();
+        if (! $user) {
+            return redirect()->route('login');
+        }
 
-            if (session()->has('guest_booking_payload') && (int) $user->role_id === 2) {
+        $roleId = (int) $user->role_id;
+
+        // Customer
+        if ($roleId === 2) {
+            if (session()->has('guest_booking_payload')) {
                 return redirect()->route('user.booking.continue');
             }
 
-            if ((int) $user->role_id === 2) {
-                return redirect()->route('user.browse');
-            }
+            return redirect()->route('user.browse');
+        }
 
-            if ((int) $user->role_id === 1) {
-                return redirect()->route('admin.dashboard');
-            }
+        // Admin
+        if ($roleId === 1) {
+            return redirect()->route('admin.dashboard');
+        }
 
-            if ((int) $user->role_id === 3) {
-                return redirect()->route('staff.dashboard');
-            }
+        // Staff
+        if ($roleId === 3) {
+            return redirect()->route('staff.dashboard');
+        }
 
-            return redirect('/');
+        // Manager
+        if ($roleId === 4) {
+            return redirect()->route('manager.dashboard');
+        }
+
+        return redirect('/');
+    }
+
+    public function showLoginForm()
+    {
+        if (auth()->check()) {
+            return $this->redirectByRole(auth()->user());
         }
 
         return view('auth.login');
@@ -39,25 +56,7 @@ class AuthController extends Controller
     public function showRegisterForm()
     {
         if (auth()->check()) {
-            $user = auth()->user();
-
-            if (session()->has('guest_booking_payload') && (int) $user->role_id === 2) {
-                return redirect()->route('user.booking.continue');
-            }
-
-            if ((int) $user->role_id === 2) {
-                return redirect()->route('user.browse');
-            }
-
-            if ((int) $user->role_id === 1) {
-                return redirect()->route('admin.dashboard');
-            }
-
-            if ((int) $user->role_id === 3) {
-                return redirect()->route('staff.dashboard');
-            }
-
-            return redirect('/');
+            return $this->redirectByRole(auth()->user());
         }
 
         return view('auth.register');
@@ -66,15 +65,15 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            'email' => ['required', 'email'],
+            'password' => ['required'],
         ]);
 
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             return back()
                 ->withInput($request->only('email'))
                 ->withErrors([
-                    'email' => 'Invalid email or password. Please try again.'
+                    'email' => 'Invalid email or password. Please try again.',
                 ]);
         }
 
@@ -82,7 +81,10 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        // Only customers can use /login
+        /*
+         * This /login page is for customers only.
+         * Admin, Staff, and Manager should login at /admin/login.
+         */
         if ((int) $user->role_id !== 2) {
             Auth::logout();
             $request->session()->invalidate();
@@ -91,67 +93,60 @@ class AuthController extends Controller
             return back()
                 ->withInput($request->only('email'))
                 ->withErrors([
-                    'email' => 'This login is for customers only.'
+                    'email' => 'This login is for customers only. Please use the admin/staff/manager login page.',
                 ]);
         }
 
-        if (session()->has('guest_booking_payload')) {
-            return redirect()->route('user.booking.continue');
-        }
-
-        return redirect()->route('user.browse');
+        return $this->redirectByRole($user);
     }
 
     public function register(Request $request)
-{
-    $request->validate([
-        'name' => ['required', 'string', 'max:255'],
-        'email' => ['required', 'email', 'unique:users,email'],
-        'phone' => ['nullable', 'string', 'max:20'],
-        'password' => ['required', 'string', 'min:8', 'confirmed'],
-    ], [
-        'email.unique' => 'This email is already registered.',
-        'password.confirmed' => 'The password confirmation does not match.',
-        'password.min' => 'The password must be at least 8 characters.',
-    ]);
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'email.unique' => 'This email is already registered.',
+            'password.confirmed' => 'The password confirmation does not match.',
+            'password.min' => 'The password must be at least 8 characters.',
+        ]);
 
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'phone' => $request->phone ?? null,
-        'password' => Hash::make($request->password),
-        'role_id' => 2,
-    ]);
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone ?? null,
+            'password' => Hash::make($request->password),
+            'role_id' => 2, // Customer
+        ]);
 
-    Auth::login($user);
-    $request->session()->regenerate();
+        Auth::login($user);
+        $request->session()->regenerate();
 
-    if (session()->has('guest_booking_payload')) {
-        return redirect()->route('user.booking.continue');
+        return $this->redirectByRole($user);
     }
-
-    return redirect()->route('user.browse');
-}
 
     public function logout(Request $request)
     {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect('/');
     }
 
-    // controller for api ---------------------------------------
+    // API controller methods ---------------------------------------
 
     public function apiLogin(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            'email' => ['required', 'email'],
+            'password' => ['required'],
         ]);
 
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid email or password',
@@ -179,10 +174,10 @@ class AuthController extends Controller
     public function apiRegister(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'nullable|string|max:20',
-            'password' => 'required|min:6|confirmed',
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
         ]);
 
         $user = User::create([
@@ -190,7 +185,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'phone' => $request->phone ?? null,
             'password' => Hash::make($request->password),
-            'role_id' => 2,
+            'role_id' => 2, // Customer
         ]);
 
         return response()->json([
