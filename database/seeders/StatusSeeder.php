@@ -10,6 +10,7 @@ class StatusSeeder extends Seeder
     public function run(): void
     {
         $statuses = [
+            ['name' => 'Pending Payment'],
             ['name' => 'Pending Payment Verification'],
             ['name' => 'Reserved'],
             ['name' => 'Confirmed'],

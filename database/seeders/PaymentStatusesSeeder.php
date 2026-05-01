@@ -15,6 +15,7 @@ class PaymentStatusesSeeder extends Seeder
     public function run(): void
     {
         $statuses = [
+            ['name' => 'Awaiting Payment', 'code' => 'awaiting_payment'],
             ['name' => 'Pending', 'code' => 'pending'],
             ['name' => 'Completed', 'code' => 'completed'],
             ['name' => 'Failed', 'code' => 'failed'],
