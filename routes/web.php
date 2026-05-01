@@ -149,6 +149,8 @@ Route::middleware(['auth', 'user'])
         Route::get('/booking/{id}/confirmation', [UserBookingController::class, 'confirmation'])
             ->name('booking.confirmation');
 
+            Route::get('/pending-payments', [PaymentController::class, 'indexPending'])
+    ->name('pending-payments');
         Route::get('/payments', [PaymentController::class, 'showPayment'])->name('payments');
         Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 

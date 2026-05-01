@@ -17,7 +17,7 @@
     .user-header {
         background: #ffffff;
         border-bottom: 1px solid #ececec;
-        box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
         position: sticky;
         top: 0;
         z-index: 999;
@@ -114,7 +114,7 @@
         background: #fff;
         border: 1px solid #ececec;
         border-radius: 16px;
-        box-shadow: 0 14px 32px rgba(0,0,0,0.12);
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
         z-index: 9999;
         overflow: hidden;
     }
@@ -390,9 +390,7 @@
             <!-- Logo -->
             <div class="user-logo-wrapper">
                 <a href="{{ route('user.browse') }}" class="user-logo-link">
-                    <img src="{{ asset('storage/cars/ezelogo.png') }}"
-                         alt="Logo"
-                         class="user-logo-img">
+                    <img src="{{ asset('storage/cars/ezelogo.png') }}" alt="Logo" class="user-logo-img">
 
                     <span class="user-logo-text">
                         Eze Car Rental
@@ -404,16 +402,14 @@
             <nav class="user-center-nav">
                 <ul>
                     <li>
-                        <a href="{{ route('user.browse') }}"
-                           title="Browse Cars"
-                           aria-label="Browse Cars"
-                           class="{{ request()->routeIs('user.browse') || request()->routeIs('user.search') ? 'mobile-active' : '' }}"
-                           style="{{ request()->routeIs('user.browse') || request()->routeIs('user.search') ? 'color:#ff5a1f; font-weight:700;' : 'color:#222; font-weight:500;' }}">
+                        <a href="{{ route('user.browse') }}" title="Browse Cars" aria-label="Browse Cars"
+                            class="{{ request()->routeIs('user.browse') || request()->routeIs('user.search') ? 'mobile-active' : '' }}"
+                            style="{{ request()->routeIs('user.browse') || request()->routeIs('user.search') ? 'color:#ff5a1f; font-weight:700;' : 'color:#222; font-weight:500;' }}">
 
                             <span class="nav-icon">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M3 13l2-5a3 3 0 012.8-2h8.4A3 3 0 0119 8l2 5M5 13h14M6 17h.01M18 17h.01M7 13l1-3h8l1 3M5 13v5m14-5v5" />
+                                        d="M3 13l2-5a3 3 0 012.8-2h8.4A3 3 0 0119 8l2 5M5 13h14M6 17h.01M18 17h.01M7 13l1-3h8l1 3M5 13v5m14-5v5" />
                                 </svg>
                             </span>
 
@@ -423,16 +419,14 @@
 
                     @auth
                         <li>
-                            <a href="{{ route('user.rentals.index') }}"
-                               title="My Rentals"
-                               aria-label="My Rentals"
-                               class="{{ request()->routeIs('user.rentals.*') ? 'mobile-active' : '' }}"
-                               style="{{ request()->routeIs('user.rentals.*') ? 'color:#ff5a1f; font-weight:700;' : 'color:#222; font-weight:500;' }}">
+                            <a href="{{ route('user.rentals.index') }}" title="My Rentals" aria-label="My Rentals"
+                                class="{{ request()->routeIs('user.rentals.*') ? 'mobile-active' : '' }}"
+                                style="{{ request()->routeIs('user.rentals.*') ? 'color:#ff5a1f; font-weight:700;' : 'color:#222; font-weight:500;' }}">
 
                                 <span class="nav-icon">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M15 7h3a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h3m6 0V5a3 3 0 00-6 0v2m6 0H9m3 5v4" />
+                                            d="M15 7h3a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h3m6 0V5a3 3 0 00-6 0v2m6 0H9m3 5v4" />
                                     </svg>
                                 </span>
 
@@ -441,16 +435,14 @@
                         </li>
 
                         <li>
-                            <a href="{{ route('user.payments') }}"
-                               title="Payments"
-                               aria-label="Payments"
-                               class="{{ request()->routeIs('user.payments') ? 'mobile-active' : '' }}"
-                               style="{{ request()->routeIs('user.payments') ? 'color:#ff5a1f; font-weight:700;' : 'color:#222; font-weight:500;' }}">
+                            <a href="{{ route('user.pending-payments') }}" title="Payments" aria-label="Payments"
+                                class="{{ request()->routeIs('user.pending-payments') || request()->routeIs('user.payments') ? 'mobile-active' : '' }}"
+                                style="{{ request()->routeIs('user.pending-payments') || request()->routeIs('user.payments') ? 'color:#ff5a1f; font-weight:700;' : 'color:#222; font-weight:500;' }}">
 
                                 <span class="nav-icon">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M3 10h18M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2zM7 15h4" />
+                                            d="M3 10h18M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2zM7 15h4" />
                                     </svg>
                                 </span>
 
@@ -467,24 +459,19 @@
                 @auth
                     <!-- Notification -->
                     <div style="position:relative;">
-                        <button id="notificationBell"
-                                type="button"
-                                onclick="toggleNotifications(event)"
-                                class="notification-btn"
-                                title="Notifications"
-                                aria-label="Notifications">
+                        <button id="notificationBell" type="button" onclick="toggleNotifications(event)"
+                            class="notification-btn" title="Notifications" aria-label="Notifications">
                             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002
-                                         6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165
-                                         6 8.388 6 11v3.159c0 .538-.214 1.055-.595
-                                         1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002
+                                             6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165
+                                             6 8.388 6 11v3.159c0 .538-.214 1.055-.595
+                                             1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
                                 </path>
                             </svg>
 
                             @if($unreadCount > 0)
                                 <span id="notificationBadge"
-                                      style="position:absolute; top:8px; right:8px; min-width:10px; height:10px; background:#ef4444; border-radius:9999px;"></span>
+                                    style="position:absolute; top:8px; right:8px; min-width:10px; height:10px; background:#ef4444; border-radius:9999px;"></span>
                             @endif
                         </button>
 
@@ -498,14 +485,16 @@
                             <div class="notification-list" style="max-height:320px; overflow-y:auto;">
                                 @forelse($notifications as $notification)
                                     <a href="{{ route('user.notifications.read', $notification->id) }}"
-                                       style="display:block; padding:14px 18px; border-bottom:1px solid #f5f5f5; text-decoration:none; background:{{ $notification->is_read ? '#fff' : '#f8faff' }};">
-                                        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:6px;">
+                                        style="display:block; padding:14px 18px; border-bottom:1px solid #f5f5f5; text-decoration:none; background:{{ $notification->is_read ? '#fff' : '#f8faff' }};">
+                                        <div
+                                            style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:6px;">
                                             <p style="margin:0; font-size:14px; font-weight:600; color:#111; line-height:1.4;">
                                                 {{ $notification->title }}
                                             </p>
 
                                             @if(!$notification->is_read)
-                                                <span style="flex-shrink:0; font-size:10px; font-weight:700; color:#4338ca; background:#eef2ff; border:1px solid #c7d2fe; border-radius:9999px; padding:4px 7px; line-height:1;">
+                                                <span
+                                                    style="flex-shrink:0; font-size:10px; font-weight:700; color:#4338ca; background:#eef2ff; border:1px solid #c7d2fe; border-radius:9999px; padding:4px 7px; line-height:1;">
                                                     New
                                                 </span>
                                             @endif
@@ -529,8 +518,8 @@
                             @if($notifications->count())
                                 <div style="padding:12px 18px; border-top:1px solid #f1f1f1; background:#fafafa;">
                                     <a href="{{ route('user.notifications.index') }}"
-                                       style="display:block; text-align:center; font-size:13px; font-weight:700; color:#4f46e5; text-decoration:none;">
-                                       View All Notifications
+                                        style="display:block; text-align:center; font-size:13px; font-weight:700; color:#4f46e5; text-decoration:none;">
+                                        View All Notifications
                                     </a>
                                 </div>
                             @endif
@@ -539,12 +528,8 @@
 
                     <!-- User Dropdown -->
                     <div class="user-dropdown-wrapper">
-                        <button id="userDropdownButton"
-                                type="button"
-                                onclick="toggleUserDropdown(event)"
-                                class="user-dropdown-btn"
-                                title="Account"
-                                aria-label="Account">
+                        <button id="userDropdownButton" type="button" onclick="toggleUserDropdown(event)"
+                            class="user-dropdown-btn" title="Account" aria-label="Account">
 
                             <div class="user-avatar">
                                 {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
@@ -560,8 +545,7 @@
                             </div>
 
                             <svg class="user-chevron" width="18" height="18" fill="none" stroke="#555" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M19 9l-7 7-7-7" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
 
@@ -570,12 +554,11 @@
                                 <div style="font-size:14px; font-weight:700; color:#111;">
                                     {{ auth()->user()->name ?? 'User' }}
                                 </div>
-                              
+
                             </div>
 
-                            <a href="{{ route('user.profile') }}"
-                               class="dropdown-profile-link"
-                               style="background:{{ request()->routeIs('user.profile') ? '#fff3ed' : '#fff' }};">
+                            <a href="{{ route('user.profile') }}" class="dropdown-profile-link"
+                                style="background:{{ request()->routeIs('user.profile') ? '#fff3ed' : '#fff' }};">
                                 <span>👤</span>
                                 <span>Profile</span>
                             </a>
@@ -591,12 +574,12 @@
                     </div>
                 @else
                     <a href="{{ route('login') }}"
-                       style="background:#fff; color:#111; border:1px solid #ececec; border-radius:10px; padding:12px 22px; font-size:15px; font-weight:600; line-height:1; text-decoration:none;">
+                        style="background:#fff; color:#111; border:1px solid #ececec; border-radius:10px; padding:12px 22px; font-size:15px; font-weight:600; line-height:1; text-decoration:none;">
                         Login
                     </a>
 
                     <a href="{{ route('register') }}"
-                       style="background:#ff5a1f; color:#fff; border:none; border-radius:10px; padding:12px 22px; font-size:15px; font-weight:600; line-height:1; text-decoration:none;">
+                        style="background:#ff5a1f; color:#fff; border:none; border-radius:10px; padding:12px 22px; font-size:15px; font-weight:600; line-height:1; text-decoration:none;">
                         Register
                     </a>
                 @endauth

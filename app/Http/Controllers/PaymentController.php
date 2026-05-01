@@ -15,6 +15,33 @@ use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
+
+public function indexPending()
+{
+    $awaitingPaymentStatus = \App\Models\PaymentStatus::where('code', 'awaiting_payment')->firstOrFail();
+    $pendingPaymentStatus = \App\Models\Status::where('name', 'Pending Payment')->firstOrFail();
+
+    $payments = \App\Models\Payment::with([
+            'booking.car.brand',
+            'booking.car.transmission',
+            'booking.car.fuelType',
+            'booking.status',
+            'paymentStatus',
+        ])
+        ->whereNull('return_issue_id')
+        ->where('payment_status_id', $awaitingPaymentStatus->id)
+        ->whereHas('booking', function ($query) use ($pendingPaymentStatus) {
+            $query->where('user_id', auth()->id())
+                ->where('status_id', $pendingPaymentStatus->id);
+        })
+        ->latest()
+        ->paginate(10);
+
+    return view('user.indexpayment', compact('payments'));
+}
+
+
+
     /**
      * Show payment page
      */
