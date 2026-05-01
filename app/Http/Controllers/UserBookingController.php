@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Car;
+use App\Models\Payment;
 use App\Models\PaymentSetting;
+use App\Models\PaymentStatus;
 use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -235,13 +237,19 @@ class UserBookingController extends Controller
 
         $blockingStatusIds = Status::whereIn('name', [
             'Pending',
+            'Pending Payment',
             'Pending Payment Verification',
             'Confirmed',
             'Active',
             'Reserved',
         ])->pluck('id')->toArray();
 
-        $pendingStatus = Status::firstOrCreate(['name' => 'Pending']);
+        $pendingStatus = Status::firstOrCreate(['name' => 'Pending Payment']);
+
+        $awaitingPaymentStatus = PaymentStatus::firstOrCreate(
+            ['code' => 'awaiting_payment'],
+            ['name' => 'Awaiting Payment']
+        );
 
         return DB::transaction(function () use (
             $user,
@@ -249,6 +257,7 @@ class UserBookingController extends Controller
             $pickupDateTime,
             $returnDateTime,
             $pendingStatus,
+            $awaitingPaymentStatus,
             $blockingStatusIds
         ) {
             $existingBooking = Booking::where('car_id', $validated['car_id'])
@@ -266,7 +275,7 @@ class UserBookingController extends Controller
 
             $totalPrice = (float) $validated['total_price'];
 
-            return Booking::create([
+            $booking = Booking::create([
                 'car_id' => $validated['car_id'],
                 'user_id' => $user->id,
                 'pickup_at' => $pickupDateTime,
@@ -277,6 +286,18 @@ class UserBookingController extends Controller
                 'service_type_id' => $validated['service_type_id'],
                 'service_location' => $validated['service_location'] ?? null,
             ]);
+
+            Payment::create([
+                'booking_id' => $booking->id,
+                'payment_date' => null,
+                'amount' => $booking->final_total ?? $booking->total_price ?? 0,
+                'payment_method_id' => null,
+                'payment_status_id' => $awaitingPaymentStatus->id,
+                'transaction_id' => null,
+                'notes' => 'Awaiting customer payment submission',
+            ]);
+
+            return $booking;
         });
     }
 
