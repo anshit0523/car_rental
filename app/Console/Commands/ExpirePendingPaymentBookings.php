@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Booking;
+use App\Models\Notification;
 use App\Models\PaymentStatus;
 use App\Models\Status;
 use Illuminate\Console\Command;
@@ -20,6 +21,7 @@ class ExpirePendingPaymentBookings extends Command
         $cancelledStatus = Status::firstOrCreate(['name' => 'Cancelled']);
 
         $awaitingPaymentStatus = PaymentStatus::where('code', 'awaiting_payment')->first();
+
         $failedPaymentStatus = PaymentStatus::firstOrCreate(
             ['code' => 'failed'],
             ['name' => 'Failed']
@@ -30,7 +32,7 @@ class ExpirePendingPaymentBookings extends Command
             return self::SUCCESS;
         }
 
-        $expiredBookings = Booking::with(['payments'])
+        $expiredBookings = Booking::with(['payments', 'car.brand'])
             ->where('status_id', $pendingPaymentStatus->id)
             ->where('created_at', '<=', now()->subHours(24))
             ->whereHas('payments', function ($query) use ($awaitingPaymentStatus) {
@@ -60,6 +62,30 @@ class ExpirePendingPaymentBookings extends Command
                         'payment_status_id' => $failedPaymentStatus->id,
                         'notes' => 'Payment expired because no receipt was submitted within 24 hours.',
                     ]);
+
+                $carName = trim(
+                    (optional(optional($booking->car)->brand)->name ?? '') . ' ' . (optional($booking->car)->model ?? '')
+                );
+
+                if ($carName === '') {
+                    $carName = 'your selected vehicle';
+                }
+
+                $alreadyNotified = Notification::where('booking_id', $booking->id)
+                    ->where('user_id', $booking->user_id)
+                    ->where('type', 'booking_payment_expired')
+                    ->exists();
+
+                if (!$alreadyNotified) {
+                    Notification::create([
+                        'user_id' => $booking->user_id,
+                        'booking_id' => $booking->id,
+                        'title' => 'Booking Expired',
+                        'message' => 'Your booking for ' . $carName . ' was cancelled because no payment receipt was submitted within 24 hours.',
+                        'type' => 'booking_payment_expired',
+                        'link' => 'user/cancelled',
+                    ]);
+                }
 
                 $count++;
             }
