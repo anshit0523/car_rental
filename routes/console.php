@@ -78,3 +78,4 @@ Schedule::call(function () {
 
 Schedule::command('traccar:sync-positions')->everyMinute();
 Schedule::command('bookings:update-status')->everyMinute();
+Schedule::command('bookings:expire-pending-payments')->everyMinute();
