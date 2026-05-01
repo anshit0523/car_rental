@@ -517,7 +517,7 @@
 <div class="payment-page">
     <div class="payment-shell">
         <div class="payment-header">
-            <a href="{{ !empty($returnIssue) ? route('user.return-issues.show', $returnIssue->id) : route('user.browse') }}" class="payment-back" aria-label="Back">
+            <a href="{{ !empty($returnIssue) ? route('user.return-issues.show', $returnIssue->id) : route('user.pending-payments') }}" class="payment-back" aria-label="Back">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
