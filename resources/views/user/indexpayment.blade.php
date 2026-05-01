@@ -1,6 +1,326 @@
 @extends('layouts.userlayout')
 
-@section('title', 'My Pending Payments')
+@section('title', 'Payments')
+
+@section('custom-styles')
+<style>
+    .pending-payments-page {
+        padding: 25px 0 50px;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .pending-payments-container {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 18px;
+    }
+
+    .pending-payments-header {
+        margin-bottom: 22px;
+    }
+
+    .pending-payments-title {
+        font-size: 34px;
+        line-height: 1.15;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 8px;
+    }
+
+    .pending-payments-subtitle {
+        font-size: 16px;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .pending-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 16px;
+        padding: 18px 20px;
+        margin-bottom: 22px;
+    }
+
+    .pending-notice-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #ff5a1f;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 18px;
+    }
+
+    .pending-notice-title {
+        font-size: 17px;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 4px;
+    }
+
+    .pending-notice-text {
+        font-size: 14px;
+        line-height: 1.5;
+        color: #374151;
+        margin: 0;
+    }
+
+    .pending-card-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .pending-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        padding: 18px;
+    }
+
+    .pending-card-inner {
+        display: grid;
+        grid-template-columns: 170px 1fr 170px;
+        gap: 22px;
+        align-items: center;
+    }
+
+    .pending-car-image-wrap {
+        width: 170px;
+        height: 105px;
+        background: #f8fafc;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .pending-car-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .pending-no-image {
+        color: #9ca3af;
+        text-align: center;
+        font-size: 12px;
+    }
+
+    .pending-car-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 4px;
+    }
+
+    .pending-car-meta {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0 0 14px;
+    }
+
+    .pending-divider {
+        height: 1px;
+        background: #f1f5f9;
+        margin-bottom: 14px;
+    }
+
+    .pending-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .pending-info-label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        font-weight: 800;
+        color: #6b7280;
+        margin-bottom: 5px;
+    }
+
+    .pending-info-value {
+        font-size: 14px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+    }
+
+    .pending-info-sub {
+        font-size: 13px;
+        color: #374151;
+        margin: 2px 0 0;
+    }
+
+    .pending-amount {
+        font-size: 17px;
+        font-weight: 900;
+        color: #ff5a1f;
+        margin: 0;
+    }
+
+    .pending-action {
+        border-left: 1px solid #f1f5f9;
+        padding-left: 22px;
+    }
+
+    .pending-pay-btn {
+        width: 100%;
+        min-height: 48px;
+        border: none;
+        border-radius: 12px;
+        background: #ff5a1f;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+
+    .pending-pay-btn:hover {
+        background: #e94d16;
+        color: #fff;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+    .pending-booked-date {
+        font-size: 12px;
+        color: #6b7280;
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .pending-footer {
+        margin-top: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .pending-footer-text {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .pending-empty {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        padding: 45px 20px;
+        text-align: center;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+    }
+
+    .pending-empty-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: #fff7ed;
+        color: #ff5a1f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 28px;
+    }
+
+    .pending-empty-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 8px;
+    }
+
+    .pending-empty-text {
+        color: #6b7280;
+        font-size: 15px;
+        margin: 0 0 20px;
+    }
+
+    .pending-browse-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: #ff5a1f;
+        color: #fff;
+        padding: 12px 22px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 800;
+    }
+
+    .pending-browse-btn:hover {
+        background: #e94d16;
+        color: #fff;
+        text-decoration: none;
+    }
+
+    @media (max-width: 992px) {
+        .pending-card-inner {
+            grid-template-columns: 150px 1fr;
+        }
+
+        .pending-action {
+            grid-column: 1 / -1;
+            border-left: none;
+            border-top: 1px solid #f1f5f9;
+            padding-left: 0;
+            padding-top: 16px;
+        }
+
+        .pending-car-image-wrap {
+            width: 150px;
+            height: 100px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .pending-payments-title {
+            font-size: 28px;
+        }
+
+        .pending-card-inner {
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        .pending-car-image-wrap {
+            width: 100%;
+            height: 150px;
+        }
+
+        .pending-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .pending-booked-date {
+            text-align: left;
+        }
+    }
+</style>
+@endsection
 
 @section('content')
 @php
@@ -39,58 +359,31 @@
     };
 @endphp
 
-<div class="min-h-screen bg-slate-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="pending-payments-page">
+    <div class="pending-payments-container">
 
-        {{-- Page Header --}}
-        <div class="mb-8">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div>
-                    <h1 class="text-3xl lg:text-4xl font-extrabold text-slate-900">
-                        My Pending Payments
-                    </h1>
+        <div class="pending-payments-header">
+            <h1 class="pending-payments-title">My Pending Payments</h1>
+            <p class="pending-payments-subtitle">
+                Bookings that are waiting for your payment receipt.
+            </p>
+        </div>
 
-                    <p class="text-slate-500 mt-2 text-base lg:text-lg">
-                        Bookings that are waiting for your payment receipt.
-                    </p>
-                </div>
+        <div class="pending-notice">
+            <div class="pending-notice-icon">
+                <i class="fas fa-info"></i>
+            </div>
 
-                <div class="hidden lg:flex h-24 w-28 rounded-3xl bg-orange-100/70 items-center justify-center relative">
-                    <div class="h-16 w-20 rounded-xl bg-orange-500 shadow-lg"></div>
-                    <div class="absolute -right-3 bottom-3 h-14 w-14 rounded-full bg-white border-4 border-orange-500 flex items-center justify-center">
-                        <i class="fas fa-clock text-orange-500 text-xl"></i>
-                    </div>
-                    <div class="absolute right-2 top-2 h-8 w-8 rounded-full bg-orange-200 flex items-center justify-center">
-                        <i class="fas fa-upload text-white text-sm"></i>
-                    </div>
-                </div>
+            <div>
+                <h2 class="pending-notice-title">Pending Payment</h2>
+                <p class="pending-notice-text">
+                    These bookings are saved but not yet paid. Please upload your payment receipt so we can verify and confirm your booking.
+                </p>
             </div>
         </div>
 
-        {{-- Notice --}}
-        <div class="mb-8 rounded-2xl border border-orange-200 bg-orange-50/80 px-5 py-5 lg:px-7">
-            <div class="flex gap-4">
-                <div class="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-                    <div class="h-9 w-9 rounded-full bg-orange-500 text-white flex items-center justify-center">
-                        <i class="fas fa-info"></i>
-                    </div>
-                </div>
-
-                <div>
-                    <h2 class="font-bold text-slate-900">
-                        Pending Payment
-                    </h2>
-
-                    <p class="text-sm lg:text-base text-slate-700 mt-1 leading-relaxed">
-                        These bookings are saved but not yet paid. Please upload your payment receipt so we can verify and confirm your booking.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        {{-- List --}}
         @if($payments->count() > 0)
-            <div class="space-y-5">
+            <div class="pending-card-list">
                 @foreach($payments as $payment)
                     @php
                         $booking = $payment->booking;
@@ -109,110 +402,89 @@
                             ?? 0;
                     @endphp
 
-                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden">
-                        <div class="p-5 lg:p-6">
-                            <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr_210px] gap-6 lg:items-center">
+                    <div class="pending-card">
+                        <div class="pending-card-inner">
 
-                                {{-- Car Image --}}
-                                <div class="flex justify-center lg:justify-start">
-                                    @if($imageUrl)
-                                        <img
-                                            src="{{ $imageUrl }}"
-                                            alt="{{ $carName }}"
-                                            class="w-full max-w-[220px] h-32 object-contain"
-                                        >
-                                    @else
-                                        <div class="w-full max-w-[220px] h-32 rounded-xl bg-slate-100 flex flex-col items-center justify-center text-slate-400">
-                                            <i class="fas fa-car text-3xl mb-2"></i>
-                                            <span class="text-xs">No Image</span>
+                            <div class="pending-car-image-wrap">
+                                @if($imageUrl)
+                                    <img src="{{ $imageUrl }}" alt="{{ $carName }}" class="pending-car-image">
+                                @else
+                                    <div class="pending-no-image">
+                                        <i class="fas fa-car fa-2x mb-2"></i>
+                                        <div>No Image</div>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div>
+                                <h2 class="pending-car-title">
+                                    {{ $carName !== '' ? $carName : 'Selected Vehicle' }}
+                                </h2>
+
+                                <p class="pending-car-meta">
+                                    {{ $transmission }} • {{ $fuel }} • {{ $seats }} Seats
+                                </p>
+
+                                <div class="pending-divider"></div>
+
+                                <div class="pending-info-grid">
+                                    <div>
+                                        <div class="pending-info-label">
+                                            <i class="far fa-calendar-alt"></i>
+                                            Pick-up
                                         </div>
-                                    @endif
-                                </div>
-
-                                {{-- Main Details --}}
-                                <div class="min-w-0">
-                                    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
-                                        <div>
-                                            <h2 class="text-xl lg:text-2xl font-extrabold text-slate-900">
-                                                {{ $carName !== '' ? $carName : 'Selected Vehicle' }}
-                                            </h2>
-
-                                            <p class="text-slate-500 mt-1">
-                                                {{ $transmission }} • {{ $fuel }} • {{ $seats }} Seats
-                                            </p>
-                                        </div>
-
-                                        <p class="text-sm text-slate-500 lg:text-right">
-                                            Booked on {{ optional($payment->created_at)->format('M d, Y') }}
+                                        <p class="pending-info-value">
+                                            {{ optional($booking?->pickup_at)->format('M d, Y') ?? 'N/A' }}
+                                        </p>
+                                        <p class="pending-info-sub">
+                                            {{ optional($booking?->pickup_at)->format('h:i A') ?? '' }}
                                         </p>
                                     </div>
 
-                                    <div class="h-px bg-slate-100 my-5"></div>
-
-                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                        <div>
-                                            <div class="flex items-center gap-2 text-xs uppercase tracking-wide font-bold text-slate-500 mb-2">
-                                                <i class="far fa-calendar-alt text-slate-500"></i>
-                                                Pick-up
-                                            </div>
-
-                                            <p class="text-sm font-semibold text-slate-900">
-                                                {{ optional($booking?->pickup_at)->format('M d, Y') ?? 'N/A' }}
-                                            </p>
-
-                                            <p class="text-sm text-slate-700 mt-1">
-                                                {{ optional($booking?->pickup_at)->format('h:i A') ?? '' }}
-                                            </p>
+                                    <div>
+                                        <div class="pending-info-label">
+                                            <i class="far fa-calendar-alt"></i>
+                                            Return
                                         </div>
+                                        <p class="pending-info-value">
+                                            {{ optional($booking?->return_at)->format('M d, Y') ?? 'N/A' }}
+                                        </p>
+                                        <p class="pending-info-sub">
+                                            {{ optional($booking?->return_at)->format('h:i A') ?? '' }}
+                                        </p>
+                                    </div>
 
-                                        <div>
-                                            <div class="flex items-center gap-2 text-xs uppercase tracking-wide font-bold text-slate-500 mb-2">
-                                                <i class="far fa-calendar-alt text-slate-500"></i>
-                                                Return
-                                            </div>
-
-                                            <p class="text-sm font-semibold text-slate-900">
-                                                {{ optional($booking?->return_at)->format('M d, Y') ?? 'N/A' }}
-                                            </p>
-
-                                            <p class="text-sm text-slate-700 mt-1">
-                                                {{ optional($booking?->return_at)->format('h:i A') ?? '' }}
-                                            </p>
+                                    <div>
+                                        <div class="pending-info-label">
+                                            <i class="fas fa-coins"></i>
+                                            Total Amount
                                         </div>
-
-                                        <div class="sm:border-l sm:border-slate-100 sm:pl-5">
-                                            <div class="flex items-center gap-2 text-xs uppercase tracking-wide font-bold text-slate-500 mb-2">
-                                                <i class="fas fa-coins text-slate-500"></i>
-                                                Total Amount
-                                            </div>
-
-                                            <p class="text-lg font-extrabold text-orange-600">
-                                                ₱{{ number_format($amount, 2) }}
-                                            </p>
-                                        </div>
+                                        <p class="pending-amount">
+                                            ₱{{ number_format($amount, 2) }}
+                                        </p>
                                     </div>
                                 </div>
-
-                                {{-- Action --}}
-                                <div class="lg:border-l lg:border-slate-100 lg:pl-6">
-                                    <a
-                                        href="{{ route('user.payments', ['booking_id' => $booking->id]) }}"
-                                        class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-orange-600 px-6 py-3.5 text-white font-bold hover:bg-orange-700 transition shadow-sm"
-                                    >
-                                        <i class="fas fa-upload"></i>
-                                        Pay Now
-                                    </a>
-                                </div>
-
                             </div>
+
+                            <div class="pending-action">
+                                <a href="{{ route('user.payments', ['booking_id' => $booking->id]) }}"
+                                   class="pending-pay-btn">
+                                    <i class="fas fa-upload"></i>
+                                    Pay Now
+                                </a>
+
+                                <p class="pending-booked-date">
+                                    Booked on {{ optional($payment->created_at)->format('M d, Y') }}
+                                </p>
+                            </div>
+
                         </div>
                     </div>
                 @endforeach
             </div>
 
-            {{-- Pagination --}}
-            <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <p class="text-sm text-slate-500">
+            <div class="pending-footer">
+                <p class="pending-footer-text">
                     Showing {{ $payments->firstItem() }} to {{ $payments->lastItem() }} of {{ $payments->total() }} bookings
                 </p>
 
@@ -221,24 +493,18 @@
                 </div>
             </div>
         @else
-            {{-- Empty State --}}
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 text-center">
-                <div class="h-20 w-20 mx-auto rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-5">
-                    <i class="fas fa-wallet text-3xl"></i>
+            <div class="pending-empty">
+                <div class="pending-empty-icon">
+                    <i class="fas fa-wallet"></i>
                 </div>
 
-                <h2 class="text-2xl font-extrabold text-slate-900">
-                    No Pending Payments
-                </h2>
+                <h2 class="pending-empty-title">No Pending Payments</h2>
 
-                <p class="text-slate-500 mt-2 max-w-md mx-auto">
+                <p class="pending-empty-text">
                     You do not have any saved bookings waiting for payment.
                 </p>
 
-                <a
-                    href="{{ route('user.browse') }}"
-                    class="inline-flex items-center justify-center gap-2 mt-6 px-6 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition"
-                >
+                <a href="{{ route('user.browse') }}" class="pending-browse-btn">
                     <i class="fas fa-car-side"></i>
                     Browse Cars
                 </a>
