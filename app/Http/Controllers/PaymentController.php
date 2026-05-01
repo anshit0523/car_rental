@@ -257,7 +257,10 @@ public function process(Request $request)
                 'booking_id' => $booking->id,
             ],
             [
-                'image_path' => $receiptPath,
+                'user_id' => auth()->id(),
+            'image_path' => $receiptPath,
+            'status' => 'pending',
+                
             ]
         );
     }
