@@ -205,34 +205,41 @@ public function process(Request $request)
 
     /*
     |--------------------------------------------------------------------------
-    | Prevent duplicate pending payment submission
+    | Check if payment already became Pending from a previous failed attempt.
+    | If yes, reuse it instead of creating a duplicate or blocking the user.
     |--------------------------------------------------------------------------
     */
     $existingPendingPayment = Payment::where('booking_id', $booking->id)
         ->where('payment_status_id', $pendingPaymentStatus->id)
         ->when(
             $returnIssue,
-            fn ($query) => $query->where('return_issue_id', $returnIssue->id),
-            fn ($query) => $query->whereNull('return_issue_id')
+            function ($query) use ($returnIssue) {
+                $query->where('return_issue_id', $returnIssue->id);
+            },
+            function ($query) {
+                $query->whereNull('return_issue_id');
+            }
         )
+        ->latest()
         ->first();
 
     if ($existingPendingPayment) {
-        return back()->withErrors([
-            'payment' => 'A pending payment already exists for this payment request.',
-        ]);
-    }
+        $payment = $existingPendingPayment;
 
-    /*
-    |--------------------------------------------------------------------------
-    | Return issue payment:
-    | Create a separate payment row.
-    |
-    | Normal booking payment:
-    | Update the existing Awaiting Payment row created during booking.
-    |--------------------------------------------------------------------------
-    */
-    if ($returnIssue) {
+        $payment->update([
+            'payment_date' => now(),
+            'amount' => $amount,
+            'payment_method_id' => $paymentMethod->id,
+            'payment_status_id' => $pendingPaymentStatus->id,
+            'transaction_id' => null,
+            'notes' => $paymentNotes,
+        ]);
+    } elseif ($returnIssue) {
+        /*
+        |--------------------------------------------------------------------------
+        | Return issue payment creates a separate payment row.
+        |--------------------------------------------------------------------------
+        */
         $payment = Payment::create([
             'booking_id' => $booking->id,
             'return_issue_id' => $returnIssue->id,
@@ -244,6 +251,11 @@ public function process(Request $request)
             'notes' => $paymentNotes,
         ]);
     } else {
+        /*
+        |--------------------------------------------------------------------------
+        | Normal booking payment updates the existing Awaiting Payment row.
+        |--------------------------------------------------------------------------
+        */
         $payment = Payment::where('booking_id', $booking->id)
             ->whereNull('return_issue_id')
             ->where('payment_status_id', $awaitingPaymentStatus->id)
@@ -278,16 +290,25 @@ public function process(Request $request)
         }
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Save payment receipt.
+    | Your photo_receipts table requires user_id and supports payment_id,
+    | payment_method, status, and return_issue_id.
+    |--------------------------------------------------------------------------
+    */
     if ($receiptPath) {
         PhotoReceipt::updateOrCreate(
             [
                 'booking_id' => $booking->id,
+                'return_issue_id' => $returnIssue ? $returnIssue->id : null,
             ],
             [
+                'payment_id' => $payment->id,
                 'user_id' => auth()->id(),
-            'image_path' => $receiptPath,
-            'status' => 'pending',
-                
+                'image_path' => $receiptPath,
+                'payment_method' => $validated['payment_method'],
+                'status' => 'pending',
             ]
         );
     }
