@@ -26,7 +26,7 @@
 
                 <div class="mb-8">
                     <h1 class="text-4xl font-bold text-slate-900 mb-2">Staff Payment Overview</h1>
-                    <p class="text-lg text-slate-600">Review and manage payment transactions</p>
+                    <p class="text-lg text-slate-600">Review and manage booking payment transactions</p>
                 </div>
 
                 @if(session('success'))
@@ -47,7 +47,7 @@
                             <div>
                                 <p class="text-slate-600 text-sm font-semibold uppercase tracking-wide">Total Received</p>
                                 <p class="text-3xl font-bold text-slate-900 mt-2">₱{{ number_format($totalReceived, 2) }}</p>
-                                <p class="text-xs text-slate-500 mt-2">All time</p>
+                                <p class="text-xs text-slate-500 mt-2">Booking payments only</p>
                             </div>
                             <div class="bg-blue-100 rounded-full p-4">
                                 <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +90,7 @@
                             <div>
                                 <p class="text-slate-600 text-sm font-semibold uppercase tracking-wide">Successful Payments</p>
                                 <p class="text-3xl font-bold text-slate-900 mt-2">{{ $successfulPayments }}</p>
-                                <p class="text-xs text-slate-500 mt-2">Completed transactions</p>
+                                <p class="text-xs text-slate-500 mt-2">Completed booking transactions</p>
                             </div>
                             <div class="bg-purple-100 rounded-full p-4">
                                 <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,13 +115,6 @@
                                 <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                             </select>
 
-                            <select id="paymentTypeFilter"
-                                class="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="">All Types</option>
-                                <option value="booking" {{ request('payment_type') == 'booking' ? 'selected' : '' }}>Booking</option>
-                                <option value="issue" {{ request('payment_type') == 'issue' ? 'selected' : '' }}>Issue</option>
-                            </select>
-
                             <input type="date" id="dateFrom" value="{{ request('date_from') }}"
                                 class="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
 
@@ -133,7 +126,7 @@
 
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
-                        <h2 class="text-xl font-bold text-slate-900">Recent Transactions</h2>
+                        <h2 class="text-xl font-bold text-slate-900">Recent Booking Transactions</h2>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -162,10 +155,12 @@
                                             'Pending' => 'bg-yellow-100 text-yellow-800',
                                             'Failed' => 'bg-red-100 text-red-800',
                                             'Cancelled' => 'bg-slate-100 text-slate-800',
+                                            'Awaiting Payment' => 'bg-orange-100 text-orange-800',
                                         ];
 
                                         $isCompleted = strtolower($status) === 'completed';
-                                        $paymentType = $payment->return_issue_id ? 'issue' : 'booking';
+                                        $isFailed = strtolower($status) === 'failed';
+                                        $isLocked = $isCompleted || $isFailed;
 
                                         $receiptUrl = $payment->booking && $payment->booking->photoReceipt
                                             ? $buildImageUrl($payment->booking->photoReceipt->image_path)
@@ -174,7 +169,7 @@
 
                                     <tr class="hover:bg-slate-50 transition-colors">
                                         <td class="px-6 py-4 text-sm text-slate-900">
-                                            {{ \Carbon\Carbon::parse($payment->payment_date)->format('Y-m-d H:i') }}
+                                            {{ $payment->payment_date ? \Carbon\Carbon::parse($payment->payment_date)->format('Y-m-d H:i') : 'N/A' }}
                                         </td>
 
                                         <td class="px-6 py-4 text-sm">
@@ -183,19 +178,9 @@
                                                     #{{ $payment->booking_id }}
                                                 </span>
 
-                                                @if($payment->return_issue_id)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-orange-100 text-orange-800 w-fit">
-                                                        Issue
-                                                    </span>
-
-                                                    <span class="text-xs text-slate-500 leading-5">
-                                                        {{ $payment->returnIssue->title ?? 'Return Issue' }}
-                                                    </span>
-                                                @else
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-800 w-fit">
-                                                        Booking
-                                                    </span>
-                                                @endif
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-800 w-fit">
+                                                    Booking
+                                                </span>
                                             </div>
                                         </td>
 
@@ -236,17 +221,19 @@
                                                         <i class="fas fa-eye"></i>
                                                     </button>
                                                 @else
-                                                    <span class="text-gray-400">No Receipt</span>
+                                                    <span class="text-gray-400" title="No receipt uploaded">
+                                                        <i class="fas fa-eye-slash"></i>
+                                                    </span>
                                                 @endif
 
-                                                @if(!$isCompleted)
+                                                @if(!$isLocked)
                                                     <button
                                                         type="button"
                                                         onclick="openApproveModal(
                                                             {{ $payment->id }},
                                                             @js($payment->booking_id),
-                                                            @js($paymentType),
-                                                            @js($payment->returnIssue->title ?? ''),
+                                                            'booking',
+                                                            '',
                                                             @js(route('staff.payments.approve', $payment->id))
                                                         )"
                                                         class="text-green-600 hover:text-green-800"
@@ -254,19 +241,19 @@
                                                         <i class="fas fa-check"></i>
                                                     </button>
                                                 @else
-                                                    <span class="inline-block text-gray-300 cursor-not-allowed" title="Already completed">
+                                                    <span class="inline-block text-gray-300 cursor-not-allowed" title="This payment can no longer be approved">
                                                         <i class="fas fa-check"></i>
                                                     </span>
                                                 @endif
 
-                                                @if(!$isCompleted)
+                                                @if(!$isLocked)
                                                     <button
                                                         type="button"
                                                         onclick="openRejectModal(
                                                             {{ $payment->id }},
                                                             @js($payment->booking_id),
-                                                            @js($paymentType),
-                                                            @js($payment->returnIssue->title ?? ''),
+                                                            'booking',
+                                                            '',
                                                             @js(route('staff.payments.reject', $payment->id))
                                                         )"
                                                         class="text-red-600 hover:text-red-800"
@@ -274,7 +261,7 @@
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 @else
-                                                    <span class="inline-block text-gray-300 cursor-not-allowed" title="Completed payments can no longer be rejected">
+                                                    <span class="inline-block text-gray-300 cursor-not-allowed" title="This payment can no longer be rejected">
                                                         <i class="fas fa-times"></i>
                                                     </span>
                                                 @endif
@@ -285,7 +272,7 @@
                                     <tr>
                                         <td colspan="9" class="px-6 py-8 text-center text-slate-400">
                                             <i class="fas fa-inbox text-2xl mb-2 block"></i>
-                                            No payments found
+                                            No booking payments found
                                         </td>
                                     </tr>
                                 @endforelse
@@ -397,7 +384,7 @@
         <form id="rejectForm" method="POST">
             @csrf
 
-            <label class="block text-sm font-medium mb-2">Admin Note</label>
+            <label class="block text-sm font-medium mb-2">Staff Note</label>
             <textarea name="admin_note" class="w-full border rounded p-2" rows="4"
                 placeholder="Explain why the receipt is rejected..." required></textarea>
 
