@@ -169,8 +169,7 @@
 
                                     <tr class="hover:bg-slate-50 transition-colors">
                                         <td class="px-6 py-4 text-sm text-slate-900">
-                                            {{ $payment->payment_date ? \Carbon\Carbon::parse($payment->payment_date)->format('Y-m-d H:i') : 'N/A' }}
-                                        </td>
+                                            {{ \Carbon\Carbon::parse($payment->payment_date)->format('Y-m-d H:i') }}
 
                                         <td class="px-6 py-4 text-sm">
                                             <div class="flex flex-col gap-1">
