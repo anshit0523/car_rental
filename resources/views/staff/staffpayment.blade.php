@@ -158,9 +158,16 @@
                                             'Awaiting Payment' => 'bg-orange-100 text-orange-800',
                                         ];
 
-                                        $isCompleted = strtolower($status) === 'completed';
-                                        $isFailed = strtolower($status) === 'failed';
+                                        $statusName = strtolower($payment->paymentStatus->name ?? '');
+                                        $notes = strtolower($payment->notes ?? '');
+
+                                        $isCompleted = $statusName === 'completed';
+                                        $isFailed = $statusName === 'failed';
                                         $isLocked = $isCompleted || $isFailed;
+
+                                        $isSystemExpired = $statusName === 'failed'
+                                            && empty($payment->verified_by)
+                                            && str_contains($notes, 'system expired');
 
                                         $receiptUrl = $payment->booking && $payment->booking->photoReceipt
                                             ? $buildImageUrl($payment->booking->photoReceipt->image_path)
@@ -202,7 +209,15 @@
                                         </td>
 
                                         <td class="px-6 py-4 text-sm text-gray-600">
-                                            {{ $payment->verifiedByUser->name ?? 'N/A' }}
+                                            @if($payment->verifiedByUser)
+                                                {{ $payment->verifiedByUser->name }}
+                                            @elseif($isSystemExpired)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                                                    <i class="fas fa-robot mr-1"></i> System
+                                                </span>
+                                            @else
+                                                N/A
+                                            @endif
                                         </td>
 
                                         <td class="px-6 py-4 text-sm text-gray-600">

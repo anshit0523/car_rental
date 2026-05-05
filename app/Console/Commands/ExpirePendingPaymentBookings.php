@@ -55,13 +55,16 @@ class ExpirePendingPaymentBookings extends Command
                     'status_id' => $cancelledStatus->id,
                 ]);
 
-                $booking->payments()
-                    ->whereNull('return_issue_id')
-                    ->where('payment_status_id', $awaitingPaymentStatus->id)
-                    ->update([
-                        'payment_status_id' => $failedPaymentStatus->id,
-                        'notes' => 'Payment expired because no receipt was submitted within 24 hours.',
-                    ]);
+              $booking->payments()
+    ->whereNull('return_issue_id')
+    ->where('payment_status_id', $awaitingPaymentStatus->id)
+    ->update([
+        'payment_status_id' => $failedPaymentStatus->id,
+        'payment_date' => now(),
+        'verified_at' => now(),
+        'verified_by' => null,
+        'notes' => 'System expired this payment because no receipt was submitted within 24 hours.',
+    ]);
 
                 $carName = trim(
                     (optional(optional($booking->car)->brand)->name ?? '') . ' ' . (optional($booking->car)->model ?? '')
