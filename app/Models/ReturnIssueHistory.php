@@ -18,6 +18,10 @@ class ReturnIssueHistory extends Model
         'booking_status_name',
     ];
 
+    protected $casts = [
+        'final_charge' => 'decimal:2',
+    ];
+
     public function returnIssue(): BelongsTo
     {
         return $this->belongsTo(ReturnIssue::class);

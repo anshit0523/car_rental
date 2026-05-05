@@ -323,18 +323,22 @@ public function process(Request $request)
         ]);
     }
 
-    if ($returnIssue) {
-        ReturnIssueHistory::create([
-            'return_issue_id' => $returnIssue->id,
-            'user_id' => auth()->id(),
-            'action' => 'payment_submitted',
-            'description' => 'Customer submitted payment proof for the return issue.',
-        ]);
+ if ($returnIssue) {
+    ReturnIssueHistory::create([
+        'return_issue_id' => $returnIssue->id,
+        'issue_status_id' => $returnIssue->issue_status_id,
+        'changed_by' => auth()->id(),
+        'event_type' => 'payment_submitted',
+        'title' => 'Payment Submitted',
+        'message' => 'Customer submitted payment proof for the return issue.',
+        'final_charge' => $returnIssue->final_charge,
+        'booking_status_name' => optional($booking->status)->name,
+    ]);
 
-        return redirect()
-            ->route('user.return-issues.show', $returnIssue->id)
-            ->with('success', 'Payment submitted successfully. Please wait for verification.');
-    }
+    return redirect()
+        ->route('user.return-issues.show', $returnIssue->id)
+        ->with('success', 'Payment submitted successfully. Please wait for verification.');
+}
 
     return redirect()
         ->route('user.booking.confirmation', $booking->id)
