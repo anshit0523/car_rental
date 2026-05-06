@@ -214,7 +214,7 @@
     }
 
     refresh();
-    setInterval(refresh, 5000);
+    setInterval(refresh, 4000);
 
     window.addEventListener('load', () => {
         setTimeout(() => map.invalidateSize(), 300);

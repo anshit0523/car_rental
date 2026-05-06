@@ -40,9 +40,30 @@ public function positions()
             ? Carbon::parse($position->fix_time)->utc()
             : null;
 
-        // Online if latest GPS fix is within 5 minutes
-        $online = $fixTime
-            ? $fixTime->greaterThanOrEqualTo($now->copy()->subMinutes(5))
+        $serverTime = $position?->server_time
+            ? Carbon::parse($position->server_time)->utc()
+            : null;
+
+        $deviceTime = $position?->device_time
+            ? Carbon::parse($position->device_time)->utc()
+            : null;
+
+        $updatedAt = $position?->updated_at
+            ? Carbon::parse($position->updated_at)->utc()
+            : null;
+
+        /*
+         * Traccar Online status is closer to server_time/device_time.
+         * GPS fix_time can be old even if the tracker is still connected.
+         */
+        $lastSeenTime = $serverTime
+            ?? $deviceTime
+            ?? $fixTime
+            ?? $updatedAt;
+
+        // Online if tracker was seen within 5 minutes
+        $online = $lastSeenTime
+            ? $lastSeenTime->greaterThanOrEqualTo($now->copy()->subMinutes(5))
             : false;
 
         return [
@@ -60,7 +81,12 @@ public function positions()
             'battery_level' => $position?->battery_level,
             'odometer_km' => $position?->odometer_km,
             'geofence_ids' => $position?->geofence_ids ?? [],
+
             'fix_time' => $fixTime?->toIso8601String(),
+            'server_time' => $serverTime?->toIso8601String(),
+            'device_time' => $deviceTime?->toIso8601String(),
+            'last_seen_time' => $lastSeenTime?->toIso8601String(),
+
             'address' => $position?->address,
         ];
     })->values();
