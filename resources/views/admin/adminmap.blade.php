@@ -143,10 +143,23 @@
             const seenCarIds = new Set();
 
             (json.data || []).forEach(v => {
+                if (
+                    v.lat === null ||
+                    v.lng === null ||
+                    v.lat === undefined ||
+                    v.lng === undefined ||
+                    v.lat === '' ||
+                    v.lng === ''
+                ) {
+                    return;
+                }
+
                 const lat = Number(v.lat);
                 const lng = Number(v.lng);
 
-                if (isNaN(lat) || isNaN(lng)) return;
+                if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                    return;
+                }
 
                 seenCarIds.add(String(v.car_id));
                 hasAny = true;

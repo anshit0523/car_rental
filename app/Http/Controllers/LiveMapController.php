@@ -39,9 +39,9 @@ public function positions()
             ? Carbon::parse($position->fix_time)->utc()
             : null;
 
-        // Online if latest GPS update is within 5 minutes
+        // Online if latest GPS fix is within 5 minutes
         $online = $fixTime
-            ? $fixTime->greaterThanOrEqualTo($now->copy()->subMinutes(1))
+            ? $fixTime->greaterThanOrEqualTo($now->copy()->subMinutes(5))
             : false;
 
         return [
@@ -50,8 +50,11 @@ public function positions()
             'tracker_id' => $tracker?->id,
             'traccar_device_id' => $tracker?->traccar_device_id,
             'online' => $online,
-            'lat' => $position?->latitude,
-            'lng' => $position?->longitude,
+
+            // Keep marker visible if last known position exists
+            'lat' => $position?->latitude !== null ? (float) $position->latitude : null,
+            'lng' => $position?->longitude !== null ? (float) $position->longitude : null,
+
             'speed_kmh' => $position?->speed_kmh ?? 0,
             'battery_level' => $position?->battery_level,
             'odometer_km' => $position?->odometer_km,
