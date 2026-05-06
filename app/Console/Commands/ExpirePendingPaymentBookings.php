@@ -18,7 +18,10 @@ class ExpirePendingPaymentBookings extends Command
     public function handle(): int
     {
         $pendingPaymentStatus = Status::where('name', 'Pending Payment')->first();
-        $cancelledStatus = Status::firstOrCreate(['name' => 'Cancelled']);
+
+        $cancelledStatus = Status::firstOrCreate([
+            'name' => 'Cancelled',
+        ]);
 
         $awaitingPaymentStatus = PaymentStatus::where('code', 'awaiting_payment')->first();
 
@@ -32,9 +35,12 @@ class ExpirePendingPaymentBookings extends Command
             return self::SUCCESS;
         }
 
-        $expiredBookings = Booking::with(['payments', 'car.brand'])
+        $expiredBookings = Booking::with([
+                'payments',
+                'car.brand',
+            ])
             ->where('status_id', $pendingPaymentStatus->id)
-            ->where('created_at', '<=', now()->subHours(24))
+          ->where('created_at', '<=', now()->subMinutes(15))
             ->whereHas('payments', function ($query) use ($awaitingPaymentStatus) {
                 $query->whereNull('return_issue_id')
                     ->where('payment_status_id', $awaitingPaymentStatus->id);
@@ -51,29 +57,51 @@ class ExpirePendingPaymentBookings extends Command
             &$count
         ) {
             foreach ($expiredBookings as $booking) {
+                /*
+                |--------------------------------------------------------------------------
+                | Cancel the unpaid booking
+                |--------------------------------------------------------------------------
+                */
                 $booking->update([
                     'status_id' => $cancelledStatus->id,
                 ]);
 
-              $booking->payments()
-    ->whereNull('return_issue_id')
-    ->where('payment_status_id', $awaitingPaymentStatus->id)
-    ->update([
-        'payment_status_id' => $failedPaymentStatus->id,
-        'payment_date' => now(),
-        'verified_at' => now(),
-        'verified_by' => null,
-        'notes' => 'System expired this payment because no receipt was submitted within 24 hours.',
-    ]);
+                /*
+                |--------------------------------------------------------------------------
+                | Update the existing Awaiting Payment row
+                | Do not create a new payment row.
+                |--------------------------------------------------------------------------
+                */
+                $booking->payments()
+                    ->whereNull('return_issue_id')
+                    ->where('payment_status_id', $awaitingPaymentStatus->id)
+                    ->update([
+                        'payment_status_id' => $failedPaymentStatus->id,
+                        'payment_date' => now(),
+                        'verified_at' => now(),
+                        'verified_by' => null,
+                        'notes' => 'System expired this payment because no receipt was submitted within 24 hours.',
+                    ]);
 
+                /*
+                |--------------------------------------------------------------------------
+                | Build readable car name for notification
+                |--------------------------------------------------------------------------
+                */
                 $carName = trim(
-                    (optional(optional($booking->car)->brand)->name ?? '') . ' ' . (optional($booking->car)->model ?? '')
+                    (optional(optional($booking->car)->brand)->name ?? '') . ' ' .
+                    (optional($booking->car)->model ?? '')
                 );
 
                 if ($carName === '') {
                     $carName = 'your selected vehicle';
                 }
 
+                /*
+                |--------------------------------------------------------------------------
+                | Prevent duplicate expiration notifications
+                |--------------------------------------------------------------------------
+                */
                 $alreadyNotified = Notification::where('booking_id', $booking->id)
                     ->where('user_id', $booking->user_id)
                     ->where('type', 'booking_payment_expired')
