@@ -22,45 +22,50 @@ class LiveMapController extends Controller
 
         return view('admin.adminreplay', compact('cars'));
     }
+public function positions()
+{
+    $cars = Car::query()
+        ->whereNotNull('tracker_id')
+        ->with(['tracker.latestPosition'])
+        ->get(['id', 'model', 'tracker_id']);
 
-    public function positions()
-    {
-        $cars = Car::query()
-            ->whereNotNull('tracker_id')
-            ->with(['tracker.latestPosition'])
-            ->get(['id', 'model', 'tracker_id']);
+    $now = Carbon::now('UTC');
 
-        $now = now();
+    $data = $cars->map(function ($car) use ($now) {
+        $tracker = $car->tracker;
+        $position = $tracker?->latestPosition;
 
-        $data = $cars->map(function ($car) use ($now) {
-            $tracker = $car->tracker;
-            $position = $tracker?->latestPosition;
+        $fixTime = $position?->fix_time
+            ? Carbon::parse($position->fix_time)->utc()
+            : null;
 
-            $fixTime = $position?->fix_time;
-            $online = $fixTime ? $fixTime->diffInSeconds($now) <= 120 : false;
+        // Online if latest GPS update is within 5 minutes
+        $online = $fixTime
+            ? $fixTime->greaterThanOrEqualTo($now->copy()->subMinutes(1))
+            : false;
 
-            return [
-                'car_id' => $car->id,
-                'plate_no' => $car->model,
-                'tracker_id' => $tracker?->id,
-                'traccar_device_id' => $tracker?->traccar_device_id,
-                'online' => $online,
-                'lat' => $position?->latitude,
-                'lng' => $position?->longitude,
-                'speed_kmh' => $position?->speed_kmh ?? 0,
-                'battery_level' => $position?->battery_level,
-                'odometer_km' => $position?->odometer_km,
-                'geofence_ids' => $position?->geofence_ids ?? [],
-                'fix_time' => $fixTime?->toIso8601String(),
-                'address' => $position?->address,
-            ];
-        })->values();
+        return [
+            'car_id' => $car->id,
+            'plate_no' => $car->model,
+            'tracker_id' => $tracker?->id,
+            'traccar_device_id' => $tracker?->traccar_device_id,
+            'online' => $online,
+            'lat' => $position?->latitude,
+            'lng' => $position?->longitude,
+            'speed_kmh' => $position?->speed_kmh ?? 0,
+            'battery_level' => $position?->battery_level,
+            'odometer_km' => $position?->odometer_km,
+            'geofence_ids' => $position?->geofence_ids ?? [],
+            'fix_time' => $fixTime?->toIso8601String(),
+            'address' => $position?->address,
+        ];
+    })->values();
 
-        return response()->json([
-            'updated_at' => now()->toIso8601String(),
-            'data' => $data,
-        ]);
-    }
+    return response()->json([
+        'updated_at' => Carbon::now('UTC')->toIso8601String(),
+        'data' => $data,
+    ]);
+}
 
     public function history(Request $request, TraccarService $traccarService)
     {
