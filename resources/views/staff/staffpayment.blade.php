@@ -208,18 +208,16 @@
                                             </span>
                                         </td>
 
-                                        <td class="px-6 py-4 text-sm text-gray-600">
-                                            @if($payment->verifiedByUser)
-                                                {{ $payment->verifiedByUser->name }}
-                                            @elseif($isSystemExpired)
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-                                                    <i class="fas fa-robot mr-1"></i> System
-                                                </span>
-                                            @else
-                                                N/A
-                                            @endif
-                                        </td>
-
+                                          <td class="px-6 py-4 text-sm text-gray-600">
+                                                    @if($payment->verifiedByUser)
+                                                        {{ $payment->verifiedByUser->name }}
+                                                    @elseif($isSystemExpired)
+                                                         System
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </td>
+                                                
                                         <td class="px-6 py-4 text-sm text-gray-600">
                                             {{ $payment->verified_at ? \Carbon\Carbon::parse($payment->verified_at)->format('M d, Y h:i A') : 'N/A' }}
                                         </td>

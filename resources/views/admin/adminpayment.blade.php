@@ -171,15 +171,31 @@
                                 <tbody class="divide-y divide-slate-200">
                                     @forelse($payments as $payment)
                                         @php
-                                            $status = $payment->paymentStatus->name ?? 'Unknown';
-                                            $colors = [
-                                                'Completed' => 'bg-green-100 text-green-800',
-                                                'Pending' => 'bg-yellow-100 text-yellow-800',
-                                                'Failed' => 'bg-red-100 text-red-800',
-                                                'Cancelled' => 'bg-slate-100 text-slate-800',
-                                            ];
-                                            $isCompleted = strtolower($status) === 'completed';
-                                        @endphp
+                                 $status = $payment->paymentStatus->name ?? 'Unknown';
+
+                                $colors = [
+                                    'Completed' => 'bg-green-100 text-green-800',
+                                    'Pending' => 'bg-yellow-100 text-yellow-800',
+                                    'Failed' => 'bg-red-100 text-red-800',
+                                    'Cancelled' => 'bg-slate-100 text-slate-800',
+                                    'Awaiting Payment' => 'bg-orange-100 text-orange-800',
+                                ];
+
+                                    $statusName = strtolower($status);
+                                    $notes = strtolower($payment->notes ?? '');
+
+                                    $isCompleted = $statusName === 'completed';
+                                    $isFailed = $statusName === 'failed';
+                                    $isLocked = $isCompleted || $isFailed;
+
+                                    $isSystemExpired = $statusName === 'failed'
+                                        && empty($payment->verified_by)
+                                        && (
+                                            str_contains($notes, 'system expired')
+                                            || str_contains($notes, 'expired')
+                                            || empty($payment->payment_method_id)
+                                        );
+                                @endphp
 
                                         <tr class="hover:bg-slate-50 transition-colors">
                                             <td class="px-6 py-4 text-sm text-slate-900">
@@ -227,12 +243,24 @@
                                                 </span>
                                             </td>
 
-                                            <td class="px-6 py-4 text-sm text-gray-600">
-                                                {{ $payment->verifiedByUser->name ?? 'N/A' }}
-                                            </td>
+                                           <td class="px-6 py-4 text-sm text-gray-600">
+                                                    @if($payment->verifiedByUser)
+                                                        {{ $payment->verifiedByUser->name }}
+                                                    @elseif($isSystemExpired)
+                                                         System
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </td>
 
                                             <td class="px-6 py-4 text-sm text-gray-600">
-                                                {{ $payment->verified_at ? \Carbon\Carbon::parse($payment->verified_at)->format('M d, Y h:i A') : 'N/A' }}
+                                                @if($payment->verified_at)
+                                                    {{ \Carbon\Carbon::parse($payment->verified_at)->format('M d, Y h:i A') }}
+                                                @elseif($isSystemExpired)
+                                                    {{ optional($payment->updated_at)->format('M d, Y h:i A') }}
+                                                @else
+                                                    N/A
+                                                @endif
                                             </td>
 
                                             <td class="px-6 py-4 text-sm text-center">
