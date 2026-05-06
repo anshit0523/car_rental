@@ -30,38 +30,39 @@ public function positions()
         ->with(['tracker.latestPosition'])
         ->get(['id', 'model', 'tracker_id']);
 
-    $now = Carbon::now('UTC');
+    $now = Carbon::now(config('app.timezone', 'Asia/Manila'));
 
     $data = $cars->map(function ($car) use ($now) {
         $tracker = $car->tracker;
         $position = $tracker?->latestPosition;
 
         $fixTime = $position?->fix_time
-            ? Carbon::parse($position->fix_time)->utc()
+            ? Carbon::parse($position->fix_time)
             : null;
 
         $serverTime = $position?->server_time
-            ? Carbon::parse($position->server_time)->utc()
+            ? Carbon::parse($position->server_time)
             : null;
 
         $deviceTime = $position?->device_time
-            ? Carbon::parse($position->device_time)->utc()
+            ? Carbon::parse($position->device_time)
             : null;
 
         $updatedAt = $position?->updated_at
-            ? Carbon::parse($position->updated_at)->utc()
+            ? Carbon::parse($position->updated_at)
             : null;
 
-        /*
-         * Traccar Online status is closer to server_time/device_time.
-         * GPS fix_time can be old even if the tracker is still connected.
-         */
-        $lastSeenTime = $serverTime
-            ?? $deviceTime
-            ?? $fixTime
-            ?? $updatedAt;
+        $lastSeenTime = collect([
+            $serverTime,
+            $deviceTime,
+            $fixTime,
+        ])->filter()->sortByDesc(function ($time) {
+            return $time->timestamp;
+        })->first();
 
-        // Online if tracker was seen within 5 minutes
+        // Fallback only if Traccar times are missing
+        $lastSeenTime = $lastSeenTime ?? $updatedAt;
+
         $online = $lastSeenTime
             ? $lastSeenTime->greaterThanOrEqualTo($now->copy()->subMinutes(5))
             : false;
@@ -73,7 +74,6 @@ public function positions()
             'traccar_device_id' => $tracker?->traccar_device_id,
             'online' => $online,
 
-            // Keep marker visible if last known position exists
             'lat' => $position?->latitude !== null ? (float) $position->latitude : null,
             'lng' => $position?->longitude !== null ? (float) $position->longitude : null,
 
@@ -92,11 +92,10 @@ public function positions()
     })->values();
 
     return response()->json([
-        'updated_at' => Carbon::now('UTC')->toIso8601String(),
+        'updated_at' => Carbon::now(config('app.timezone', 'Asia/Manila'))->toIso8601String(),
         'data' => $data,
     ]);
 }
-
     public function history(Request $request, TraccarService $traccarService)
     {
         $validated = $request->validate([
