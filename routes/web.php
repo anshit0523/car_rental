@@ -89,7 +89,9 @@ Route::prefix('user')
         Route::get('/car/{id}', [UserCarBrowseController::class, 'show'])->name('car-detail');
         Route::get('/filter-cars', [UserCarBrowseController::class, 'filterCars'])->name('filter-cars');
 
-        Route::post('/booking/create', [UserBookingController::class, 'store'])->name('booking.create');
+        Route::post('/booking/create', [UserBookingController::class, 'store'])
+            ->middleware('throttle:10,1')
+            ->name('booking.create');
 
         Route::get('/api/car/{id}/details', [UserBookingController::class, 'getCarDetails'])->name('api.car-details');
         Route::post('/api/booking/check-availability', [AvailabilityController::class, 'check'])->name('api.check-availability');
@@ -149,8 +151,9 @@ Route::middleware(['auth', 'user'])
         Route::get('/booking/{id}/confirmation', [UserBookingController::class, 'confirmation'])
             ->name('booking.confirmation');
 
-            Route::get('/pending-payments', [PaymentController::class, 'indexPending'])
-    ->name('pending-payments');
+        Route::get('/pending-payments', [PaymentController::class, 'indexPending'])
+            ->name('pending-payments');
+
         Route::get('/payments', [PaymentController::class, 'showPayment'])->name('payments');
         Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 
