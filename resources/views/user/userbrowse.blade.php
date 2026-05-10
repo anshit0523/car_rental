@@ -120,8 +120,8 @@
         top: 24px;
         right: 24px;
         background: #f8f8f8;
-        border-radius: 18px;
-        padding: 16px 26px;
+        border-radius: 8px;
+        padding: 10px 14px;
         font-size: 20px;
         font-weight: 500;
         color: #334155;
