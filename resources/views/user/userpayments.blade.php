@@ -5,7 +5,7 @@
     .payment-page {
         min-height: 100vh;
         background:
-            radial-gradient(circle at top left, rgba(255, 90, 31, 0.08), transparent 34%),
+            radial-gradient(circle at top left, rgba(255, 90, 31, 0.07), transparent 34%),
             linear-gradient(135deg, #f8fafc 0%, #ffffff 45%, #fff7ed 100%);
         font-family: 'Outfit', sans-serif;
     }
@@ -36,6 +36,7 @@
         border: 1px solid #e5e7eb;
         box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
         transition: all 0.2s ease;
+        flex-shrink: 0;
     }
 
     .payment-back:hover {
@@ -48,16 +49,16 @@
         margin: 0;
         font-size: 34px;
         line-height: 1.05;
-        font-weight: 900;
+        font-weight: 800;
         color: #0f172a;
-        letter-spacing: -0.04em;
+        letter-spacing: -0.03em;
     }
 
     .payment-header-subtitle {
         margin: 6px 0 0;
         color: #64748b;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 500;
     }
 
     .payment-grid {
@@ -101,9 +102,9 @@
         margin: 0;
         font-size: 21px;
         line-height: 1.2;
-        font-weight: 900;
+        font-weight: 700;
         color: #0f172a;
-        letter-spacing: -0.03em;
+        letter-spacing: -0.02em;
     }
 
     .payment-card-subtitle {
@@ -111,7 +112,7 @@
         font-size: 13px;
         color: #64748b;
         line-height: 1.5;
-        font-weight: 600;
+        font-weight: 500;
     }
 
     .payment-method-grid {
@@ -141,7 +142,7 @@
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(135deg, rgba(255, 90, 31, 0.09), transparent 55%);
+        background: linear-gradient(135deg, rgba(255, 90, 31, 0.08), transparent 55%);
         opacity: 0;
         transition: opacity 0.2s ease;
     }
@@ -190,7 +191,7 @@
     .payment-option.is-active .payment-radio-dot::after {
         content: "✓";
         font-size: 13px;
-        font-weight: 900;
+        font-weight: 800;
     }
 
     .payment-option-icon {
@@ -217,9 +218,23 @@
         box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
     }
 
+    .gcash-logo-text {
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #2563eb;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: 800;
+        font-family: Arial, sans-serif;
+    }
+
     .payment-option-label {
         font-size: 20px;
-        font-weight: 900;
+        font-weight: 700;
         color: #0f172a;
         position: relative;
         z-index: 1;
@@ -228,7 +243,7 @@
     .payment-option-note {
         font-size: 13px;
         color: #64748b;
-        font-weight: 600;
+        font-weight: 500;
         position: relative;
         z-index: 1;
     }
@@ -274,7 +289,7 @@
     .payment-panel-title {
         margin: 0;
         font-size: 19px;
-        font-weight: 900;
+        font-weight: 700;
         color: #0f172a;
         letter-spacing: -0.02em;
     }
@@ -283,7 +298,8 @@
         margin: 3px 0 0;
         font-size: 13px;
         color: #64748b;
-        font-weight: 600;
+        font-weight: 500;
+        line-height: 1.5;
     }
 
     .payment-split {
@@ -309,50 +325,28 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-weight: 900;
+        font-weight: 800;
         font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .provider-badge span {
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #2563eb;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-family: Arial, sans-serif;
     }
 
     .provider-name {
         font-size: 15px;
-        font-weight: 900;
-        color: #0f172a;
-    }
-
-    .reference-box {
-        margin: 14px 0 16px;
-        background: #fff7ed;
-        border: 1px solid #fed7aa;
-        border-radius: 16px;
-        padding: 13px 14px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .reference-icon {
-        width: 34px;
-        height: 34px;
-        border-radius: 12px;
-        background: #ffffff;
-        color: #ff5a1f;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .reference-label {
-        font-size: 12px;
-        color: #9a3412;
         font-weight: 700;
-        margin-bottom: 2px;
-    }
-
-    .reference-value {
-        font-size: 15px;
         color: #0f172a;
-        font-weight: 900;
     }
 
     .divider-line {
@@ -363,7 +357,7 @@
 
     .upload-title {
         font-size: 15px;
-        font-weight: 900;
+        font-weight: 700;
         color: #0f172a;
         margin-bottom: 4px;
     }
@@ -373,7 +367,7 @@
         color: #64748b;
         margin-bottom: 12px;
         line-height: 1.5;
-        font-weight: 600;
+        font-weight: 500;
     }
 
     .upload-box {
@@ -410,7 +404,7 @@
 
     .upload-main {
         font-size: 15px;
-        font-weight: 900;
+        font-weight: 700;
         color: #0f172a;
         margin-bottom: 4px;
     }
@@ -418,7 +412,7 @@
     .upload-help {
         font-size: 12px;
         color: #64748b;
-        font-weight: 600;
+        font-weight: 500;
     }
 
     .preview-box {
@@ -457,7 +451,7 @@
 
     .payment-qr-name {
         font-size: 15px;
-        font-weight: 900;
+        font-weight: 700;
         color: #0f172a;
         margin-bottom: 4px;
     }
@@ -465,18 +459,7 @@
     .payment-qr-number {
         font-size: 13px;
         color: #64748b;
-        font-weight: 700;
-    }
-
-    .payment-reference-note {
-        margin-top: 10px;
-        font-size: 13px;
-        color: #0f172a;
-        font-weight: 800;
-        background: #ffffff;
-        border: 1px solid #fed7aa;
-        border-radius: 12px;
-        padding: 10px;
+        font-weight: 500;
     }
 
     .bank-details {
@@ -514,33 +497,13 @@
 
     .bank-row span:nth-child(2) {
         color: #64748b;
-        font-weight: 700;
+        font-weight: 500;
     }
 
     .bank-row span:last-child {
         color: #0f172a;
-        font-weight: 900;
+        font-weight: 700;
         text-align: right;
-    }
-
-    .bank-info-note {
-        background: #f8fafc;
-        border: 1px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 13px 14px;
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
-        color: #475569;
-        font-size: 13px;
-        line-height: 1.5;
-        margin-bottom: 16px;
-        font-weight: 600;
-    }
-
-    .bank-info-note i {
-        color: #2563eb;
-        margin-top: 2px;
     }
 
     .file-input {
@@ -561,7 +524,7 @@
         background: linear-gradient(135deg, #ff5a1f, #f97316);
         color: #ffffff;
         font-size: 16px;
-        font-weight: 900;
+        font-weight: 700;
         transition: all 0.25s ease;
         box-shadow: 0 14px 28px rgba(249, 115, 22, 0.22);
     }
@@ -606,7 +569,7 @@
     .summary-title {
         margin: 0;
         font-size: 20px;
-        font-weight: 900;
+        font-weight: 700;
         color: #0f172a;
         letter-spacing: -0.02em;
     }
@@ -615,7 +578,7 @@
         margin: 3px 0 0;
         font-size: 12px;
         color: #64748b;
-        font-weight: 600;
+        font-weight: 500;
     }
 
     .summary-car {
@@ -636,7 +599,7 @@
 
     .summary-car-name {
         font-size: 17px;
-        font-weight: 900;
+        font-weight: 700;
         color: #0f172a;
         margin-bottom: 6px;
     }
@@ -644,7 +607,7 @@
     .summary-car-meta {
         font-size: 13px;
         color: #64748b;
-        font-weight: 700;
+        font-weight: 500;
         line-height: 1.5;
     }
 
@@ -658,7 +621,7 @@
         background: #f8fafc;
         color: #475569;
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 600;
     }
 
     .summary-detail-list {
@@ -704,12 +667,12 @@
 
     .summary-detail-label {
         color: #0f172a;
-        font-weight: 900;
+        font-weight: 700;
     }
 
     .summary-detail-value {
         color: #475569;
-        font-weight: 700;
+        font-weight: 500;
         text-align: right;
     }
 
@@ -727,7 +690,7 @@
         gap: 12px;
         font-size: 14px;
         color: #475569;
-        font-weight: 700;
+        font-weight: 500;
     }
 
     .summary-line.total {
@@ -735,13 +698,14 @@
         padding-top: 12px;
         margin-top: 4px;
         font-size: 18px;
-        font-weight: 900;
+        font-weight: 700;
         color: #0f172a;
     }
 
     .summary-line.total span:last-child {
         color: #ff5a1f;
         font-size: 24px;
+        font-weight: 800;
     }
 
     .secure-box {
@@ -770,7 +734,7 @@
     .secure-title {
         color: #1d4ed8;
         font-size: 13px;
-        font-weight: 900;
+        font-weight: 700;
         margin-bottom: 3px;
     }
 
@@ -778,7 +742,7 @@
         color: #334155;
         font-size: 12px;
         line-height: 1.5;
-        font-weight: 600;
+        font-weight: 500;
     }
 
     .payment-alert {
@@ -830,7 +794,7 @@
 
     .error-modal-title {
         font-size: 18px;
-        font-weight: 800;
+        font-weight: 700;
         color: #0f172a;
         margin-bottom: 8px;
     }
@@ -849,7 +813,7 @@
         border-radius: 10px;
         background: #2563eb;
         color: #ffffff;
-        font-weight: 800;
+        font-weight: 700;
     }
 
     @media (max-width: 1100px) {
@@ -892,6 +856,15 @@
         }
 
         .bank-row span:last-child {
+            grid-column: 2;
+            text-align: left;
+        }
+
+        .summary-detail-item {
+            grid-template-columns: 34px 1fr;
+        }
+
+        .summary-detail-value {
             grid-column: 2;
             text-align: left;
         }
@@ -1014,7 +987,7 @@
                             <span class="payment-radio-dot"></span>
 
                             <span class="payment-option-icon gcash-icon">
-                                <i class="fas fa-wallet"></i>
+                                <span class="gcash-logo-text">G</span>
                             </span>
 
                             <span class="payment-option-label">GCash</span>
@@ -1047,25 +1020,18 @@
                         <div class="payment-split">
                             <div>
                                 <div class="provider-row">
-                                    <div class="provider-badge">G</div>
+                                    <div class="provider-badge">
+                                        <span>G</span>
+                                    </div>
+
                                     <div>
                                         <div class="provider-name">
                                             {{ $paymentSetting->gcash_account_name ?? 'N/A' }}
                                         </div>
+
                                         <div class="upload-subtitle" style="margin-bottom:0;">
                                             GCash Number: {{ $paymentSetting->gcash_number ?? 'N/A' }}
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div class="reference-box">
-                                    <div class="reference-icon">
-                                        <i class="fas fa-hashtag"></i>
-                                    </div>
-
-                                    <div>
-                                        <div class="reference-label">Reference / Booking ID</div>
-                                        <div class="reference-value">#{{ $booking->id }}</div>
                                     </div>
                                 </div>
 
@@ -1108,10 +1074,6 @@
                                 <div class="payment-qr-number">
                                     GCash Number: {{ $paymentSetting->gcash_number ?? 'N/A' }}
                                 </div>
-
-                                <div class="payment-reference-note">
-                                    Reference / Booking ID: <strong>#{{ $booking->id }}</strong>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -1148,17 +1110,6 @@
                                 <span>Account Number</span>
                                 <span>1234 5678 9012</span>
                             </div>
-
-                            <div class="bank-row">
-                                <span class="bank-row-icon"><i class="fas fa-hashtag"></i></span>
-                                <span>Reference / Booking ID</span>
-                                <span>#{{ $booking->id }}</span>
-                            </div>
-                        </div>
-
-                        <div class="bank-info-note">
-                            <i class="fas fa-info-circle"></i>
-                            <span>Please use your Booking ID <strong>#{{ $booking->id }}</strong> as the transfer reference.</span>
                         </div>
 
                         <div class="upload-title">Upload Bank Receipt</div>
@@ -1234,7 +1185,9 @@
                             <div class="summary-detail-icon orange">
                                 <i class="fas fa-calendar-check"></i>
                             </div>
+
                             <div class="summary-detail-label">Pick-up</div>
+
                             <div class="summary-detail-value">
                                 {{ \Carbon\Carbon::parse($booking->pickup_at)->format('M d, Y • h:i A') }}
                             </div>
@@ -1244,7 +1197,9 @@
                             <div class="summary-detail-icon green">
                                 <i class="fas fa-calendar-alt"></i>
                             </div>
+
                             <div class="summary-detail-label">Return</div>
+
                             <div class="summary-detail-value">
                                 {{ \Carbon\Carbon::parse($booking->return_at)->format('M d, Y • h:i A') }}
                             </div>
@@ -1254,16 +1209,12 @@
                             <div class="summary-detail-icon blue">
                                 <i class="fas fa-clock"></i>
                             </div>
-                            <div class="summary-detail-label">Duration</div>
-                            <div class="summary-detail-value">{{ $rentalDays }} day{{ $rentalDays > 1 ? 's' : '' }}</div>
-                        </div>
 
-                        <div class="summary-detail-item">
-                            <div class="summary-detail-icon orange">
-                                <i class="fas fa-hashtag"></i>
+                            <div class="summary-detail-label">Duration</div>
+
+                            <div class="summary-detail-value">
+                                {{ $rentalDays }} day{{ $rentalDays > 1 ? 's' : '' }}
                             </div>
-                            <div class="summary-detail-label">Booking ID</div>
-                            <div class="summary-detail-value">#{{ $booking->id }}</div>
                         </div>
                     </div>
 
@@ -1315,7 +1266,9 @@
         <div id="errorModal" class="error-modal">
             <div class="error-modal-box">
                 <div class="error-modal-icon">⚠️</div>
+
                 <div class="error-modal-title">Upload Required</div>
+
                 <div class="error-modal-text">
                     Please upload your payment receipt before submitting.
                 </div>
@@ -1325,7 +1278,6 @@
                 </button>
             </div>
         </div>
-
     </div>
 </div>
 @endsection
