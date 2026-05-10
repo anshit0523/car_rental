@@ -213,23 +213,18 @@
     }
 
     .payment-option-icon.gcash-icon {
-        background: linear-gradient(135deg, #2563eb, #60a5fa);
+        background: #ffffff;
         color: #ffffff;
-        box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+        box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+        overflow: hidden;
     }
 
-    .gcash-logo-text {
-        width: 48px;
-        height: 48px;
+    .gcash-logo-img {
+        width: 82px;
+        height: 82px;
+        object-fit: cover;
         border-radius: 999px;
-        background: #ffffff;
-        color: #2563eb;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        font-weight: 800;
-        font-family: Arial, sans-serif;
+        display: block;
     }
 
     .payment-option-label {
@@ -320,27 +315,22 @@
         width: 42px;
         height: 42px;
         border-radius: 14px;
-        background: linear-gradient(135deg, #2563eb, #60a5fa);
+        background: #ffffff;
         color: #ffffff;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-weight: 800;
-        font-size: 18px;
+        overflow: hidden;
         flex-shrink: 0;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.16);
     }
 
-    .provider-badge span {
-        width: 26px;
-        height: 26px;
-        border-radius: 999px;
-        background: #ffffff;
-        color: #2563eb;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 800;
-        font-family: Arial, sans-serif;
+    .provider-badge img {
+        width: 42px;
+        height: 42px;
+        object-fit: cover;
+        border-radius: 14px;
+        display: block;
     }
 
     .provider-name {
@@ -504,16 +494,6 @@
         color: #0f172a;
         font-weight: 700;
         text-align: right;
-    }
-
-    .file-input {
-        width: 100%;
-        min-height: 44px;
-        border: 1px solid #dbe2ea;
-        border-radius: 12px;
-        padding: 10px 12px;
-        font-size: 13px;
-        background: #fff;
     }
 
     .submit-payment-btn {
@@ -889,6 +869,8 @@
         </div>
 
         @php
+            $gcashLogoUrl = asset('storage/cars/gcash-logo-square-rounded-gcash-logo-free-download-gcash-logo-free-png.webp');
+
             $rentalDays = max(
                 1,
                 \Carbon\Carbon::parse($booking->pickup_at)->diffInDays(\Carbon\Carbon::parse($booking->return_at))
@@ -987,7 +969,7 @@
                             <span class="payment-radio-dot"></span>
 
                             <span class="payment-option-icon gcash-icon">
-                                <span class="gcash-logo-text">G</span>
+                                <img src="{{ $gcashLogoUrl }}" alt="GCash" class="gcash-logo-img">
                             </span>
 
                             <span class="payment-option-label">GCash</span>
@@ -1021,7 +1003,7 @@
                             <div>
                                 <div class="provider-row">
                                     <div class="provider-badge">
-                                        <span>G</span>
+                                        <img src="{{ $gcashLogoUrl }}" alt="GCash">
                                     </div>
 
                                     <div>
