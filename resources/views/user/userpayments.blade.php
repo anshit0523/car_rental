@@ -4,27 +4,29 @@
 <style>
     .payment-page {
         min-height: 100vh;
-        background: #f8fafc;
+        background:
+            radial-gradient(circle at top left, rgba(255, 90, 31, 0.08), transparent 34%),
+            linear-gradient(135deg, #f8fafc 0%, #ffffff 45%, #fff7ed 100%);
         font-family: 'Outfit', sans-serif;
     }
 
     .payment-shell {
-        max-width: 1400px;
+        max-width: 1450px;
         margin: 0 auto;
-        padding: 24px 18px 48px;
+        padding: 30px 22px 54px;
     }
 
     .payment-header {
         display: flex;
         align-items: center;
-        gap: 14px;
-        margin-bottom: 20px;
+        gap: 16px;
+        margin-bottom: 24px;
     }
 
     .payment-back {
-        width: 42px;
-        height: 42px;
-        border-radius: 999px;
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -32,94 +34,203 @@
         color: #0f172a;
         background: #ffffff;
         border: 1px solid #e5e7eb;
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+        transition: all 0.2s ease;
+    }
+
+    .payment-back:hover {
+        transform: translateY(-1px);
+        color: #ff5a1f;
+        border-color: #fed7aa;
     }
 
     .payment-title {
         margin: 0;
-        font-size: 30px;
-        line-height: 1.1;
-        font-weight: 800;
+        font-size: 34px;
+        line-height: 1.05;
+        font-weight: 900;
         color: #0f172a;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.04em;
+    }
+
+    .payment-header-subtitle {
+        margin: 6px 0 0;
+        color: #64748b;
+        font-size: 14px;
+        font-weight: 600;
     }
 
     .payment-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.2fr) minmax(320px, 420px);
-        gap: 24px;
+        grid-template-columns: minmax(0, 1.35fr) minmax(340px, 430px);
+        gap: 26px;
         align-items: start;
     }
 
     .payment-card {
-        background: #ffffff;
+        background: rgba(255, 255, 255, 0.94);
         border: 1px solid #eef2f7;
-        border-radius: 22px;
-        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
-        padding: 22px;
+        border-radius: 28px;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+        padding: 28px;
+        backdrop-filter: blur(10px);
+    }
+
+    .payment-card-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .payment-card-head-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        background: #fff7ed;
+        color: #ff5a1f;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+        border: 1px solid #fed7aa;
     }
 
     .payment-card-title {
-        margin: 0 0 14px;
-        font-size: 20px;
+        margin: 0;
+        font-size: 21px;
         line-height: 1.2;
-        font-weight: 800;
+        font-weight: 900;
         color: #0f172a;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.03em;
     }
 
     .payment-card-subtitle {
-        margin: 0 0 16px;
+        margin: 5px 0 0;
         font-size: 13px;
         color: #64748b;
-        line-height: 1.6;
-        font-weight: 500;
+        line-height: 1.5;
+        font-weight: 600;
     }
 
     .payment-method-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
+        gap: 18px;
     }
 
     .payment-option {
+        min-height: 190px;
         border: 1.5px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 18px 16px;
+        border-radius: 24px;
+        padding: 22px;
         display: flex;
+        flex-direction: column;
         align-items: center;
+        justify-content: center;
         gap: 12px;
-        background: #fff;
+        background: #ffffff;
         transition: all 0.25s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .payment-option::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255, 90, 31, 0.09), transparent 55%);
+        opacity: 0;
+        transition: opacity 0.2s ease;
     }
 
     .payment-option:hover {
         border-color: #fed7aa;
-        background: #fff7ed;
+        transform: translateY(-2px);
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+    }
+
+    .payment-option:hover::before {
+        opacity: 1;
     }
 
     .payment-option.is-active {
         border-color: #ff5a1f;
         background: #fff7ed;
-        box-shadow: 0 10px 24px rgba(255, 90, 31, 0.10);
+        box-shadow: 0 16px 35px rgba(255, 90, 31, 0.13);
+    }
+
+    .payment-option.is-active::before {
+        opacity: 1;
+    }
+
+    .payment-radio-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        border: 2px solid #cbd5e1;
+        background: #ffffff;
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
+
+    .payment-option.is-active .payment-radio-dot {
+        background: #ff5a1f;
+        border-color: #ff5a1f;
+        color: #ffffff;
+    }
+
+    .payment-option.is-active .payment-radio-dot::after {
+        content: "✓";
+        font-size: 13px;
+        font-weight: 900;
     }
 
     .payment-option-icon {
-        width: 42px;
-        height: 42px;
+        width: 82px;
+        height: 82px;
         border-radius: 999px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: #f8fafc;
-        font-size: 18px;
+        font-size: 34px;
         flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .payment-option-icon.bank-icon {
+        background: #fff7ed;
+        color: #ea580c;
+    }
+
+    .payment-option-icon.gcash-icon {
+        background: linear-gradient(135deg, #2563eb, #60a5fa);
+        color: #ffffff;
+        box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
     }
 
     .payment-option-label {
-        font-size: 15px;
-        font-weight: 800;
+        font-size: 20px;
+        font-weight: 900;
         color: #0f172a;
+        position: relative;
+        z-index: 1;
+    }
+
+    .payment-option-note {
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
     }
 
     .payment-form {
@@ -129,35 +240,57 @@
     }
 
     .payment-panel {
-        border: 1px solid #e5e7eb;
-        border-radius: 18px;
-        padding: 20px;
-        background: #ffffff;
+        border: 1px solid #fed7aa;
+        border-radius: 24px;
+        padding: 24px;
+        background: linear-gradient(135deg, #fffaf5, #ffffff);
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
     }
 
     .payment-panel.hidden-panel {
         display: none;
     }
 
-    .payment-panel-title {
-        margin: 0 0 6px;
+    .payment-panel-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .payment-panel-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 15px;
+        background: #fff7ed;
+        color: #ff5a1f;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         font-size: 18px;
-        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .payment-panel-title {
+        margin: 0;
+        font-size: 19px;
+        font-weight: 900;
         color: #0f172a;
+        letter-spacing: -0.02em;
     }
 
     .payment-panel-subtitle {
-        margin: 0 0 18px;
+        margin: 3px 0 0;
         font-size: 13px;
         color: #64748b;
-        font-weight: 500;
+        font-weight: 600;
     }
 
     .payment-split {
         display: grid;
-        grid-template-columns: 1fr 260px;
-        gap: 22px;
-        align-items: center;
+        grid-template-columns: minmax(0, 1fr) 270px;
+        gap: 24px;
+        align-items: stretch;
     }
 
     .provider-row {
@@ -168,32 +301,69 @@
     }
 
     .provider-badge {
-        width: 38px;
-        height: 38px;
-        border-radius: 999px;
-        background: #dbeafe;
-        color: #2563eb;
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #2563eb, #60a5fa);
+        color: #ffffff;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-weight: 800;
+        font-weight: 900;
+        font-size: 18px;
     }
 
     .provider-name {
         font-size: 15px;
-        font-weight: 800;
+        font-weight: 900;
         color: #0f172a;
+    }
+
+    .reference-box {
+        margin: 14px 0 16px;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 16px;
+        padding: 13px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .reference-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #ff5a1f;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .reference-label {
+        font-size: 12px;
+        color: #9a3412;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .reference-value {
+        font-size: 15px;
+        color: #0f172a;
+        font-weight: 900;
     }
 
     .divider-line {
         height: 1px;
         background: #e5e7eb;
-        margin: 14px 0 16px;
+        margin: 16px 0;
     }
 
     .upload-title {
         font-size: 15px;
-        font-weight: 800;
+        font-weight: 900;
         color: #0f172a;
         margin-bottom: 4px;
     }
@@ -202,19 +372,22 @@
         font-size: 13px;
         color: #64748b;
         margin-bottom: 12px;
+        line-height: 1.5;
+        font-weight: 600;
     }
 
     .upload-box {
-        border: 1.5px dashed #cbd5e1;
-        border-radius: 16px;
-        padding: 16px;
-        background: #f8fafc;
+        border: 1.5px dashed #fdba74;
+        border-radius: 20px;
+        padding: 28px 18px;
+        background: #ffffff;
         transition: all 0.25s ease;
+        text-align: center;
     }
 
     .upload-box:hover {
-        border-color: #94a3b8;
-        background: #f1f5f9;
+        border-color: #ff5a1f;
+        background: #fff7ed;
     }
 
     .upload-box label {
@@ -222,9 +395,22 @@
         cursor: pointer;
     }
 
+    .upload-box-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 999px;
+        background: #fff7ed;
+        color: #ff5a1f;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 24px;
+    }
+
     .upload-main {
-        font-size: 14px;
-        font-weight: 700;
+        font-size: 15px;
+        font-weight: 900;
         color: #0f172a;
         margin-bottom: 4px;
     }
@@ -232,6 +418,7 @@
     .upload-help {
         font-size: 12px;
         color: #64748b;
+        font-weight: 600;
     }
 
     .preview-box {
@@ -240,25 +427,28 @@
     }
 
     .preview-box img {
-        width: 160px;
-        border-radius: 12px;
+        width: 170px;
+        border-radius: 14px;
         border: 1px solid #e5e7eb;
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
     }
 
     .payment-qr-wrap {
         text-align: center;
         background: #f8fafc;
         border: 1px solid #e5e7eb;
-        border-radius: 18px;
+        border-radius: 20px;
         padding: 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     .payment-qr-wrap img {
-        width: 180px;
+        width: 190px;
         max-width: 100%;
         margin: 0 auto 12px;
-        border-radius: 14px;
+        border-radius: 16px;
         background: #fff;
         border: 1px solid #e5e7eb;
         padding: 8px;
@@ -267,7 +457,7 @@
 
     .payment-qr-name {
         font-size: 15px;
-        font-weight: 800;
+        font-weight: 900;
         color: #0f172a;
         margin-bottom: 4px;
     }
@@ -275,38 +465,82 @@
     .payment-qr-number {
         font-size: 13px;
         color: #64748b;
-        font-weight: 600;
+        font-weight: 700;
+    }
+
+    .payment-reference-note {
+        margin-top: 10px;
+        font-size: 13px;
+        color: #0f172a;
+        font-weight: 800;
+        background: #ffffff;
+        border: 1px solid #fed7aa;
+        border-radius: 12px;
+        padding: 10px;
     }
 
     .bank-details {
-        background: #f8fafc;
+        background: #ffffff;
         border: 1px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 16px;
+        border-radius: 18px;
+        overflow: hidden;
         margin-bottom: 16px;
     }
 
     .bank-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 14px;
-        margin-bottom: 10px;
+        display: grid;
+        grid-template-columns: 42px 1fr auto;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 14px;
+        border-bottom: 1px solid #eef2f7;
         font-size: 14px;
     }
 
     .bank-row:last-child {
-        margin-bottom: 0;
+        border-bottom: none;
     }
 
-    .bank-row span:first-child {
+    .bank-row-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: #fff7ed;
+        color: #ff5a1f;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bank-row span:nth-child(2) {
         color: #64748b;
-        font-weight: 600;
+        font-weight: 700;
     }
 
     .bank-row span:last-child {
         color: #0f172a;
-        font-weight: 800;
+        font-weight: 900;
         text-align: right;
+    }
+
+    .bank-info-note {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 13px 14px;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        color: #475569;
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 16px;
+        font-weight: 600;
+    }
+
+    .bank-info-note i {
+        color: #2563eb;
+        margin-top: 2px;
     }
 
     .file-input {
@@ -321,23 +555,27 @@
 
     .submit-payment-btn {
         width: 100%;
-        min-height: 48px;
+        min-height: 54px;
         border: none;
-        border-radius: 12px;
-        background: #2563eb;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #ff5a1f, #f97316);
         color: #ffffff;
-        font-size: 15px;
-        font-weight: 800;
+        font-size: 16px;
+        font-weight: 900;
         transition: all 0.25s ease;
+        box-shadow: 0 14px 28px rgba(249, 115, 22, 0.22);
     }
 
     .submit-payment-btn:hover {
-        background: #1d4ed8;
+        transform: translateY(-1px);
+        box-shadow: 0 18px 34px rgba(249, 115, 22, 0.30);
     }
 
     .submit-payment-btn:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
     }
 
     .summary-card {
@@ -345,11 +583,39 @@
         top: 110px;
     }
 
+    .summary-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .summary-head-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 15px;
+        background: #eff6ff;
+        color: #2563eb;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
     .summary-title {
-        margin: 0 0 14px;
+        margin: 0;
         font-size: 20px;
-        font-weight: 800;
+        font-weight: 900;
         color: #0f172a;
+        letter-spacing: -0.02em;
+    }
+
+    .summary-subtitle {
+        margin: 3px 0 0;
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 600;
     }
 
     .summary-car {
@@ -360,8 +626,8 @@
     }
 
     .summary-car img {
-        width: 84px;
-        height: 84px;
+        width: 94px;
+        height: 82px;
         border-radius: 16px;
         object-fit: cover;
         flex-shrink: 0;
@@ -369,8 +635,8 @@
     }
 
     .summary-car-name {
-        font-size: 16px;
-        font-weight: 800;
+        font-size: 17px;
+        font-weight: 900;
         color: #0f172a;
         margin-bottom: 6px;
     }
@@ -378,8 +644,73 @@
     .summary-car-meta {
         font-size: 13px;
         color: #64748b;
-        font-weight: 600;
+        font-weight: 700;
         line-height: 1.5;
+    }
+
+    .summary-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #f8fafc;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .summary-detail-list {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .summary-detail-item {
+        display: grid;
+        grid-template-columns: 34px 1fr auto;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+    }
+
+    .summary-detail-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 11px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .summary-detail-icon.orange {
+        background: #fff7ed;
+        color: #ff5a1f;
+    }
+
+    .summary-detail-icon.green {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .summary-detail-icon.blue {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .summary-detail-label {
+        color: #0f172a;
+        font-weight: 900;
+    }
+
+    .summary-detail-value {
+        color: #475569;
+        font-weight: 700;
+        text-align: right;
     }
 
     .summary-lines {
@@ -396,7 +727,7 @@
         gap: 12px;
         font-size: 14px;
         color: #475569;
-        font-weight: 600;
+        font-weight: 700;
     }
 
     .summary-line.total {
@@ -404,8 +735,50 @@
         padding-top: 12px;
         margin-top: 4px;
         font-size: 18px;
-        font-weight: 800;
+        font-weight: 900;
         color: #0f172a;
+    }
+
+    .summary-line.total span:last-child {
+        color: #ff5a1f;
+        font-size: 24px;
+    }
+
+    .secure-box {
+        margin-top: 16px;
+        padding: 14px;
+        border-radius: 16px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .secure-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 13px;
+        background: #dbeafe;
+        color: #2563eb;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .secure-title {
+        color: #1d4ed8;
+        font-size: 13px;
+        font-weight: 900;
+        margin-bottom: 3px;
+    }
+
+    .secure-text {
+        color: #334155;
+        font-size: 12px;
+        line-height: 1.5;
+        font-weight: 600;
     }
 
     .payment-alert {
@@ -502,12 +875,25 @@
             grid-template-columns: 1fr;
         }
 
+        .payment-option {
+            min-height: 150px;
+        }
+
         .payment-split {
             grid-template-columns: 1fr;
         }
 
         .summary-car {
             align-items: flex-start;
+        }
+
+        .bank-row {
+            grid-template-columns: 36px 1fr;
+        }
+
+        .bank-row span:last-child {
+            grid-column: 2;
+            text-align: left;
         }
     }
 </style>
@@ -518,12 +904,15 @@
     <div class="payment-shell">
         <div class="payment-header">
             <a href="{{ !empty($returnIssue) ? route('user.return-issues.show', $returnIssue->id) : route('user.pending-payments') }}" class="payment-back" aria-label="Back">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
+                <i class="fas fa-arrow-left"></i>
             </a>
 
-            <h1 class="payment-title">{{ $paymentTitle ?? 'Payment' }}</h1>
+            <div>
+                <h1 class="payment-title">{{ $paymentTitle ?? 'Payment' }}</h1>
+                <p class="payment-header-subtitle">
+                    Choose your preferred payment method and upload your payment proof.
+                </p>
+            </div>
         </div>
 
         @php
@@ -576,7 +965,6 @@
         @endphp
 
         <div class="payment-grid">
-            <!-- Left -->
             <div style="display:flex; flex-direction:column; gap:18px;">
 
                 @if($errors->any())
@@ -595,22 +983,42 @@
                 @endif
 
                 <div class="payment-card">
-                    <h2 class="payment-card-title">Select Payment Method</h2>
-                    <p class="payment-card-subtitle">
-                        Choose your preferred payment option, then upload your receipt after sending the payment.
-                    </p>
+                    <div class="payment-card-head">
+                        <div class="payment-card-head-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+
+                        <div>
+                            <h2 class="payment-card-title">1. Select Payment Method</h2>
+                            <p class="payment-card-subtitle">
+                                Choose how you want to pay.
+                            </p>
+                        </div>
+                    </div>
 
                     <div class="payment-method-grid">
-                        <label class="payment-option" data-method="gcash">
-                            <input type="radio" name="payment_method" class="hidden" hidden>
-                            <span class="payment-option-icon">💙</span>
-                            <span class="payment-option-label">GCash</span>
-                        </label>
-
                         <label class="payment-option" data-method="bank">
                             <input type="radio" name="payment_method" class="hidden" hidden>
-                            <span class="payment-option-icon">🏦</span>
+                            <span class="payment-radio-dot"></span>
+
+                            <span class="payment-option-icon bank-icon">
+                                <i class="fas fa-university"></i>
+                            </span>
+
                             <span class="payment-option-label">Bank Transfer</span>
+                            <span class="payment-option-note">Transfer via your bank</span>
+                        </label>
+
+                        <label class="payment-option" data-method="gcash">
+                            <input type="radio" name="payment_method" class="hidden" hidden>
+                            <span class="payment-radio-dot"></span>
+
+                            <span class="payment-option-icon gcash-icon">
+                                <i class="fas fa-wallet"></i>
+                            </span>
+
+                            <span class="payment-option-label">GCash</span>
+                            <span class="payment-option-note">Pay using GCash</span>
                         </label>
                     </div>
                 </div>
@@ -622,27 +1030,60 @@
                     <input type="hidden" name="return_issue_id" value="{{ $returnIssue->id ?? '' }}">
                     <input type="hidden" name="payment_method" id="paymentMethod">
 
-                    <!-- GCASH -->
                     <div id="gcashSection" class="payment-card payment-panel hidden-panel">
-                        <h3 class="payment-panel-title">GCash QR Payment</h3>
-                        <p class="payment-panel-subtitle">Scan the QR code using your GCash app and upload your payment screenshot.</p>
+                        <div class="payment-panel-head">
+                            <div class="payment-panel-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+
+                            <div>
+                                <h3 class="payment-panel-title">GCash QR Payment</h3>
+                                <p class="payment-panel-subtitle">
+                                    Scan the QR code using your GCash app and upload your payment screenshot.
+                                </p>
+                            </div>
+                        </div>
 
                         <div class="payment-split">
                             <div>
                                 <div class="provider-row">
                                     <div class="provider-badge">G</div>
-                                    <div class="provider-name">Car Rental PH</div>
+                                    <div>
+                                        <div class="provider-name">
+                                            {{ $paymentSetting->gcash_account_name ?? 'N/A' }}
+                                        </div>
+                                        <div class="upload-subtitle" style="margin-bottom:0;">
+                                            GCash Number: {{ $paymentSetting->gcash_number ?? 'N/A' }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="reference-box">
+                                    <div class="reference-icon">
+                                        <i class="fas fa-hashtag"></i>
+                                    </div>
+
+                                    <div>
+                                        <div class="reference-label">Reference / Booking ID</div>
+                                        <div class="reference-value">#{{ $booking->id }}</div>
+                                    </div>
                                 </div>
 
                                 <div class="divider-line"></div>
 
                                 <div class="upload-title">Upload Payment Receipt</div>
-                                <div class="upload-subtitle">Upload a screenshot of your payment. JPG, PNG or JPEG only.</div>
+                                <div class="upload-subtitle">
+                                    Upload a screenshot of your payment. JPG, PNG or JPEG only.
+                                </div>
 
                                 <div class="upload-box">
                                     <label>
-                                        <div class="upload-main">Upload Payment Screenshot</div>
-                                        <div class="upload-help">Tap to choose your receipt image</div>
+                                        <div class="upload-box-icon">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                        </div>
+
+                                        <div class="upload-main">Click to upload</div>
+                                        <div class="upload-help">Tap to choose your GCash receipt image</div>
 
                                         <input type="file" id="gcashInput" name="receipt_image" accept="image/*" class="hidden" hidden>
                                     </label>
@@ -667,54 +1108,101 @@
                                 <div class="payment-qr-number">
                                     GCash Number: {{ $paymentSetting->gcash_number ?? 'N/A' }}
                                 </div>
+
+                                <div class="payment-reference-note">
+                                    Reference / Booking ID: <strong>#{{ $booking->id }}</strong>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- BANK -->
                     <div id="bankSection" class="payment-card payment-panel hidden-panel">
-                        <h3 class="payment-panel-title">Bank Transfer</h3>
-                        <p class="payment-panel-subtitle">Send payment to the bank account below and upload your receipt after payment.</p>
+                        <div class="payment-panel-head">
+                            <div class="payment-panel-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+
+                            <div>
+                                <h3 class="payment-panel-title">Bank Transfer</h3>
+                                <p class="payment-panel-subtitle">
+                                    Send payment to the bank account below and upload your receipt after payment.
+                                </p>
+                            </div>
+                        </div>
 
                         <div class="bank-details">
                             <div class="bank-row">
-                                <span>Bank</span>
+                                <span class="bank-row-icon"><i class="fas fa-university"></i></span>
+                                <span>Bank Name</span>
                                 <span>BDO</span>
                             </div>
 
                             <div class="bank-row">
+                                <span class="bank-row-icon"><i class="fas fa-user"></i></span>
                                 <span>Account Name</span>
                                 <span>Car Rental PH</span>
                             </div>
 
                             <div class="bank-row">
+                                <span class="bank-row-icon"><i class="fas fa-credit-card"></i></span>
                                 <span>Account Number</span>
                                 <span>1234 5678 9012</span>
                             </div>
+
+                            <div class="bank-row">
+                                <span class="bank-row-icon"><i class="fas fa-hashtag"></i></span>
+                                <span>Reference / Booking ID</span>
+                                <span>#{{ $booking->id }}</span>
+                            </div>
+                        </div>
+
+                        <div class="bank-info-note">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Please use your Booking ID <strong>#{{ $booking->id }}</strong> as the transfer reference.</span>
                         </div>
 
                         <div class="upload-title">Upload Bank Receipt</div>
-                        <input type="file" name="bank_receipt" accept="image/*" id="bankInput" class="file-input">
-
-                        <div id="bankPreview" class="preview-box">
-                            <img id="bankPreviewImg" alt="Bank receipt preview">
+                        <div class="upload-subtitle">
+                            Upload screenshot after sending bank transfer.
                         </div>
 
-                        <div class="upload-subtitle" style="margin-top:10px;">
-                            Upload screenshot after sending bank transfer.
+                        <div class="upload-box">
+                            <label>
+                                <div class="upload-box-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+
+                                <div class="upload-main">Click to upload</div>
+                                <div class="upload-help">Tap to choose your bank receipt image</div>
+
+                                <input type="file" name="bank_receipt" accept="image/*" id="bankInput" class="hidden" hidden>
+                            </label>
+
+                            <div id="bankPreview" class="preview-box">
+                                <img id="bankPreviewImg" alt="Bank receipt preview">
+                            </div>
                         </div>
                     </div>
 
                     <button type="submit" id="submitPaymentBtn" class="submit-payment-btn">
+                        <i class="fas fa-lock" style="margin-right:8px;"></i>
                         Submit Payment Proof
                     </button>
                 </form>
             </div>
 
-            <!-- Right -->
             <div class="summary-card">
                 <div class="payment-card">
-                    <h2 class="summary-title">Booking Summary</h2>
+                    <div class="summary-head">
+                        <div class="summary-head-icon">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+
+                        <div>
+                            <h2 class="summary-title">Booking Summary</h2>
+                            <p class="summary-subtitle">Please review your booking details.</p>
+                        </div>
+                    </div>
 
                     <div class="summary-car">
                         <img
@@ -729,14 +1217,53 @@
                             </div>
 
                             <div class="summary-car-meta">
-                                {{ \Carbon\Carbon::parse($booking->pickup_at)->format('M d') }}
-                                -
-                                {{ \Carbon\Carbon::parse($booking->return_at)->format('M d, Y') }}
+                                {{ $booking->car->category->name ?? 'Car Rental' }}
+                                • {{ $booking->car->transmission->type ?? 'N/A' }}
+                                • {{ $booking->car->fuelType->type ?? 'N/A' }}
                             </div>
 
-                            <div class="summary-car-meta">
-                                {{ $rentalDays }} days rental
+                            <div class="summary-pill">
+                                <i class="fas fa-users"></i>
+                                {{ $booking->car->seats ?? 'N/A' }} Seats
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="summary-detail-list">
+                        <div class="summary-detail-item">
+                            <div class="summary-detail-icon orange">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="summary-detail-label">Pick-up</div>
+                            <div class="summary-detail-value">
+                                {{ \Carbon\Carbon::parse($booking->pickup_at)->format('M d, Y • h:i A') }}
+                            </div>
+                        </div>
+
+                        <div class="summary-detail-item">
+                            <div class="summary-detail-icon green">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="summary-detail-label">Return</div>
+                            <div class="summary-detail-value">
+                                {{ \Carbon\Carbon::parse($booking->return_at)->format('M d, Y • h:i A') }}
+                            </div>
+                        </div>
+
+                        <div class="summary-detail-item">
+                            <div class="summary-detail-icon blue">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="summary-detail-label">Duration</div>
+                            <div class="summary-detail-value">{{ $rentalDays }} day{{ $rentalDays > 1 ? 's' : '' }}</div>
+                        </div>
+
+                        <div class="summary-detail-item">
+                            <div class="summary-detail-icon orange">
+                                <i class="fas fa-hashtag"></i>
+                            </div>
+                            <div class="summary-detail-label">Booking ID</div>
+                            <div class="summary-detail-value">#{{ $booking->id }}</div>
                         </div>
                     </div>
 
@@ -764,15 +1291,27 @@
                         @endif
 
                         <div class="summary-line total">
-                            <span>Total :</span>
+                            <span>Total Amount :</span>
                             <span>₱{{ number_format($payableAmount ?? $total, 2) }}</span>
+                        </div>
+                    </div>
+
+                    <div class="secure-box">
+                        <div class="secure-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+
+                        <div>
+                            <div class="secure-title">Your booking is secure</div>
+                            <div class="secure-text">
+                                Your payment will be reviewed before your booking is confirmed.
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Error Modal -->
         <div id="errorModal" class="error-modal">
             <div class="error-modal-box">
                 <div class="error-modal-icon">⚠️</div>
