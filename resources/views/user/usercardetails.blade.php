@@ -905,21 +905,20 @@
                             </div>
 
                             <div class="form-group-block">
-                                <label class="form-label">Contact Number</label>
-                                <input type="tel"
-                            id="phone"
-                            name="phone"
-                            value="{{ old('phone', auth()->user()->phone ?? '') }}"
-                            placeholder="09XXXXXXXXX"
-                            class="form-input"
-                            required
-                            maxlength="11"
-                            inputmode="numeric"
-                            pattern="09[0-9]{9}">
-                        <div class="helper-text">Enter an 11-digit Philippine mobile number, e.g. 09XXXXXXXXX.</div>
-                        <p id="phoneError" class="inline-message error" style="display:none;">
-                            Phone number must be 11 digits and start with 09.
-                        </p>
+                         <label class="form-label">Contact Number</label>
+                               <input type="tel"
+                        id="phone"
+                        name="phone"
+                        value="{{ old('phone', auth()->user()->phone ?? '') }}"
+                        placeholder="09XX-XXX-XXXX"
+                        class="form-input"
+                        required
+                        maxlength="13"
+                        inputmode="numeric">
+
+                    <p id="phoneError" class="inline-message error" style="display:none;">
+                        Phone number must be 11 digits and start with 09.
+                    </p>
                          </div>
 
                             <div id="locationWrap" class="form-group-block full" style="display:none;">

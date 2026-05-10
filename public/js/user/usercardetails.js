@@ -212,9 +212,27 @@
 
     if (!phone) return;
 
+    const formatPhone = (value) => {
+      const numbersOnly = value.replace(/\D/g, "").slice(0, 11);
+
+      if (numbersOnly.length <= 4) {
+        return numbersOnly;
+      }
+
+      if (numbersOnly.length <= 7) {
+        return `${numbersOnly.slice(0, 4)}-${numbersOnly.slice(4)}`;
+      }
+
+      return `${numbersOnly.slice(0, 4)}-${numbersOnly.slice(4, 7)}-${numbersOnly.slice(7)}`;
+    };
+
+    const getRawPhone = () => {
+      return phone.value.replace(/\D/g, "");
+    };
+
     const validatePhone = (showError = true) => {
-      const value = phone.value.trim();
-      const isValid = /^09\d{9}$/.test(value);
+      const rawValue = getRawPhone();
+      const isValid = /^09\d{9}$/.test(rawValue);
 
       if (phoneError) {
         phoneError.style.display = !isValid && showError ? "block" : "none";
@@ -227,17 +245,12 @@
       return isValid;
     };
 
-    const cleanPhone = () => {
-      phone.value = phone.value.replace(/\D/g, "");
-
-      if (phone.value.length > 11) {
-        phone.value = phone.value.slice(0, 11);
-      }
-
+    const syncPhone = () => {
+      phone.value = formatPhone(phone.value);
       validatePhone(false);
     };
 
-    phone.addEventListener("input", cleanPhone);
+    phone.addEventListener("input", syncPhone);
 
     phone.addEventListener("keypress", function (e) {
       if (!/[0-9]/.test(e.key)) {
@@ -249,15 +262,17 @@
       e.preventDefault();
 
       const pastedText = (e.clipboardData || window.clipboardData).getData("text");
-      const numbersOnly = pastedText.replace(/\D/g, "").slice(0, 11);
+      phone.value = formatPhone(pastedText);
 
-      phone.value = numbersOnly;
       validatePhone(true);
     });
 
     phone.addEventListener("blur", function () {
+      phone.value = formatPhone(phone.value);
       validatePhone(true);
     });
+
+    phone.value = formatPhone(phone.value);
   }
 
   function handleBookingSubmit(e) {
@@ -274,7 +289,7 @@
     const phoneError = document.getElementById("phoneError");
 
     if (phone) {
-      const phoneValue = phone.value.trim();
+      const phoneValue = phone.value.replace(/\D/g, "");
       const isPhoneValid = /^09\d{9}$/.test(phoneValue);
 
       if (!isPhoneValid) {
@@ -286,6 +301,11 @@
         return;
       } else {
         if (phoneError) phoneError.style.display = "none";
+
+        // Submit clean phone number to database.
+        // Example visible: 0946-979-4208
+        // Example submitted: 09469794208
+        phone.value = phoneValue;
       }
     }
 
