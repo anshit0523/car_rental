@@ -869,8 +869,7 @@
         </div>
 
         @php
-            $gcashLogoUrl = asset('storage/cars/gcash-logo.webp');
-
+           $gcashLogoUrl = 'https://fls-a1a2e3a5-eacb-4008-aaff-ac1a1ac4ffae.laravel.cloud/cars/gcash-logo.webp';
             $rentalDays = max(
                 1,
                 \Carbon\Carbon::parse($booking->pickup_at)->diffInDays(\Carbon\Carbon::parse($booking->return_at))
