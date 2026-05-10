@@ -519,7 +519,7 @@
 
                                     <div class="rental-meta-grid">
                                         <div class="rental-meta-card">
-                                            <div class="rental-meta-icon">📅</div>
+                                            <div class="rental-meta-icon"> <i class="far fa-calendar-alt"></i></div>
                                             <div>
                                                 <p class="rental-meta-label">Pick-up</p>
                                                 <p class="rental-meta-value">
@@ -529,7 +529,7 @@
                                         </div>
 
                                         <div class="rental-meta-card">
-                                            <div class="rental-meta-icon">📅</div>
+                                            <div class="rental-meta-icon"> <i class="far fa-calendar-alt"></i></div>
                                             <div>
                                                 <p class="rental-meta-label">Return</p>
                                                 <p class="rental-meta-value">
@@ -539,7 +539,7 @@
                                         </div>
 
                                         <div class="rental-meta-card">
-                                            <div class="rental-meta-icon">⏱️</div>
+                                            <div class="rental-meta-icon"> <i class="far fa-clock"></i></div>
                                             <div>
                                                 <p class="rental-meta-label">Duration</p>
                                                 <p class="rental-meta-value">

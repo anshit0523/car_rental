@@ -682,14 +682,14 @@
                             <a href="{{ route('user.profile') }}"
                                class="dropdown-profile-link"
                                style="background:{{ request()->routeIs('user.profile') ? '#fff3ed' : '#fff' }};">
-                                <span>👤</span>
+                                <span><i class="fas fa-user"></i></span>
                                 <span>Profile</span>
                             </a>
 
                             <form action="{{ route('logout') }}?clear=1" method="POST" style="margin:0;">
                                 @csrf
                                 <button type="submit" class="dropdown-logout-btn">
-                                    <span>🚪</span>
+                                    <span><i class="fas fa-sign-out-alt"></i></span>
                                     <span>Logout</span>
                                 </button>
                             </form>
