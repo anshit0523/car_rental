@@ -23,10 +23,12 @@
   function calculateBaseTotal() {
     const pickupVal = document.querySelector('input[name="pickup_date"]')?.value;
     const returnVal = document.querySelector('input[name="return_date"]')?.value;
+
     if (!pickupVal || !returnVal) return null;
 
     const pickupDate = new Date(pickupVal + "T00:00:00");
     const returnDate = new Date(returnVal + "T00:00:00");
+
     if (returnDate <= pickupDate) return null;
 
     const days = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
@@ -85,6 +87,7 @@
 
       onOpen: (selectedDates, dateStr, fp) => {
         fp.calendarContainer.classList.add("fp-center");
+
         if (!document.querySelector(".fp-overlay")) {
           const overlay = document.createElement("div");
           overlay.className = "fp-overlay";
@@ -162,6 +165,7 @@
     const type = document.getElementById("service_type_id");
     const wrap = document.getElementById("locationWrap");
     const loc = document.getElementById("service_location");
+
     if (!type || !wrap || !loc) return;
 
     const isDelivery = () => {
@@ -171,6 +175,7 @@
 
     const sync = () => {
       const delivery = isDelivery();
+
       wrap.style.display = delivery ? "flex" : "none";
       loc.required = delivery;
 
@@ -201,6 +206,60 @@
     }
   }
 
+  function initPhoneNumberValidation() {
+    const phone = document.getElementById("phone");
+    const phoneError = document.getElementById("phoneError");
+
+    if (!phone) return;
+
+    const validatePhone = (showError = true) => {
+      const value = phone.value.trim();
+      const isValid = /^09\d{9}$/.test(value);
+
+      if (phoneError) {
+        phoneError.style.display = !isValid && showError ? "block" : "none";
+      }
+
+      phone.setCustomValidity(
+        isValid ? "" : "Phone number must be 11 digits and start with 09."
+      );
+
+      return isValid;
+    };
+
+    const cleanPhone = () => {
+      phone.value = phone.value.replace(/\D/g, "");
+
+      if (phone.value.length > 11) {
+        phone.value = phone.value.slice(0, 11);
+      }
+
+      validatePhone(false);
+    };
+
+    phone.addEventListener("input", cleanPhone);
+
+    phone.addEventListener("keypress", function (e) {
+      if (!/[0-9]/.test(e.key)) {
+        e.preventDefault();
+      }
+    });
+
+    phone.addEventListener("paste", function (e) {
+      e.preventDefault();
+
+      const pastedText = (e.clipboardData || window.clipboardData).getData("text");
+      const numbersOnly = pastedText.replace(/\D/g, "").slice(0, 11);
+
+      phone.value = numbersOnly;
+      validatePhone(true);
+    });
+
+    phone.addEventListener("blur", function () {
+      validatePhone(true);
+    });
+  }
+
   function handleBookingSubmit(e) {
     e.preventDefault();
 
@@ -211,6 +270,24 @@
     const agree = document.getElementById("agree_terms");
     const err = document.getElementById("agreeError");
     const termsSection = document.getElementById("termsSection");
+    const phone = document.getElementById("phone");
+    const phoneError = document.getElementById("phoneError");
+
+    if (phone) {
+      const phoneValue = phone.value.trim();
+      const isPhoneValid = /^09\d{9}$/.test(phoneValue);
+
+      if (!isPhoneValid) {
+        if (phoneError) phoneError.style.display = "block";
+
+        phone.focus();
+
+        alert("Please enter a valid 11-digit Philippine mobile number starting with 09.");
+        return;
+      } else {
+        if (phoneError) phoneError.style.display = "none";
+      }
+    }
 
     if (agree && !agree.checked) {
       if (err) err.style.display = "block";
@@ -249,6 +326,7 @@
         alert("Selected dates include unavailable days. Please choose different dates.");
         return;
       }
+
       start.setDate(start.getDate() + 1);
     }
 
@@ -265,6 +343,7 @@
   function initBookingFormSubmit() {
     const form = document.getElementById("bookingForm");
     if (!form) return;
+
     form.addEventListener("submit", handleBookingSubmit);
   }
 
@@ -278,12 +357,14 @@
     const open = () => {
       sidebar.classList.remove("-translate-x-full");
       sidebar.classList.add("translate-x-0");
+
       if (overlay) overlay.classList.remove("hidden");
     };
 
     const close = () => {
       sidebar.classList.add("-translate-x-full");
       sidebar.classList.remove("translate-x-0");
+
       if (overlay) overlay.classList.add("hidden");
     };
 
@@ -301,6 +382,7 @@
     initAgreeTerms();
     initServiceTypeToggle();
     initPickupReturnTimeSync();
+    initPhoneNumberValidation();
     initBookingFormSubmit();
 
     loadUnavailableDates();
