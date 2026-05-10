@@ -869,7 +869,7 @@
         </div>
 
         @php
-            $gcashLogoUrl = asset('storage/cars/gcash-logo-square-rounded-gcash-logo-free-download-gcash-logo-free-png.webp');
+            $gcashLogoUrl = asset('storage/cars/gcash-logo-webp');
 
             $rentalDays = max(
                 1,
