@@ -101,31 +101,41 @@ class AuthController extends Controller
     }
 
     public function register(Request $request)
-    {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email'],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ], [
-            'email.unique' => 'This email is already registered.',
-            'password.confirmed' => 'The password confirmation does not match.',
-            'password.min' => 'The password must be at least 8 characters.',
-        ]);
+{
+    // Clean phone before validation:
+    // 0946-979-4208 becomes 09469794208
+    $request->merge([
+        'phone' => $request->phone
+            ? preg_replace('/\D/', '', $request->phone)
+            : null,
+    ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone ?? null,
-            'password' => Hash::make($request->password),
-            'role_id' => 2, // Customer
-        ]);
+    $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'email', 'unique:users,email'],
+        'phone' => ['required', 'regex:/^09\d{9}$/'],
+        'password' => ['required', 'string', 'min:8', 'confirmed'],
+    ], [
+        'email.unique' => 'This email is already registered.',
+        'phone.required' => 'The phone number is required.',
+        'phone.regex' => 'The phone number must be 11 digits and start with 09.',
+        'password.confirmed' => 'The password confirmation does not match.',
+        'password.min' => 'The password must be at least 8 characters.',
+    ]);
 
-        Auth::login($user);
-        $request->session()->regenerate();
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'phone' => $request->phone,
+        'password' => Hash::make($request->password),
+        'role_id' => 2, // Customer
+    ]);
 
-        return $this->redirectByRole($user);
-    }
+    Auth::login($user);
+    $request->session()->regenerate();
+
+    return $this->redirectByRole($user);
+}
 
     public function logout(Request $request)
     {

@@ -135,30 +135,37 @@
     padding-right: 50px;
   }
 
- .password-toggle {
-  position: absolute;
-  top: 50%;
-  right: 14px;
-  transform: translateY(-50%);
-  border: none;
-  background: transparent;
-  color: #fc8734;
-  cursor: pointer;
-  padding: 0;
-  z-index: 3;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  .password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #fc8734;
+    cursor: pointer;
+    padding: 0;
+    z-index: 3;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.password-toggle:hover {
-  color: #ff8c2a;
-}
+  .password-toggle:hover {
+    color: #ff8c2a;
+  }
 
   .password-toggle:focus {
     outline: none;
+  }
+
+  .phone-help {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 12px;
+    margin-top: 6px;
+    margin-bottom: 0;
   }
 </style>
 
@@ -178,7 +185,7 @@
       </div>
     @endif
 
-    <form method="POST" action="{{ url('/register') }}">
+    <form method="POST" action="{{ url('/register') }}" id="registerForm">
       @csrf
 
       <div class="mb-3">
@@ -214,12 +221,20 @@
       <div class="mb-3">
         <label class="form-label">Phone Number</label>
         <input
-          type="text"
+          type="tel"
+          id="phone"
           name="phone"
           class="form-control"
-          placeholder="Enter your phone number"
+          placeholder="09XX-XXX-XXXX"
           value="{{ old('phone') }}"
+          maxlength="13"
+          inputmode="numeric"
+          required
         >
+        <p class="phone-help">Format: 09XX-XXX-XXXX</p>
+        <p id="phoneError" class="input-error" style="display:none;">
+          Phone number must be 11 digits and start with 09.
+        </p>
         @error('phone')
           <p class="input-error">{{ $message }}</p>
         @enderror
@@ -285,6 +300,89 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    const registerForm = document.getElementById('registerForm');
+    const phone = document.getElementById('phone');
+    const phoneError = document.getElementById('phoneError');
+
+    function formatPhone(value) {
+      const numbersOnly = value.replace(/\D/g, '').slice(0, 11);
+
+      if (numbersOnly.length <= 4) {
+        return numbersOnly;
+      }
+
+      if (numbersOnly.length <= 7) {
+        return numbersOnly.slice(0, 4) + '-' + numbersOnly.slice(4);
+      }
+
+      return numbersOnly.slice(0, 4) + '-' + numbersOnly.slice(4, 7) + '-' + numbersOnly.slice(7);
+    }
+
+    function getRawPhone() {
+      return phone ? phone.value.replace(/\D/g, '') : '';
+    }
+
+    function validatePhone(showError = true) {
+      if (!phone) return true;
+
+      const rawPhone = getRawPhone();
+      const isValid = /^09\d{9}$/.test(rawPhone);
+
+      if (phoneError) {
+        phoneError.style.display = !isValid && showError ? 'block' : 'none';
+      }
+
+      phone.setCustomValidity(
+        isValid ? '' : 'Phone number must be 11 digits and start with 09.'
+      );
+
+      return isValid;
+    }
+
+    if (phone) {
+      phone.value = formatPhone(phone.value);
+
+      phone.addEventListener('input', function () {
+        phone.value = formatPhone(phone.value);
+        validatePhone(false);
+      });
+
+      phone.addEventListener('keypress', function (e) {
+        if (!/[0-9]/.test(e.key)) {
+          e.preventDefault();
+        }
+      });
+
+      phone.addEventListener('paste', function (e) {
+        e.preventDefault();
+
+        const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        phone.value = formatPhone(pastedText);
+
+        validatePhone(true);
+      });
+
+      phone.addEventListener('blur', function () {
+        phone.value = formatPhone(phone.value);
+        validatePhone(true);
+      });
+    }
+
+    if (registerForm) {
+      registerForm.addEventListener('submit', function (e) {
+        if (!validatePhone(true)) {
+          e.preventDefault();
+          phone.focus();
+          return;
+        }
+
+        // Submit clean 11-digit number to Laravel.
+        // Example visible: 0946-979-4208
+        // Example submitted: 09469794208
+        phone.value = getRawPhone();
+      });
+    }
+
     document.querySelectorAll('.password-toggle').forEach(function (button) {
       button.addEventListener('click', function () {
         const targetId = this.getAttribute('data-target');
