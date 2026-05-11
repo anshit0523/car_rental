@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const brandId = document.getElementById('brandId');
     const carTypeId = document.getElementById('carTypeId');
     const modelInput = document.getElementById('modelInput');
+    const plateNumberInput = document.getElementById('plateNumberInput');
     const transmissionId = document.getElementById('transmissionId');
     const fuelTypeId = document.getElementById('fuelTypeId');
     const seatsInput = document.getElementById('seatsInput');
@@ -26,6 +27,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const activeCheckbox = document.getElementById('activeCheckbox');
 
     const storeRoute = addCarForm?.getAttribute('data-store-route') || '/admin/cars';
+
+    if (plateNumberInput) {
+        plateNumberInput.addEventListener('input', function () {
+            this.value = this.value.toUpperCase();
+        });
+    }
 
     if (addCarBtn) {
         addCarBtn.addEventListener('click', () => {
@@ -43,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 brand_id: this.dataset.brandId || '',
                 car_type_id: this.dataset.carTypeId || '',
                 model: this.dataset.model || '',
+                plate_number: this.dataset.plateNumber || '',
                 transmission_id: this.dataset.transmissionId || '',
                 fuel_type_id: this.dataset.fuelTypeId || '',
                 seats: this.dataset.seats || 4,
@@ -123,6 +131,11 @@ document.addEventListener('DOMContentLoaded', function () {
         brandId.value = car.brand_id || '';
         carTypeId.value = car.car_type_id || '';
         modelInput.value = car.model || '';
+
+        if (plateNumberInput) {
+            plateNumberInput.value = car.plate_number || '';
+        }
+
         transmissionId.value = car.transmission_id || '';
         fuelTypeId.value = car.fuel_type_id || '';
         seatsInput.value = car.seats || 4;
@@ -149,6 +162,11 @@ document.addEventListener('DOMContentLoaded', function () {
         transmissionId.value = '';
         fuelTypeId.value = '';
         modelInput.value = '';
+
+        if (plateNumberInput) {
+            plateNumberInput.value = '';
+        }
+
         seatsInput.value = 4;
         priceInput.value = '';
         descriptionInput.value = '';

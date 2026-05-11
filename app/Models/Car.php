@@ -16,6 +16,7 @@ class Car extends Model
         'transmission_id',
         'fuel_type_id',
         'model',
+        'plate_number',
         'seats',
         'price_per_day',
         'description',

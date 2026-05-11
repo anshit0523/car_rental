@@ -10,6 +10,7 @@
                         <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Fleet Management</h1>
                         <p class="text-gray-600">Manage your car inventory</p>
                     </div>
+
                     <button id="addCarBtn"
                         class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition flex items-center gap-2 w-full lg:w-auto justify-center">
                         <i class="fas fa-plus"></i>
@@ -38,8 +39,8 @@
                         <table class="w-full">
                             <thead>
                                 <tr class="bg-gray-50 border-b border-gray-200">
-                                    <th class="px-6 py-4 text-left"></th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Photo</th>
+                                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Plate No.</th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Tracker</th>
                                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Total Booking</th>
@@ -48,11 +49,10 @@
                                     <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Actions</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @forelse($cars as $car)
                                     <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
-                                        <td class="px-6 py-4"></td>
-
                                         <td class="px-6 py-4">
                                             @php
                                                 $images = [];
@@ -82,17 +82,39 @@
                                             @endphp
 
                                             @if($imageUrl)
-                                                <img src="{{ $imageUrl }}" alt="{{ $car->model }}" class="w-16 h-10 object-cover rounded">
+                                                <img
+                                                    src="{{ $imageUrl }}"
+                                                    alt="{{ $car->model }}"
+                                                    class="w-24 h-16 object-cover rounded-lg border border-gray-200"
+                                                    onerror="this.onerror=null;this.src='{{ asset('images/no-car-image.png') }}';"
+                                                >
                                             @else
-                                                <div class="w-16 h-10 bg-gray-200 rounded flex items-center justify-center">
+                                                <div class="w-24 h-16 bg-gray-200 rounded-lg flex items-center justify-center border border-gray-200">
                                                     <i class="fas fa-image text-gray-400"></i>
                                                 </div>
                                             @endif
                                         </td>
 
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            @if($car->plate_number)
+                                                <span class="font-semibold tracking-wide">
+                                                    {{ $car->plate_number }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400">No Plate</span>
+                                            @endif
+                                        </td>
+
                                         <td class="px-6 py-4 text-sm text-gray-900 font-medium">
-                                            {{ $car->brand->name ?? 'N/A' }} {{ $car->model }}
-                                            <div class="text-xs text-gray-500">
+                                            <div class="font-semibold">
+                                                {{ $car->brand->name ?? 'N/A' }}
+                                            </div>
+
+                                            <div>
+                                                {{ $car->model }}
+                                            </div>
+
+                                            <div class="text-xs text-gray-500 mt-1">
                                                 {{ optional($car->carType)->name ?: 'No Type' }}
                                             </div>
                                         </td>
@@ -139,6 +161,7 @@
                                                     data-brand-id="{{ $car->brand_id }}"
                                                     data-car-type-id="{{ $car->car_type_id }}"
                                                     data-model="{{ $car->model }}"
+                                                    data-plate-number="{{ $car->plate_number }}"
                                                     data-transmission-id="{{ $car->transmission_id }}"
                                                     data-fuel-type-id="{{ $car->fuel_type_id }}"
                                                     data-seats="{{ $car->seats }}"
@@ -153,9 +176,11 @@
                                                     action="{{ route('admin.cars.destroy', $car->id) }}" method="POST">
                                                     @csrf
                                                     @method('DELETE')
+
                                                     <button type="button"
                                                         class="deleteCarBtn w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded flex items-center justify-center transition"
-                                                        title="Delete" data-form-id="deleteForm-{{ $car->id }}">
+                                                        title="Delete"
+                                                        data-form-id="deleteForm-{{ $car->id }}">
                                                         <i class="fas fa-trash text-sm"></i>
                                                     </button>
                                                 </form>
@@ -183,16 +208,21 @@
                     <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
                         <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
                             <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">Add New Car</h2>
+
                             <button id="closeModal" class="text-gray-500 hover:text-gray-700 text-2xl">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
 
-                        <form id="addCarForm" action="{{ route('admin.cars.store') }}" method="POST"
-                            enctype="multipart/form-data" class="p-6 space-y-6"
+                        <form id="addCarForm"
+                            action="{{ route('admin.cars.store') }}"
+                            method="POST"
+                            enctype="multipart/form-data"
+                            class="p-6 space-y-6"
                             data-store-route="{{ route('admin.cars.store') }}"
                             data-update-route="{{ route('admin.cars.update', ':id') }}">
                             @csrf
+
                             <input type="hidden" id="carId" name="car_id">
                             <input type="hidden" id="methodField" name="_method" value="POST">
 
@@ -220,8 +250,25 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Model *</label>
-                                <input type="text" name="model" id="modelInput" required placeholder="e.g., Camry, Accord"
+                                <input type="text"
+                                    name="model"
+                                    id="modelInput"
+                                    required
+                                    placeholder="e.g., Camry, Accord"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Plate Number</label>
+                                <input type="text"
+                                    name="plate_number"
+                                    id="plateNumberInput"
+                                    placeholder="e.g., ABC 1234"
+                                    maxlength="20"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Optional. Plate number will be saved in uppercase.
+                                </p>
                             </div>
 
                             <div>
@@ -248,29 +295,45 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Seats</label>
-                                <input type="number" name="seats" id="seatsInput" value="4" min="1" max="10"
+                                <input type="number"
+                                    name="seats"
+                                    id="seatsInput"
+                                    value="4"
+                                    min="1"
+                                    max="10"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Price Per Day (₱) *</label>
-                                <input type="number" name="price_per_day" id="priceInput" step="0.01" required
+                                <input type="number"
+                                    name="price_per_day"
+                                    id="priceInput"
+                                    step="0.01"
+                                    required
                                     placeholder="e.g., 99.99"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                <textarea name="description" id="descriptionInput" rows="4"
+                                <textarea name="description"
+                                    id="descriptionInput"
+                                    rows="4"
                                     placeholder="Car features and details..."
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Images</label>
-                                <input type="file" name="images[]" multiple accept="image/*"
+                                <input type="file"
+                                    name="images[]"
+                                    multiple
+                                    accept="image/*"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                                <p class="text-xs text-gray-500 mt-1">Upload multiple images (optional)</p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Upload multiple images (optional)
+                                </p>
                             </div>
 
                             <div>
@@ -286,13 +349,21 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <p class="text-xs text-gray-500 mt-1">Assign a tracker to this car</p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Assign a tracker to this car
+                                </p>
                             </div>
 
                             <div class="flex items-center">
-                                <input type="checkbox" name="active" id="activeCheckbox" value="1" checked
+                                <input type="checkbox"
+                                    name="active"
+                                    id="activeCheckbox"
+                                    value="1"
+                                    checked
                                     class="w-4 h-4 text-green-600 rounded">
-                                <label for="activeCheckbox" class="ml-2 text-sm font-medium text-gray-700">Active</label>
+                                <label for="activeCheckbox" class="ml-2 text-sm font-medium text-gray-700">
+                                    Active
+                                </label>
                             </div>
 
                             <div class="border-t border-gray-200 pt-6 flex gap-3 justify-end">
@@ -300,6 +371,7 @@
                                     class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition font-medium">
                                     Cancel
                                 </button>
+
                                 <button type="submit"
                                     class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium flex items-center gap-2">
                                     <i class="fas fa-save"></i>
@@ -316,11 +388,13 @@
                             <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
                             <h2 class="text-xl font-bold text-gray-900 mb-2">Delete Car</h2>
                             <p class="text-gray-600 mb-6">Are you sure you want to delete this car?</p>
+
                             <div class="flex justify-center gap-3">
                                 <button id="deleteCancelBtn"
                                     class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700">
                                     Cancel
                                 </button>
+
                                 <button id="deleteConfirmBtn"
                                     class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
                                     Delete

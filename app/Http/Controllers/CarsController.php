@@ -71,13 +71,19 @@ class CarsController extends Controller
 
     public function store(Request $request)
     {
-  
+        $request->merge([
+            'plate_number' => $request->plate_number
+                ? strtoupper(trim($request->plate_number))
+                : null,
+        ]);
+
         $validated = $request->validate([
             'brand_id' => 'required|exists:brands,id',
             'car_type_id' => 'required|exists:car_types,id',
             'transmission_id' => 'required|exists:transmissions,id',
             'fuel_type_id' => 'required|exists:fuel_types,id',
             'model' => 'required|string|max:255',
+            'plate_number' => 'nullable|string|max:20|unique:cars,plate_number',
             'seats' => 'nullable|integer|min:1|max:10',
             'price_per_day' => 'required|numeric|min:0.01',
             'description' => 'nullable|string',
@@ -85,6 +91,9 @@ class CarsController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'active' => 'nullable|boolean',
             'tracker_id' => 'nullable|exists:trackers,id',
+        ], [
+            'plate_number.unique' => 'This plate number is already registered to another car.',
+            'plate_number.max' => 'The plate number must not be greater than 20 characters.',
         ]);
 
         if (!empty($validated['tracker_id'])) {
@@ -119,12 +128,19 @@ class CarsController extends Controller
     {
         $car = Car::findOrFail($id);
 
+        $request->merge([
+            'plate_number' => $request->plate_number
+                ? strtoupper(trim($request->plate_number))
+                : null,
+        ]);
+
         $validated = $request->validate([
             'brand_id' => 'required|exists:brands,id',
             'car_type_id' => 'required|exists:car_types,id',
             'transmission_id' => 'required|exists:transmissions,id',
             'fuel_type_id' => 'required|exists:fuel_types,id',
             'model' => 'required|string|max:255',
+            'plate_number' => 'nullable|string|max:20|unique:cars,plate_number,' . $car->id,
             'seats' => 'nullable|integer|min:1|max:10',
             'price_per_day' => 'required|numeric|min:0.01',
             'description' => 'nullable|string',
@@ -132,6 +148,9 @@ class CarsController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'active' => 'nullable|boolean',
             'tracker_id' => 'nullable|exists:trackers,id',
+        ], [
+            'plate_number.unique' => 'This plate number is already registered to another car.',
+            'plate_number.max' => 'The plate number must not be greater than 20 characters.',
         ]);
 
         if (!empty($validated['tracker_id'])) {
