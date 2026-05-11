@@ -1,13 +1,23 @@
 @extends('layouts.adminlayout')
 
 @section('content')
+@php
+    $isManager = auth()->check() && (int) auth()->user()->role_id === 4;
+
+    $returnIssuesIndexRoute = $isManager
+        ? route('manager.return-issues.index')
+        : route('admin.return-issues.index');
+
+    $returnIssueUpdateRoute = fn ($issueId) => $isManager
+        ? route('manager.return-issues.update-status', $issueId)
+        : route('admin.return-issues.update-status', $issueId);
+@endphp
+
 <div class="h-screen overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pb-8">
 
-        <!-- Header Section -->
         <div class="mb-6 sm:mb-8">
             <div class="flex flex-col gap-4 sm:gap-6">
-                <!-- Title -->
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
                         Damage & Return Reports
@@ -17,9 +27,8 @@
                     </p>
                 </div>
 
-                <!-- Filters -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                    <form method="GET" action="{{ route('admin.return-issues.index') }}" class="flex flex-col sm:flex-row gap-3">
+                    <form method="GET" action="{{ $returnIssuesIndexRoute }}" class="flex flex-col sm:flex-row gap-3">
                         <div class="flex-1">
                             <label class="block text-xs font-medium text-gray-700 mb-1.5">Filter by Status</label>
                             <select name="issue_status_id" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
@@ -38,7 +47,7 @@
                                 <span class="sm:hidden">Filter</span>
                             </button>
 
-                            <a href="{{ route('admin.return-issues.index') }}" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors text-center">
+                            <a href="{{ $returnIssuesIndexRoute }}" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors text-center">
                                 Reset
                             </a>
                         </div>
@@ -47,7 +56,6 @@
             </div>
         </div>
 
-        <!-- Alert Messages -->
         @if(session('success'))
             <div class="mb-6 rounded-xl bg-green-50 border border-green-200 p-4 shadow-sm animate-fade-in">
                 <div class="flex items-start gap-3">
@@ -109,7 +117,6 @@
             };
         @endphp
 
-        <!-- Reports List -->
         <div class="space-y-4 sm:space-y-6">
             @forelse($returnIssues as $issue)
                 @php
@@ -125,8 +132,6 @@
                 @endphp
 
                 <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-
-                    <!-- Card Header -->
                     <div class="p-4 sm:p-6 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
                         <div class="flex flex-col gap-3 sm:gap-4">
                             <div class="flex items-start justify-between gap-3">
@@ -144,7 +149,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Mobile: Issue Status Badge -->
                                 <div class="sm:hidden">
                                     <span
                                         data-role="issue-status-badge"
@@ -159,7 +163,6 @@
                                 </div>
                             </div>
 
-                            <!-- Desktop: Status Badges -->
                             <div class="hidden sm:flex flex-wrap gap-2">
                                 <span
                                     data-role="issue-status-badge"
@@ -179,7 +182,6 @@
                                 </span>
                             </div>
 
-                            <!-- Mobile: Booking Status Badge -->
                             <div class="sm:hidden">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border {{ $bookingStatusClasses[optional($issue->booking->status)->name] ?? 'bg-gray-100 text-gray-800 border-gray-200' }}">
                                     Booking: {{ optional($issue->booking->status)->name ?? 'No Status' }}
@@ -188,10 +190,7 @@
                         </div>
                     </div>
 
-                    <!-- Card Body -->
                     <div class="p-4 sm:p-6">
-
-                        <!-- Info Grid -->
                         <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
                             <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-200">
                                 <p class="text-xs uppercase tracking-wide text-gray-500 font-medium mb-1">Booking ID</p>
@@ -241,7 +240,6 @@
                             </div>
                         </div>
 
-                        <!-- Description -->
                         <div class="mb-5 sm:mb-6">
                             <div class="flex items-center gap-2 mb-2.5">
                                 <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,7 +254,6 @@
                             </div>
                         </div>
 
-                        <!-- Photos -->
                         <div class="mb-6">
                             <div class="flex items-center gap-2 mb-3">
                                 <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -281,7 +278,7 @@
                                             data-gallery='@json($photoUrls)'
                                             data-issue-id="{{ $issue->id }}"
                                             data-current-status="{{ $currentIssueStatusName }}"
-                                            data-update-url="{{ route('admin.return-issues.update-status', $issue->id) }}"
+                                            data-update-url="{{ $returnIssueUpdateRoute($issue->id) }}"
                                             onclick="openIssuePhotoModal(this)"
                                         >
                                             <img
@@ -291,35 +288,22 @@
                                                 onerror="this.onerror=null;this.src='{{ asset('images/no-car-image.png') }}';"
                                             >
                                             <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                                            <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <svg class="w-4 h-4 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
-                                                    <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
-                                                </svg>
-                                            </div>
                                         </button>
                                     @endforeach
                                 </div>
                             @else
                                 <div class="bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl p-8 text-center">
-                                    <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
                                     <p class="text-sm text-gray-500">No photos uploaded</p>
                                 </div>
                             @endif
                         </div>
 
-                        <!-- Update Status Section -->
                         <div class="border-t border-gray-200 pt-5 sm:pt-6">
                             <div class="flex items-center gap-2 mb-4">
-                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
                                 <h3 class="text-base sm:text-lg font-semibold text-gray-900">Update Status</h3>
                             </div>
 
-                            <form action="{{ route('admin.return-issues.update-status', $issue->id) }}" method="POST" class="space-y-4">
+                            <form action="{{ $returnIssueUpdateRoute($issue->id) }}" method="POST" class="space-y-4">
                                 @csrf
                                 @method('PATCH')
 
@@ -373,10 +357,7 @@
 
                                     <div class="flex items-end">
                                         <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 active:from-indigo-800 active:to-indigo-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                            </svg>
-                                            <span>Update Report</span>
+                                            Update Report
                                         </button>
                                     </div>
                                 </div>
@@ -386,25 +367,18 @@
                 </div>
             @empty
                 <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-200 p-10 sm:p-16 text-center">
-                    <div class="max-w-md mx-auto">
-                        <svg class="w-16 h-16 sm:w-20 sm:h-20 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Reports Found</h3>
-                        <p class="text-sm sm:text-base text-gray-500">There are no return issue reports matching your criteria.</p>
-                    </div>
+                    <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Reports Found</h3>
+                    <p class="text-sm sm:text-base text-gray-500">There are no return issue reports matching your criteria.</p>
                 </div>
             @endforelse
         </div>
 
-        <!-- Pagination -->
         <div class="mt-6 sm:mt-8">
             {{ $returnIssues->links() }}
         </div>
     </div>
 </div>
 
-<!-- Photo Modal -->
 <div
     id="issuePhotoModal"
     class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 p-4"
@@ -415,9 +389,7 @@
             onclick="closeIssuePhotoModal()"
             class="absolute -top-12 right-0 text-white hover:text-gray-300 transition"
         >
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
+            ✕
         </button>
 
         <button
@@ -426,9 +398,7 @@
             onclick="showPreviousIssuePhoto()"
             class="absolute left-0 sm:left-3 top-1/2 -translate-y-1/2 bg-white/15 hover:bg-white/25 text-white backdrop-blur px-3 py-3 rounded-full transition"
         >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
+            ‹
         </button>
 
         <div class="w-full flex flex-col items-center">
@@ -450,9 +420,7 @@
             onclick="showNextIssuePhoto()"
             class="absolute right-0 sm:right-3 top-1/2 -translate-y-1/2 bg-white/15 hover:bg-white/25 text-white backdrop-blur px-3 py-3 rounded-full transition"
         >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
+            ›
         </button>
     </div>
 </div>
@@ -545,18 +513,14 @@
     }
 
     function showPreviousIssuePhoto() {
-        if (!issuePhotoGallery.length) {
-            return;
-        }
+        if (!issuePhotoGallery.length) return;
 
         issuePhotoIndex = (issuePhotoIndex - 1 + issuePhotoGallery.length) % issuePhotoGallery.length;
         renderIssuePhotoModal();
     }
 
     function showNextIssuePhoto() {
-        if (!issuePhotoGallery.length) {
-            return;
-        }
+        if (!issuePhotoGallery.length) return;
 
         issuePhotoIndex = (issuePhotoIndex + 1) % issuePhotoGallery.length;
         renderIssuePhotoModal();
@@ -644,21 +608,11 @@
         const modal = document.getElementById('issuePhotoModal');
         const isOpen = modal && !modal.classList.contains('hidden');
 
-        if (!isOpen) {
-            return;
-        }
+        if (!isOpen) return;
 
-        if (event.key === 'Escape') {
-            closeIssuePhotoModal();
-        }
-
-        if (event.key === 'ArrowLeft') {
-            showPreviousIssuePhoto();
-        }
-
-        if (event.key === 'ArrowRight') {
-            showNextIssuePhoto();
-        }
+        if (event.key === 'Escape') closeIssuePhotoModal();
+        if (event.key === 'ArrowLeft') showPreviousIssuePhoto();
+        if (event.key === 'ArrowRight') showNextIssuePhoto();
     });
 </script>
 @endsection
