@@ -5,152 +5,7 @@
 @endphp
 
 @section('content')
-<style>
-    .calendar-page-wrapper {
-        overflow-x: hidden;
-    }
-
-    .calendar-scroll-wrapper {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: auto !important;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-        position: relative;
-    }
-
-    .calendar-scroll-wrapper::-webkit-scrollbar {
-        height: 9px;
-    }
-
-    .calendar-scroll-wrapper::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 999px;
-    }
-
-    .calendar-scroll-wrapper::-webkit-scrollbar-thumb {
-        background: #94a3b8;
-        border-radius: 999px;
-    }
-
-    .calendar-scroll-wrapper::-webkit-scrollbar-thumb:hover {
-        background: #64748b;
-    }
-
-    .calendar-scroll-table {
-        width: max-content !important;
-        min-width: max-content !important;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
-    .vehicle-sticky-head,
-    .vehicle-sticky-cell {
-        position: sticky !important;
-        left: 0;
-    }
-
-    .vehicle-sticky-head {
-        z-index: 40;
-        min-width: 260px;
-        max-width: 260px;
-        box-shadow: 8px 0 18px rgba(15, 23, 42, 0.14);
-    }
-
-    .vehicle-sticky-cell {
-        z-index: 20;
-        min-width: 260px;
-        max-width: 260px;
-        box-shadow: 8px 0 18px rgba(15, 23, 42, 0.08);
-    }
-
-    .calendar-date-cell,
-    .calendar-day-cell {
-        min-width: 112px;
-    }
-
-    .calendar-slide-btn {
-        width: 38px;
-        height: 38px;
-        border-radius: 999px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        color: #334155;
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
-        transition: 0.2s ease;
-    }
-
-    .calendar-slide-btn:hover {
-        background: #2563eb;
-        color: #ffffff;
-        border-color: #2563eb;
-    }
-
-    .calendar-slide-btn:active {
-        transform: scale(0.96);
-    }
-
-    .calendar-timeline-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 14px 18px;
-        background: #ffffff;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    @media (max-width: 768px) {
-        .calendar-page-wrapper {
-            padding-left: 10px !important;
-            padding-right: 10px !important;
-        }
-
-        .calendar-timeline-bar {
-            padding: 12px;
-        }
-
-        .vehicle-sticky-head,
-        .vehicle-sticky-cell {
-            min-width: 190px;
-            max-width: 190px;
-            padding-left: 12px !important;
-            padding-right: 12px !important;
-        }
-
-        .vehicle-icon-box {
-            display: none;
-        }
-
-        .vehicle-name {
-            font-size: 12px;
-            line-height: 1.25;
-            white-space: normal;
-        }
-
-        .vehicle-plate,
-        .vehicle-meta-badge {
-            font-size: 10px;
-            padding: 3px 6px;
-        }
-
-        .calendar-date-cell,
-        .calendar-day-cell {
-            min-width: 105px;
-        }
-
-        .calendar-slide-btn {
-            width: 36px;
-            height: 36px;
-        }
-    }
-</style>
-
-<div class="calendar-page-wrapper h-screen overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+<div class="h-screen overflow-y-auto overflow-x-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
     <div class="max-w-7xl mx-auto">
         <div class="mb-4">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -285,33 +140,41 @@
                 <span class="text-sm font-medium text-blue-600">Updating table...</span>
             </div>
 
-            <div class="calendar-timeline-bar">
+            <div class="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
                 <div>
                     <p class="text-sm font-semibold text-gray-700">Calendar Timeline</p>
                     <p class="text-xs text-gray-400">Use the arrows or swipe to slide left and right</p>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <button type="button" id="calendarScrollLeft" class="calendar-slide-btn" title="Scroll left">
+                    <button
+                        type="button"
+                        id="calendarScrollLeft"
+                        class="w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-blue-600 hover:text-white transition"
+                        title="Scroll left">
                         <i class="fas fa-chevron-left"></i>
                     </button>
 
-                    <button type="button" id="calendarScrollRight" class="calendar-slide-btn" title="Scroll right">
+                    <button
+                        type="button"
+                        id="calendarScrollRight"
+                        class="w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-blue-600 hover:text-white transition"
+                        title="Scroll right">
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
             </div>
 
-            <div id="calendarScrollWrapper" class="calendar-scroll-wrapper">
-                <table class="calendar-scroll-table">
+            <div id="calendarScrollWrapper" class="overflow-x-auto">
+                <table class="min-w-max w-max">
                     <thead>
                         <tr class="bg-gradient-to-r from-gray-800 to-gray-900 text-white sticky top-0 z-20">
-                            <th class="vehicle-sticky-head bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-4 text-left text-sm font-bold">
+                            <th class="bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-4 text-left text-sm font-bold min-w-64">
                                 <i class="fas fa-car mr-2"></i>Vehicle Details
                             </th>
 
                             @foreach($calendarDates as $date)
-                                <th class="calendar-date-cell px-3 py-4 text-center whitespace-nowrap">
+                                <th class="px-3 py-4 text-center min-w-24 whitespace-nowrap">
                                     <div class="flex flex-col items-center gap-1">
                                         <span class="font-bold text-base">{{ $date['day'] }}</span>
                                         <span class="text-xs opacity-80">{{ $date['date'] }}</span>
@@ -324,36 +187,36 @@
                     <tbody class="divide-y divide-gray-200">
                         @forelse($cars as $car)
                             <tr class="hover:bg-blue-50 transition duration-200">
-                                <td class="vehicle-sticky-cell bg-white hover:bg-blue-50 px-6 py-3 font-medium">
+                                <td class="bg-white hover:bg-blue-50 px-6 py-3 font-medium min-w-64">
                                     <div class="flex items-start gap-3">
-                                        <div class="vehicle-icon-box p-2.5 bg-blue-100 rounded-lg flex-shrink-0">
+                                        <div class="p-2.5 bg-blue-100 rounded-lg flex-shrink-0">
                                             <i class="fas fa-car text-blue-600 text-lg"></i>
                                         </div>
 
                                         <div class="min-w-0">
-                                            <p class="vehicle-name font-bold text-gray-900 truncate">
+                                            <p class="font-bold text-gray-900 truncate">
                                                 {{ $car->brand->name ?? 'Unknown' }}, {{ $car->model }}
                                             </p>
 
                                             <div class="mt-1">
                                                 @if($car->plate_number)
-                                                    <span class="vehicle-plate inline-flex items-center px-2.5 py-1 rounded-md border border-gray-300 bg-white text-xs font-semibold text-gray-700 tracking-wide shadow-sm">
+                                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-300 bg-white text-xs font-semibold text-gray-700 tracking-wide shadow-sm">
                                                         {{ $car->plate_number }}
                                                     </span>
                                                 @else
-                                                    <span class="vehicle-plate inline-flex items-center px-2.5 py-1 rounded-md border border-gray-200 bg-gray-50 text-xs font-medium text-gray-400">
+                                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-200 bg-gray-50 text-xs font-medium text-gray-400">
                                                         No Plate
                                                     </span>
                                                 @endif
                                             </div>
 
                                             <div class="flex gap-2 mt-2 flex-wrap">
-                                                <span class="vehicle-meta-badge inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
                                                     <i class="fas fa-cog"></i>
                                                     {{ $car->transmission->type ?? 'N/A' }}
                                                 </span>
 
-                                                <span class="vehicle-meta-badge inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
                                                     <i class="fas fa-users"></i>
                                                     {{ $car->seats ?? 0 }}
                                                 </span>
@@ -363,7 +226,7 @@
                                 </td>
 
                                 @foreach($calendarDates as $date)
-                                    <td class="calendar-day-cell px-3 py-2 text-center">
+                                    <td class="px-3 py-2 text-center min-w-24">
                                         @php
                                             $dayStart = \Carbon\Carbon::parse($date['full'])->startOfDay();
                                             $dayEnd = \Carbon\Carbon::parse($date['full'])->endOfDay();
