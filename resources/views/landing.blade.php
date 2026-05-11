@@ -536,10 +536,11 @@
 
                             <ul class="popular-showcase-info">
                                 <li>
-                                    <i class="fas fa-car-side"></i>
-                                    <span>Doors: {{ $car->doors ?? '2' }}</span>
-                                </li>
-                                <li>
+                                        <i class="fas fa-car-side"></i>
+                                        <span>Type: {{ $car->carType->name ?? 'N/A' }}</span>
+                                    </li>
+                                    
+                                      <li>
                                     <i class="fas fa-cogs"></i>
                                     <span>Transmission: {{ $car->transmission->type ?? 'Automatic' }}</span>
                                 </li>
