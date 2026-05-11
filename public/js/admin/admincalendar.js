@@ -73,11 +73,13 @@ async function fetchFilteredData() {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
-        const newWrapper = doc.querySelector('.overflow-x-auto');
-        const curWrapper = document.querySelector('.overflow-x-auto');
+        const newWrapper = doc.querySelector('#calendarScrollWrapper');
+        const curWrapper = document.querySelector('#calendarScrollWrapper');
 
         if (newWrapper && curWrapper) {
+            const oldScrollLeft = curWrapper.scrollLeft;
             curWrapper.innerHTML = newWrapper.innerHTML;
+            curWrapper.scrollLeft = oldScrollLeft;
         }
 
         const newNav = doc.querySelector('.min-w-fit');
@@ -716,6 +718,30 @@ function togglePassword(inputId, button) {
     }
 }
 
+function bindCalendarScrollButtons() {
+    const calendarScrollWrapper = document.getElementById('calendarScrollWrapper');
+    const scrollLeftBtn = document.getElementById('calendarScrollLeft');
+    const scrollRightBtn = document.getElementById('calendarScrollRight');
+
+    if (!calendarScrollWrapper || !scrollLeftBtn || !scrollRightBtn) {
+        return;
+    }
+
+    scrollLeftBtn.addEventListener('click', function () {
+        calendarScrollWrapper.scrollBy({
+            left: -360,
+            behavior: 'smooth'
+        });
+    });
+
+    scrollRightBtn.addEventListener('click', function () {
+        calendarScrollWrapper.scrollBy({
+            left: 360,
+            behavior: 'smooth'
+        });
+    });
+}
+
 function bindStaticEvents() {
     const form = qs('#filterForm');
     const searchInput = form?.querySelector('input[name="search"]');
@@ -824,5 +850,6 @@ window.togglePassword = togglePassword;
 
 document.addEventListener('DOMContentLoaded', () => {
     bindStaticEvents();
+    bindCalendarScrollButtons();
     setInterval(fetchFilteredData, 30000);
 });

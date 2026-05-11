@@ -4,18 +4,24 @@
     $panelPrefix = $panelPrefix ?? (request()->is('manager*') ? 'manager' : 'admin');
 @endphp
 
-@section('custom-styles')
+@section('content')
 <style>
+    .calendar-page-wrapper {
+        overflow-x: hidden;
+    }
+
     .calendar-scroll-wrapper {
         width: 100%;
-        overflow-x: auto;
+        max-width: 100%;
+        overflow-x: auto !important;
         overflow-y: visible;
         -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
         position: relative;
     }
 
     .calendar-scroll-wrapper::-webkit-scrollbar {
-        height: 8px;
+        height: 9px;
     }
 
     .calendar-scroll-wrapper::-webkit-scrollbar-track {
@@ -24,18 +30,24 @@
     }
 
     .calendar-scroll-wrapper::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
+        background: #94a3b8;
         border-radius: 999px;
     }
 
-    .calendar-table {
-        min-width: max-content;
-        width: max-content;
+    .calendar-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+    }
+
+    .calendar-scroll-table {
+        width: max-content !important;
+        min-width: max-content !important;
+        border-collapse: separate;
+        border-spacing: 0;
     }
 
     .vehicle-sticky-head,
     .vehicle-sticky-cell {
-        position: sticky;
+        position: sticky !important;
         left: 0;
     }
 
@@ -43,14 +55,53 @@
         z-index: 40;
         min-width: 260px;
         max-width: 260px;
-        box-shadow: 8px 0 18px rgba(15, 23, 42, 0.12);
+        box-shadow: 8px 0 18px rgba(15, 23, 42, 0.14);
     }
 
     .vehicle-sticky-cell {
         z-index: 20;
         min-width: 260px;
         max-width: 260px;
-        box-shadow: 8px 0 18px rgba(15, 23, 42, 0.06);
+        box-shadow: 8px 0 18px rgba(15, 23, 42, 0.08);
+    }
+
+    .calendar-date-cell,
+    .calendar-day-cell {
+        min-width: 112px;
+    }
+
+    .calendar-slide-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+        transition: 0.2s ease;
+    }
+
+    .calendar-slide-btn:hover {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+    }
+
+    .calendar-slide-btn:active {
+        transform: scale(0.96);
+    }
+
+    .calendar-timeline-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 18px;
+        background: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
     }
 
     @media (max-width: 768px) {
@@ -59,16 +110,14 @@
             padding-right: 10px !important;
         }
 
-        .vehicle-sticky-head {
-            min-width: 185px;
-            max-width: 185px;
-            padding-left: 12px !important;
-            padding-right: 12px !important;
+        .calendar-timeline-bar {
+            padding: 12px;
         }
 
+        .vehicle-sticky-head,
         .vehicle-sticky-cell {
-            min-width: 185px;
-            max-width: 185px;
+            min-width: 190px;
+            max-width: 190px;
             padding-left: 12px !important;
             padding-right: 12px !important;
         }
@@ -79,29 +128,29 @@
 
         .vehicle-name {
             font-size: 12px;
-            line-height: 1.2;
+            line-height: 1.25;
             white-space: normal;
         }
 
-        .vehicle-plate {
-            font-size: 10px;
-            padding: 3px 6px;
-        }
-
+        .vehicle-plate,
         .vehicle-meta-badge {
             font-size: 10px;
             padding: 3px 6px;
         }
 
-        .calendar-date-cell {
-            min-width: 95px;
+        .calendar-date-cell,
+        .calendar-day-cell {
+            min-width: 105px;
+        }
+
+        .calendar-slide-btn {
+            width: 36px;
+            height: 36px;
         }
     }
 </style>
-@endsection
 
-@section('content')
-<div class="calendar-page-wrapper h-screen overflow-y-auto overflow-x-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+<div class="calendar-page-wrapper h-screen overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
     <div class="max-w-7xl mx-auto">
         <div class="mb-4">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -236,8 +285,25 @@
                 <span class="text-sm font-medium text-blue-600">Updating table...</span>
             </div>
 
-            <div class="calendar-scroll-wrapper">
-                <table class="calendar-table">
+            <div class="calendar-timeline-bar">
+                <div>
+                    <p class="text-sm font-semibold text-gray-700">Calendar Timeline</p>
+                    <p class="text-xs text-gray-400">Use the arrows or swipe to slide left and right</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button type="button" id="calendarScrollLeft" class="calendar-slide-btn" title="Scroll left">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+
+                    <button type="button" id="calendarScrollRight" class="calendar-slide-btn" title="Scroll right">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="calendarScrollWrapper" class="calendar-scroll-wrapper">
+                <table class="calendar-scroll-table">
                     <thead>
                         <tr class="bg-gradient-to-r from-gray-800 to-gray-900 text-white sticky top-0 z-20">
                             <th class="vehicle-sticky-head bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-4 text-left text-sm font-bold">
@@ -245,7 +311,7 @@
                             </th>
 
                             @foreach($calendarDates as $date)
-                                <th class="calendar-date-cell px-3 py-4 text-center min-w-24 whitespace-nowrap">
+                                <th class="calendar-date-cell px-3 py-4 text-center whitespace-nowrap">
                                     <div class="flex flex-col items-center gap-1">
                                         <span class="font-bold text-base">{{ $date['day'] }}</span>
                                         <span class="text-xs opacity-80">{{ $date['date'] }}</span>
@@ -297,7 +363,7 @@
                                 </td>
 
                                 @foreach($calendarDates as $date)
-                                    <td class="px-3 py-2 text-center">
+                                    <td class="calendar-day-cell px-3 py-2 text-center">
                                         @php
                                             $dayStart = \Carbon\Carbon::parse($date['full'])->startOfDay();
                                             $dayEnd = \Carbon\Carbon::parse($date['full'])->endOfDay();
