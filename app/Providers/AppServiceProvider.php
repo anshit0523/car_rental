@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
             $pendingPaymentsCount = 0;
 
-            if (Auth::check() && in_array((int) Auth::user()->role_id, [1, 3])) {
+            if (Auth::check() && in_array((int) Auth::user()->role_id, [1, 3,4])) {
                 $pendingStatusId = DB::table('payment_statuses')
                     ->where('name', 'Pending')
                     ->value('id');
