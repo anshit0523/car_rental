@@ -209,7 +209,7 @@ class AdminDashboardController extends Controller
         return $row;
     })->values();
 
-    $revenueWithGrowth = $chartMonthlyRevenue->reverse()->values();
+    $revenueWithGrowth = $chartMonthlyRevenue->reverse()->values()->take(5);
 
     return view('admin.adminrevenue', [
         'monthlyRevenue' => $revenueWithGrowth,
