@@ -13,6 +13,25 @@ use Illuminate\Support\Facades\DB;
 
 class ReturnIssueController extends Controller
 {
+    private function isManager(): bool
+    {
+        return auth()->check() && (int) auth()->user()->role_id === 4;
+    }
+
+    private function bookingsIndexRoute(): string
+    {
+        return $this->isManager()
+            ? 'manager.bookings.index'
+            : 'admin.bookings.index';
+    }
+
+    private function returnIssuesIndexRoute(): string
+    {
+        return $this->isManager()
+            ? 'manager.return-issues.index'
+            : 'admin.return-issues.index';
+    }
+
     public function index(Request $request)
     {
         $issueStatusId = $request->get('issue_status_id');
@@ -91,7 +110,7 @@ class ReturnIssueController extends Controller
 
             if ($request->hasFile('photos')) {
                 foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('return-issues', 'public');
+                    $path = $photo->store('return-issues', config('filesystems.default'));
 
                     $issue->photos()->create([
                         'photo_path' => $path,
@@ -110,147 +129,125 @@ class ReturnIssueController extends Controller
             ]);
 
             ReturnIssueHistory::create([
-    'return_issue_id' => $issue->id,
-    'issue_status_id' => $pendingStatus->id,
-    'changed_by' => auth()->id(),
-    'event_type' => 'created',
-    'title' => 'Issue Report Created',
-    'message' => 'A new return issue was reported and marked as Pending.',
-    'final_charge' => 0,
-    'booking_status_name' => $validated['status_name'] ?? null,
-]);
+                'return_issue_id' => $issue->id,
+                'issue_status_id' => $pendingStatus->id,
+                'changed_by' => auth()->id(),
+                'event_type' => 'created',
+                'title' => 'Issue Report Created',
+                'message' => 'A new return issue was reported and marked as Pending.',
+                'final_charge' => 0,
+                'booking_status_name' => $validated['status_name'] ?? null,
+            ]);
         });
 
         return redirect()
-            ->route('admin.bookings.index')
+            ->route($this->bookingsIndexRoute())
             ->with('success', 'Return issue created successfully.');
     }
 
-  
-
-  public function updateStatus(Request $request, ReturnIssue $returnIssue)
-{
-    $validated = $request->validate([
-        'issue_status_id' => 'required|exists:issue_statuses,id',
-        'final_charge' => 'nullable|numeric|min:0',
-        'booking_status_name' => 'nullable|string|in:Checkup,Damage,Needs Repair',
-    ]);
-
-    $result = DB::transaction(function () use ($validated, $returnIssue) {
-        $issueStatus = IssueStatus::findOrFail($validated['issue_status_id']);
-
-        $oldIssueStatusId = (int) $returnIssue->issue_status_id;
-        $newIssueStatusId = (int) $issueStatus->id;
-        $statusChanged = $oldIssueStatusId !== $newIssueStatusId;
-
-        $oldFinalCharge = (float) $returnIssue->final_charge;
-        $newFinalCharge = array_key_exists('final_charge', $validated) && $validated['final_charge'] !== null
-            ? (float) $validated['final_charge']
-            : $oldFinalCharge;
-
-        $chargeChanged = $oldFinalCharge !== $newFinalCharge;
-
-        $returnIssue->update([
-            'status' => $issueStatus->name,
-            'issue_status_id' => $issueStatus->id,
-            'final_charge' => $newFinalCharge,
+    public function updateStatus(Request $request, ReturnIssue $returnIssue)
+    {
+        $validated = $request->validate([
+            'issue_status_id' => 'required|exists:issue_statuses,id',
+            'final_charge' => 'nullable|numeric|min:0',
+            'booking_status_name' => 'nullable|string|in:Checkup,Damage,Needs Repair',
         ]);
 
-        $bookingStatusChanged = false;
-        $updatedBookingStatusName = optional($returnIssue->booking->status)->name;
+        $result = DB::transaction(function () use ($validated, $returnIssue) {
+            $issueStatus = IssueStatus::findOrFail($validated['issue_status_id']);
 
-        if (!empty($validated['booking_status_name'])) {
-            $bookingStatus = Status::where('name', $validated['booking_status_name'])->first();
+            $oldIssueStatusId = (int) $returnIssue->issue_status_id;
+            $newIssueStatusId = (int) $issueStatus->id;
+            $statusChanged = $oldIssueStatusId !== $newIssueStatusId;
 
-            if ($bookingStatus && (int) $returnIssue->booking->status_id !== (int) $bookingStatus->id) {
-                $returnIssue->booking->update([
-                    'status_id' => $bookingStatus->id,
-                ]);
+            $oldFinalCharge = (float) $returnIssue->final_charge;
+            $newFinalCharge = array_key_exists('final_charge', $validated) && $validated['final_charge'] !== null
+                ? (float) $validated['final_charge']
+                : $oldFinalCharge;
 
-                $bookingStatusChanged = true;
-                $updatedBookingStatusName = $bookingStatus->name;
+            $chargeChanged = $oldFinalCharge !== $newFinalCharge;
+
+            $returnIssue->update([
+                'status' => $issueStatus->name,
+                'issue_status_id' => $issueStatus->id,
+                'final_charge' => $newFinalCharge,
+            ]);
+
+            $bookingStatusChanged = false;
+            $updatedBookingStatusName = optional($returnIssue->booking->status)->name;
+
+            if (!empty($validated['booking_status_name'])) {
+                $bookingStatus = Status::where('name', $validated['booking_status_name'])->first();
+
+                if ($bookingStatus && (int) $returnIssue->booking->status_id !== (int) $bookingStatus->id) {
+                    $returnIssue->booking->update([
+                        'status_id' => $bookingStatus->id,
+                    ]);
+
+                    $bookingStatusChanged = true;
+                    $updatedBookingStatusName = $bookingStatus->name;
+                }
             }
-        }
 
-        if ($statusChanged || $chargeChanged || $bookingStatusChanged) {
-            $historyTitle = 'Issue Updated';
-            $historyMessageParts = [];
+            if ($statusChanged || $chargeChanged || $bookingStatusChanged) {
+                $historyTitle = 'Issue Updated';
+                $historyMessageParts = [];
+
+                if ($statusChanged) {
+                    $historyTitle = 'Issue Status Updated';
+                    $historyMessageParts[] = 'Status changed to ' . ($issueStatus->label ?? ucfirst($issueStatus->name)) . '.';
+                }
+
+                if ($chargeChanged) {
+                    $historyMessageParts[] = 'Final charge updated to ₱' . number_format($newFinalCharge, 2) . '.';
+                }
+
+                if ($bookingStatusChanged) {
+                    $historyMessageParts[] = 'Booking status changed to ' . $updatedBookingStatusName . '.';
+                }
+
+                ReturnIssueHistory::create([
+                    'return_issue_id' => $returnIssue->id,
+                    'issue_status_id' => $issueStatus->id,
+                    'changed_by' => auth()->id(),
+                    'event_type' => 'updated',
+                    'title' => $historyTitle,
+                    'message' => implode(' ', $historyMessageParts),
+                    'final_charge' => $newFinalCharge,
+                    'booking_status_name' => $updatedBookingStatusName,
+                ]);
+            }
 
             if ($statusChanged) {
-                $historyTitle = 'Issue Status Updated';
-                $historyMessageParts[] = 'Status changed to ' . ($issueStatus->label ?? ucfirst($issueStatus->name)) . '.';
+                Notification::create([
+                    'user_id' => $returnIssue->booking->user_id,
+                    'booking_id' => $returnIssue->booking->id,
+                    'title' => 'Return Issue Updated',
+                    'message' => 'Your return issue "' . $returnIssue->title . '" was updated to ' . ($issueStatus->label ?? ucfirst($issueStatus->name)) . '.',
+                    'type' => 'booking',
+                    'link' => route('user.return-issues.show', $returnIssue->id),
+                ]);
             }
 
-            if ($chargeChanged) {
-                $historyMessageParts[] = 'Final charge updated to ₱' . number_format($newFinalCharge, 2) . '.';
-            }
-
-            if ($bookingStatusChanged) {
-                $historyMessageParts[] = 'Booking status changed to ' . $updatedBookingStatusName . '.';
-            }
-
-            ReturnIssueHistory::create([
-                'return_issue_id' => $returnIssue->id,
+            return [
+                'success' => true,
+                'status_changed' => $statusChanged,
+                'booking_status_changed' => $bookingStatusChanged,
+                'issue_id' => $returnIssue->id,
                 'issue_status_id' => $issueStatus->id,
-                'changed_by' => auth()->id(),
-                'event_type' => 'updated',
-                'title' => $historyTitle,
-                'message' => implode(' ', $historyMessageParts),
+                'issue_status_name' => $issueStatus->name,
+                'issue_status_label' => $issueStatus->label ?? ucfirst($issueStatus->name),
                 'final_charge' => $newFinalCharge,
                 'booking_status_name' => $updatedBookingStatusName,
-            ]);
+            ];
+        });
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json($result);
         }
 
-        if ($statusChanged) {
-            Notification::create([
-                'user_id' => $returnIssue->booking->user_id,
-                'booking_id' => $returnIssue->booking->id,
-                'title' => 'Return Issue Updated',
-                'message' => 'Your return issue "' . $returnIssue->title . '" was updated to ' . ($issueStatus->label ?? ucfirst($issueStatus->name)) . '.',
-                'type' => 'booking',
-                'link' => route('user.return-issues.show', $returnIssue->id),
-            ]);
-        }
-
-        return [
-            'success' => true,
-            'status_changed' => $statusChanged,
-            'booking_status_changed' => $bookingStatusChanged,
-            'issue_id' => $returnIssue->id,
-            'issue_status_id' => $issueStatus->id,
-            'issue_status_name' => $issueStatus->name,
-            'issue_status_label' => $issueStatus->label ?? ucfirst($issueStatus->name),
-            'final_charge' => $newFinalCharge,
-            'booking_status_name' => $updatedBookingStatusName,
-        ];
-    });
-
-    if ($request->expectsJson() || $request->ajax()) {
-        return response()->json($result);
+        return redirect()
+            ->route($this->returnIssuesIndexRoute())
+            ->with('success', 'Return issue updated successfully.');
     }
-
-    return redirect()
-        ->route('admin.return-issues.index')
-        ->with('success', 'Return issue updated successfully.');
-}
-
-
-   public function show(ReturnIssue $returnIssue)
-{
-    $returnIssue->load([
-        'booking.user',
-        'booking.car.brand',
-        'photos',
-        'reporter',
-        'issueStatus',
-        'histories.issueStatus',
-        'histories.changedBy',
-    ]);
-
-    abort_if($returnIssue->booking->user_id !== auth()->id(), 403);
-
-    return view('user.user_return_issue', compact('returnIssue'));
-}
-
-
 }
