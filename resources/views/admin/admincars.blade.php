@@ -299,8 +299,8 @@
                                     name="seats"
                                     id="seatsInput"
                                     value="4"
-                                    min="1"
-                                    max="10"
+                                    min="2"
+                                    max="18"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                             </div>
 
