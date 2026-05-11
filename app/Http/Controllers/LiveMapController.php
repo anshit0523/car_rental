@@ -23,7 +23,8 @@ class LiveMapController extends Controller
 
         return view('admin.adminreplay', compact('cars'));
     }
-public function positions()
+
+public function positions(TraccarService $traccarService)
 {
     $cars = Car::query()
         ->whereNotNull('tracker_id')
@@ -32,9 +33,19 @@ public function positions()
 
     $now = Carbon::now(config('app.timezone', 'Asia/Manila'));
 
-    $data = $cars->map(function ($car) use ($now) {
+    $devices = collect($traccarService->devices())
+        ->keyBy(function ($device) {
+            return (int) ($device['id'] ?? 0);
+        });
+
+    $data = $cars->map(function ($car) use ($now, $devices) {
         $tracker = $car->tracker;
         $position = $tracker?->latestPosition;
+
+        $traccarDeviceId = (int) ($tracker?->traccar_device_id ?? 0);
+        $device = $devices->get($traccarDeviceId);
+
+        $traccarStatus = $device['status'] ?? null;
 
         $fixTime = $position?->fix_time
             ? Carbon::parse($position->fix_time)
@@ -60,18 +71,23 @@ public function positions()
             return $time->timestamp;
         })->first();
 
-        // Fallback only if Traccar times are missing
         $lastSeenTime = $lastSeenTime ?? $updatedAt;
 
-        $online = $lastSeenTime
-            ? $lastSeenTime->greaterThanOrEqualTo($now->copy()->subMinutes(5))
-            : false;
+        // Use Traccar device status first
+        if ($traccarStatus) {
+            $online = $traccarStatus === 'online';
+        } else {
+            $online = $lastSeenTime
+                ? $lastSeenTime->greaterThanOrEqualTo($now->copy()->subMinutes(5))
+                : false;
+        }
 
         return [
             'car_id' => $car->id,
             'plate_no' => $car->model,
             'tracker_id' => $tracker?->id,
             'traccar_device_id' => $tracker?->traccar_device_id,
+            'traccar_status' => $traccarStatus,
             'online' => $online,
 
             'lat' => $position?->latitude !== null ? (float) $position->latitude : null,
@@ -96,6 +112,7 @@ public function positions()
         'data' => $data,
     ]);
 }
+
     public function history(Request $request, TraccarService $traccarService)
     {
         $validated = $request->validate([
