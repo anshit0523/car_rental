@@ -20,6 +20,10 @@ class ManagerDashboardController extends Controller
         $startOfMonth = now()->copy()->startOfMonth();
         $endOfMonth = now()->copy()->endOfMonth();
 
+        // 3 previous months + current month = 4 months total
+        $startGraphMonth = now()->copy()->startOfMonth()->subMonths(3);
+        $endGraphMonth = now()->copy()->endOfMonth();
+
         $totalBookings = Booking::whereBetween('pickup_at', [$startOfMonth, $endOfMonth])->count();
         $totalCars = Car::count();
         $totalUsers = User::count();
@@ -27,10 +31,6 @@ class ManagerDashboardController extends Controller
         $totalRevenue = Booking::whereBetween('pickup_at', [$startOfMonth, $endOfMonth])
             ->sum('total_price');
 
-        /*
-         * Do not use hardcoded status_id values.
-         * Status IDs can be different between local MySQL and Laravel Cloud PostgreSQL.
-         */
         $activeStatusId = DB::table('statuses')
             ->where('name', 'Active')
             ->value('id');
@@ -40,25 +40,26 @@ class ManagerDashboardController extends Controller
             : 0;
 
         if ($driver === 'pgsql') {
-            $monthlyData = DB::table('bookings')
+            $rawMonthlyData = DB::table('bookings')
                 ->selectRaw("
-                    EXTRACT(YEAR FROM pickup_at) as year,
-                    EXTRACT(MONTH FROM pickup_at) as month_num,
-                    TO_CHAR(pickup_at, 'Mon YYYY') as month_label,
+                    TO_CHAR(pickup_at, 'YYYY-MM') as month_key,
                     COUNT(*) as bookings,
                     COALESCE(SUM(total_price), 0) as revenue
                 ")
-                ->groupByRaw("
-                    EXTRACT(YEAR FROM pickup_at),
-                    EXTRACT(MONTH FROM pickup_at),
-                    TO_CHAR(pickup_at, 'Mon YYYY')
-                ")
-                ->orderByRaw("EXTRACT(YEAR FROM pickup_at) DESC")
-                ->orderByRaw("EXTRACT(MONTH FROM pickup_at) DESC")
-                ->limit(8)
+                ->whereBetween('pickup_at', [$startGraphMonth, $endGraphMonth])
+                ->groupByRaw("TO_CHAR(pickup_at, 'YYYY-MM')")
                 ->get()
-                ->reverse()
-                ->values();
+                ->keyBy('month_key');
+
+            $rawUserMonthlyData = DB::table('users')
+                ->selectRaw("
+                    TO_CHAR(created_at, 'YYYY-MM') as month_key,
+                    COUNT(*) as users
+                ")
+                ->whereBetween('created_at', [$startGraphMonth, $endGraphMonth])
+                ->groupByRaw("TO_CHAR(created_at, 'YYYY-MM')")
+                ->get()
+                ->keyBy('month_key');
 
             $bookingsThisMonth = DB::table('bookings')
                 ->whereRaw("TO_CHAR(pickup_at, 'YYYY-MM') = ?", [$currentMonthStr])
@@ -82,25 +83,26 @@ class ManagerDashboardController extends Controller
             $usersLastMonth = User::whereRaw("TO_CHAR(created_at, 'YYYY-MM') = ?", [$lastMonthStr])
                 ->count();
         } else {
-            $monthlyData = DB::table('bookings')
+            $rawMonthlyData = DB::table('bookings')
                 ->selectRaw('
-                    YEAR(pickup_at) as year,
-                    MONTH(pickup_at) as month_num,
-                    DATE_FORMAT(pickup_at, "%b %Y") as month_label,
+                    DATE_FORMAT(pickup_at, "%Y-%m") as month_key,
                     COUNT(*) as bookings,
                     COALESCE(SUM(total_price), 0) as revenue
                 ')
-                ->groupByRaw('
-                    YEAR(pickup_at),
-                    MONTH(pickup_at),
-                    DATE_FORMAT(pickup_at, "%b %Y")
-                ')
-                ->orderByRaw('YEAR(pickup_at) DESC')
-                ->orderByRaw('MONTH(pickup_at) DESC')
-                ->limit(8)
+                ->whereBetween('pickup_at', [$startGraphMonth, $endGraphMonth])
+                ->groupByRaw('DATE_FORMAT(pickup_at, "%Y-%m")')
                 ->get()
-                ->reverse()
-                ->values();
+                ->keyBy('month_key');
+
+            $rawUserMonthlyData = DB::table('users')
+                ->selectRaw('
+                    DATE_FORMAT(created_at, "%Y-%m") as month_key,
+                    COUNT(*) as users
+                ')
+                ->whereBetween('created_at', [$startGraphMonth, $endGraphMonth])
+                ->groupByRaw('DATE_FORMAT(created_at, "%Y-%m")')
+                ->get()
+                ->keyBy('month_key');
 
             $bookingsThisMonth = DB::table('bookings')
                 ->whereRaw('DATE_FORMAT(pickup_at, "%Y-%m") = ?', [$currentMonthStr])
@@ -125,9 +127,23 @@ class ManagerDashboardController extends Controller
                 ->count();
         }
 
+        $monthlyData = collect();
+
+        for ($date = $startGraphMonth->copy(); $date <= now()->startOfMonth(); $date->addMonth()) {
+            $key = $date->format('Y-m');
+
+            $monthlyData->push((object) [
+                'month_label' => $date->format('M Y'),
+                'bookings' => $rawMonthlyData[$key]->bookings ?? 0,
+                'revenue' => $rawMonthlyData[$key]->revenue ?? 0,
+                'users' => $rawUserMonthlyData[$key]->users ?? 0,
+            ]);
+        }
+
         $months = $monthlyData->pluck('month_label')->toArray();
         $bookingsData = $monthlyData->pluck('bookings')->toArray();
         $revenueData = $monthlyData->pluck('revenue')->toArray();
+        $usersData = $monthlyData->pluck('users')->toArray();
 
         $bookingsTrend = $bookingsLastMonth > 0
             ? round((($bookingsThisMonth - $bookingsLastMonth) / $bookingsLastMonth) * 100, 1)
@@ -172,15 +188,20 @@ class ManagerDashboardController extends Controller
             'activeCars' => $activeCars,
             'totalUsers' => $totalUsers,
             'totalRevenue' => $totalRevenue,
+
             'bookingsTrend' => $bookingsTrend,
             'revenueTrend' => $revenueTrend,
             'usersTrend' => $usersTrend,
+
             'months' => $months,
             'bookingsData' => $bookingsData,
             'revenueData' => $revenueData,
+            'usersData' => $usersData,
+
             'statusLabels' => $statusLabels,
             'statusData' => $statusData,
             'recentBookings' => $recentBookings,
+
             'bookingsTrendIcon' => $bookingsTrendIcon,
             'bookingsTrendColor' => $bookingsTrendColor,
             'revenueTrendIcon' => $revenueTrendIcon,
