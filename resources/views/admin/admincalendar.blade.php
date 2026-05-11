@@ -169,20 +169,34 @@
                                         </div>
 
                                         <div class="min-w-0">
-                                            <p class="font-bold text-gray-900 truncate">
-                                                {{ $car->brand->name ?? 'Unknown' }}, {{ $car->model }}
-                                            </p>
+                                    <p class="font-bold text-gray-900 truncate">
+                                        {{ $car->brand->name ?? 'Unknown' }}, {{ $car->model }}
+                                    </p>
 
-                                            <div class="flex gap-2 mt-2 flex-wrap">
-                                                <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
-                                                    <i class="fas fa-cog"></i>{{ $car->transmission->type ?? 'N/A' }}
-                                                </span>
+                                    <div class="mt-1">
+                                        @if($car->plate_number)
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-300 bg-white text-xs font-semibold text-gray-700 tracking-wide shadow-sm">
+                                                {{ $car->plate_number }}
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-200 bg-gray-50 text-xs font-medium text-gray-400">
+                                                No Plate
+                                            </span>
+                                        @endif
+                                    </div>
 
-                                                <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
-                                                    <i class="fas fa-users"></i>{{ $car->seats }}
-                                                </span>
-                                            </div>
-                                        </div>
+                                    <div class="flex gap-2 mt-2 flex-wrap">
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                                            <i class="fas fa-cog"></i>
+                                            {{ $car->transmission->type ?? 'N/A' }}
+                                        </span>
+
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                                            <i class="fas fa-users"></i>
+                                            {{ $car->seats ?? 0 }}
+                                        </span>
+                                    </div>
+                                </div>
                                     </div>
                                 </td>
 
