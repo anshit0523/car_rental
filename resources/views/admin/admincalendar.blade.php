@@ -4,8 +4,104 @@
     $panelPrefix = $panelPrefix ?? (request()->is('manager*') ? 'manager' : 'admin');
 @endphp
 
+@section('custom-styles')
+<style>
+    .calendar-scroll-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        position: relative;
+    }
+
+    .calendar-scroll-wrapper::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .calendar-scroll-wrapper::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 999px;
+    }
+
+    .calendar-scroll-wrapper::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 999px;
+    }
+
+    .calendar-table {
+        min-width: max-content;
+        width: max-content;
+    }
+
+    .vehicle-sticky-head,
+    .vehicle-sticky-cell {
+        position: sticky;
+        left: 0;
+    }
+
+    .vehicle-sticky-head {
+        z-index: 40;
+        min-width: 260px;
+        max-width: 260px;
+        box-shadow: 8px 0 18px rgba(15, 23, 42, 0.12);
+    }
+
+    .vehicle-sticky-cell {
+        z-index: 20;
+        min-width: 260px;
+        max-width: 260px;
+        box-shadow: 8px 0 18px rgba(15, 23, 42, 0.06);
+    }
+
+    @media (max-width: 768px) {
+        .calendar-page-wrapper {
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
+
+        .vehicle-sticky-head {
+            min-width: 185px;
+            max-width: 185px;
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+        }
+
+        .vehicle-sticky-cell {
+            min-width: 185px;
+            max-width: 185px;
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+        }
+
+        .vehicle-icon-box {
+            display: none;
+        }
+
+        .vehicle-name {
+            font-size: 12px;
+            line-height: 1.2;
+            white-space: normal;
+        }
+
+        .vehicle-plate {
+            font-size: 10px;
+            padding: 3px 6px;
+        }
+
+        .vehicle-meta-badge {
+            font-size: 10px;
+            padding: 3px 6px;
+        }
+
+        .calendar-date-cell {
+            min-width: 95px;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
-<div class="h-screen overflow-y-auto overflow-x-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+<div class="calendar-page-wrapper h-screen overflow-y-auto overflow-x-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
     <div class="max-w-7xl mx-auto">
         <div class="mb-4">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -140,16 +236,16 @@
                 <span class="text-sm font-medium text-blue-600">Updating table...</span>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full">
+            <div class="calendar-scroll-wrapper">
+                <table class="calendar-table">
                     <thead>
                         <tr class="bg-gradient-to-r from-gray-800 to-gray-900 text-white sticky top-0 z-20">
-                            <th class="sticky left-0 bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-4 text-left text-sm font-bold z-30 min-w-64">
+                            <th class="vehicle-sticky-head bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-4 text-left text-sm font-bold">
                                 <i class="fas fa-car mr-2"></i>Vehicle Details
                             </th>
 
                             @foreach($calendarDates as $date)
-                                <th class="px-3 py-4 text-center min-w-24 whitespace-nowrap">
+                                <th class="calendar-date-cell px-3 py-4 text-center min-w-24 whitespace-nowrap">
                                     <div class="flex flex-col items-center gap-1">
                                         <span class="font-bold text-base">{{ $date['day'] }}</span>
                                         <span class="text-xs opacity-80">{{ $date['date'] }}</span>
@@ -162,41 +258,41 @@
                     <tbody class="divide-y divide-gray-200">
                         @forelse($cars as $car)
                             <tr class="hover:bg-blue-50 transition duration-200">
-                                <td class="sticky left-0 bg-white hover:bg-blue-50 px-6 py-3 font-medium z-10">
+                                <td class="vehicle-sticky-cell bg-white hover:bg-blue-50 px-6 py-3 font-medium">
                                     <div class="flex items-start gap-3">
-                                        <div class="p-2.5 bg-blue-100 rounded-lg flex-shrink-0">
+                                        <div class="vehicle-icon-box p-2.5 bg-blue-100 rounded-lg flex-shrink-0">
                                             <i class="fas fa-car text-blue-600 text-lg"></i>
                                         </div>
 
                                         <div class="min-w-0">
-                                    <p class="font-bold text-gray-900 truncate">
-                                        {{ $car->brand->name ?? 'Unknown' }}, {{ $car->model }}
-                                    </p>
+                                            <p class="vehicle-name font-bold text-gray-900 truncate">
+                                                {{ $car->brand->name ?? 'Unknown' }}, {{ $car->model }}
+                                            </p>
 
-                                    <div class="mt-1">
-                                        @if($car->plate_number)
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-300 bg-white text-xs font-semibold text-gray-700 tracking-wide shadow-sm">
-                                                {{ $car->plate_number }}
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md border border-gray-200 bg-gray-50 text-xs font-medium text-gray-400">
-                                                No Plate
-                                            </span>
-                                        @endif
-                                    </div>
+                                            <div class="mt-1">
+                                                @if($car->plate_number)
+                                                    <span class="vehicle-plate inline-flex items-center px-2.5 py-1 rounded-md border border-gray-300 bg-white text-xs font-semibold text-gray-700 tracking-wide shadow-sm">
+                                                        {{ $car->plate_number }}
+                                                    </span>
+                                                @else
+                                                    <span class="vehicle-plate inline-flex items-center px-2.5 py-1 rounded-md border border-gray-200 bg-gray-50 text-xs font-medium text-gray-400">
+                                                        No Plate
+                                                    </span>
+                                                @endif
+                                            </div>
 
-                                    <div class="flex gap-2 mt-2 flex-wrap">
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
-                                            <i class="fas fa-cog"></i>
-                                            {{ $car->transmission->type ?? 'N/A' }}
-                                        </span>
+                                            <div class="flex gap-2 mt-2 flex-wrap">
+                                                <span class="vehicle-meta-badge inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                                                    <i class="fas fa-cog"></i>
+                                                    {{ $car->transmission->type ?? 'N/A' }}
+                                                </span>
 
-                                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
-                                            <i class="fas fa-users"></i>
-                                            {{ $car->seats ?? 0 }}
-                                        </span>
-                                    </div>
-                                </div>
+                                                <span class="vehicle-meta-badge inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                                                    <i class="fas fa-users"></i>
+                                                    {{ $car->seats ?? 0 }}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
 
