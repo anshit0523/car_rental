@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const filterForm = document.getElementById('filterForm');
     const userSearch = document.getElementById('userSearch');
     const roleFilter = document.getElementById('roleFilter');
+    const statusFilter = document.getElementById('statusFilter');
 
     let searchTimeout;
 
@@ -26,6 +27,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (roleFilter) {
         roleFilter.addEventListener('change', function () {
+            submitFilterForm();
+        });
+    }
+
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function () {
             submitFilterForm();
         });
     }

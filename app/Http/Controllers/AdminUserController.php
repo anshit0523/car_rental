@@ -13,8 +13,16 @@ class AdminUserController extends Controller
     {
         $search = trim((string) $request->search);
         $roleId = $request->role_id;
+        $status = $request->status ?? 'active';
 
-        $users = User::with('role')
+        $users = User::withTrashed()
+            ->with('role')
+            ->when($status === 'active', function ($query) {
+                $query->whereNull('deleted_at');
+            })
+            ->when($status === 'deactivated', function ($query) {
+                $query->onlyTrashed();
+            })
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -50,7 +58,7 @@ class AdminUserController extends Controller
         if ($existingDeletedUser) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'This email belongs to a deleted account. Please restore that account or use a different email.');
+                ->with('error', 'This email belongs to a deactivated account. Please restore that account or use a different email.');
         }
 
         User::create([
@@ -88,7 +96,7 @@ class AdminUserController extends Controller
         if ($existingDeletedUser) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'This email belongs to a deleted account. Please restore that account or use a different email.');
+                ->with('error', 'This email belongs to a deactivated account. Please restore that account or use a different email.');
         }
 
         $data = [
@@ -112,6 +120,6 @@ class AdminUserController extends Controller
         $user->delete();
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'User deleted successfully');
+            ->with('success', 'User deactivated successfully');
     }
 }

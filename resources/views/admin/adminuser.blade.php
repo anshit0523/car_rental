@@ -42,6 +42,16 @@
                                 <option value="4" {{ request('role_id') == '4' ? 'selected' : '' }}>Manager</option>
                             </select>
 
+                            <select
+                                id="statusFilter"
+                                name="status"
+                                class="w-full lg:w-56 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                            >
+                                <option value="active" {{ request('status', 'active') == 'active' ? 'selected' : '' }}>Active Accounts</option>
+                                <option value="deactivated" {{ request('status') == 'deactivated' ? 'selected' : '' }}>Deactivated Accounts</option>
+                                <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Accounts</option>
+                            </select>
+
                             <a
                                 href="{{ route('admin.users.index') }}"
                                 class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2 rounded-lg font-medium text-center"
@@ -68,7 +78,7 @@
 
                             <tbody class="divide-y divide-gray-200">
                                 @forelse($users as $user)
-                                    <tr class="hover:bg-gray-50 transition">
+                                    <tr class="hover:bg-gray-50 transition {{ $user->trashed() ? 'bg-red-50/40' : '' }}">
                                         <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                             {{ $user->name }}
                                         </td>
@@ -102,25 +112,35 @@
                                         </td>
 
                                         <td class="px-6 py-4 text-sm">
-                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                Active
-                                            </span>
+                                            @if($user->trashed())
+                                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    Deactivated
+                                                </span>
+                                            @else
+                                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Active
+                                                </span>
+                                            @endif
                                         </td>
 
                                         <td class="px-6 py-4 text-sm">
-                                            <div class="flex items-center gap-3">
-                                                <button type="button"
-                                                    onclick='openEditModal(@json($user))'
-                                                    class="text-amber-600 hover:text-amber-800 font-medium">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
+                                            @if($user->trashed())
+                                                <span class="text-gray-400 text-xs font-medium">No action</span>
+                                            @else
+                                                <div class="flex items-center gap-3">
+                                                    <button type="button"
+                                                        onclick='openEditModal(@json($user))'
+                                                        class="text-amber-600 hover:text-amber-800 font-medium">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
 
-                                                <button type="button"
-                                                    onclick="openDeleteModal({{ $user->id }})"
-                                                    class="text-red-600 hover:text-red-800 font-medium">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
+                                                    <button type="button"
+                                                        onclick="openDeleteModal({{ $user->id }})"
+                                                        class="text-red-600 hover:text-red-800 font-medium">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty
@@ -276,11 +296,11 @@
                     class="bg-white p-6 rounded-xl w-full max-w-md transform scale-90 transition-all duration-300">
 
                     <h2 class="text-xl font-bold mb-3 text-red-600">
-                        <i class="fas fa-exclamation-triangle"></i> Confirm Delete
+                        <i class="fas fa-exclamation-triangle"></i> Confirm Deactivate
                     </h2>
 
                     <p class="text-gray-700 mb-6">
-                        Are you sure you want to delete this user? This action cannot be undone.
+                        Are you sure you want to deactivate this user account?
                     </p>
 
                     <form id="deleteForm" method="POST">
@@ -293,7 +313,7 @@
                             </button>
 
                             <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg">
-                                Delete
+                                Deactivate
                             </button>
                         </div>
                     </form>
