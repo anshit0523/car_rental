@@ -36,13 +36,17 @@
                 </div>
 
                 <!-- Chart -->
-                <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Monthly Revenue Trend</h3>
+             
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Monthly Revenue Trend</h3>
+
+                <div class="h-[420px]">
                     <canvas id="revenueChart"
-                        data-labels="{{ json_encode($monthlyRevenue->pluck('month_label')->values()) }}"
-                        data-values="{{ json_encode($monthlyRevenue->pluck('total')->values()) }}">
+                        data-labels="{{ json_encode($chartMonthlyRevenue->pluck('month_label')->values()) }}"
+                        data-values="{{ json_encode($chartMonthlyRevenue->pluck('total')->values()) }}">
                     </canvas>
                 </div>
+            </div>
 
                 <!-- Revenue Table -->
                 <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-8">

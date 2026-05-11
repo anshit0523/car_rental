@@ -174,43 +174,47 @@ class AdminDashboardController extends Controller
     }
 
     public function revenue()
-    {
-        $startGraphMonth = now()->copy()->startOfMonth()->subMonths(5);
-        $endGraphMonth = now()->copy()->endOfMonth();
+{
+    $startGraphMonth = now()->copy()->startOfMonth()->subMonths(5);
+    $endGraphMonth = now()->copy()->endOfMonth();
 
-        $rawRevenue = DB::table('bookings')
-            ->selectRaw("
-                TO_CHAR(pickup_at, 'YYYY-MM') as month_key,
-                COALESCE(SUM(total_price), 0) as total
-            ")
-            ->whereBetween('pickup_at', [$startGraphMonth, $endGraphMonth])
-            ->groupByRaw("TO_CHAR(pickup_at, 'YYYY-MM')")
-            ->get()
-            ->keyBy('month_key');
+    $rawRevenue = DB::table('bookings')
+        ->selectRaw("
+            TO_CHAR(pickup_at, 'YYYY-MM') as month_key,
+            COALESCE(SUM(total_price), 0) as total
+        ")
+        ->whereBetween('pickup_at', [$startGraphMonth, $endGraphMonth])
+        ->groupByRaw("TO_CHAR(pickup_at, 'YYYY-MM')")
+        ->get()
+        ->keyBy('month_key');
 
-        $monthlyRevenue = collect();
+    $monthlyRevenue = collect();
 
-        for ($date = $startGraphMonth->copy(); $date <= now()->startOfMonth(); $date->addMonth()) {
-            $key = $date->format('Y-m');
+    for ($date = $startGraphMonth->copy(); $date <= now()->startOfMonth(); $date->addMonth()) {
+        $key = $date->format('Y-m');
 
-            $monthlyRevenue->push((object) [
-                'month_label' => $date->format('M Y'),
-                'total' => $rawRevenue[$key]->total ?? 0,
-            ]);
-        }
-
-        $revenueWithGrowth = $monthlyRevenue->map(function ($row, $index) use ($monthlyRevenue) {
-            $prevTotal = $monthlyRevenue->get($index - 1)?->total ?? null;
-
-            $row->growth = ($prevTotal && $prevTotal > 0)
-                ? round((($row->total - $prevTotal) / $prevTotal) * 100, 1)
-                : null;
-
-            return $row;
-        });
-
-        return view('admin.adminrevenue', [
-            'monthlyRevenue' => $revenueWithGrowth,
+        $monthlyRevenue->push((object) [
+            'month_label' => $date->format('M Y'),
+            'total' => $rawRevenue[$key]->total ?? 0,
         ]);
     }
+
+    $chartMonthlyRevenue = $monthlyRevenue->map(function ($row, $index) use ($monthlyRevenue) {
+        $prevTotal = $monthlyRevenue->get($index - 1)?->total ?? null;
+
+        $row->growth = ($prevTotal && $prevTotal > 0)
+            ? round((($row->total - $prevTotal) / $prevTotal) * 100, 1)
+            : null;
+
+        return $row;
+    })->values();
+
+    $revenueWithGrowth = $chartMonthlyRevenue->reverse()->values();
+
+    return view('admin.adminrevenue', [
+        'monthlyRevenue' => $revenueWithGrowth,
+        'chartMonthlyRevenue' => $chartMonthlyRevenue,
+    ]);
+}
+
 }
