@@ -18,13 +18,6 @@ class ReturnIssueController extends Controller
         return auth()->check() && (int) auth()->user()->role_id === 4;
     }
 
-    private function bookingsIndexRoute(): string
-    {
-        return $this->isManager()
-            ? 'manager.bookings.index'
-            : 'admin.bookings.index';
-    }
-
     private function returnIssuesIndexRoute(): string
     {
         return $this->isManager()
@@ -141,7 +134,7 @@ class ReturnIssueController extends Controller
         });
 
         return redirect()
-            ->route($this->bookingsIndexRoute())
+            ->route($this->returnIssuesIndexRoute())
             ->with('success', 'Return issue created successfully.');
     }
 
