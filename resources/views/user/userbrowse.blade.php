@@ -561,9 +561,10 @@
                                         <ul class="car-two-grid-info">
                                             <li>
                                                 <i class="fas fa-car-side"></i>
-                                                <span>Doors: {{ $car->doors ?? '2' }}</span>
+                                                <span>Type: {{ $car->carType?->name ?? 'N/A' }}</span>
                                             </li>
-                                            <li>
+
+                                                 <li>
                                                 <i class="fas fa-cogs"></i>
                                                 <span>Transmission: {{ $car->transmission?->type ?? 'Manual' }}</span>
                                             </li>

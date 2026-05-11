@@ -231,7 +231,7 @@
           inputmode="numeric"
           required
         >
-        <p class="phone-help">Format: 09XX-XXX-XXXX</p>
+        
         <p id="phoneError" class="input-error" style="display:none;">
           Phone number must be 11 digits and start with 09.
         </p>

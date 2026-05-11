@@ -34,7 +34,7 @@ class UserCarBrowseController extends Controller
             $this->applySorting($query, $request->get('sort_by', 'price_low'));
         }
 
-        $cars = $query->with(['brand', 'fuelType', 'transmission'])
+        $cars = $query->with(['brand', 'fuelType', 'transmission', 'carType'])
             ->paginate(9)
             ->appends($request->query());
 
@@ -50,7 +50,7 @@ class UserCarBrowseController extends Controller
 
     public function show($id)
     {
-        $car = Car::with(['brand', 'fuelType', 'transmission'])->findOrFail($id);
+        $car = Car::with(['brand', 'fuelType', 'transmission', 'carType'])->findOrFail($id);
 
         if (!$car->active) {
             return redirect()->route('user.browse')
@@ -58,6 +58,7 @@ class UserCarBrowseController extends Controller
         }
 
         $relatedCars = Car::active()
+            ->with(['brand', 'fuelType', 'transmission', 'carType'])
             ->where('brand_id', $car->brand_id)
             ->where('id', '!=', $id)
             ->limit(5)
@@ -92,7 +93,7 @@ class UserCarBrowseController extends Controller
         $this->applyAvailabilityFilter($query, $validated);
         $this->applySorting($query, $request->get('sort_by', 'price_low'));
 
-        $cars = $query->with(['brand', 'fuelType', 'transmission'])
+        $cars = $query->with(['brand', 'fuelType', 'transmission', 'carType'])
             ->paginate(9)
             ->appends($request->query());
 
