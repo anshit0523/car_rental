@@ -7,8 +7,8 @@
                 <img src="{{ asset('storage/cars/ezelogo.png') }}" alt="Logo"
                     class="h-12 md:h-14 w-auto object-contain">
                 <div class="hidden sm:block leading-tight">
-                    <p class="text-white font-extrabold text-sm md:text-base tracking-wide">Dumaguete EZE</p>
-                    <p class="text-white/70 text-xs md:text-sm">Car Rental Services</p>
+                    <p class="text-white font-extrabold text-sm md:text-base tracking-wide">Eze Car Rental</p>
+                    <p class="text-white/70 text-xs md:text-sm"> </p>
                 </div>
             </a>
 
