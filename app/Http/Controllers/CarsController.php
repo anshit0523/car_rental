@@ -13,211 +13,173 @@ use Illuminate\Support\Facades\Storage;
 
 class CarsController extends Controller
 {
-    private function carDisk(): string
+    private function carsRoute(): string
     {
-        return config('filesystems.default') === 's3' ? 's3' : 'public';
+        return request()->routeIs('manager.*')
+            ? 'manager.cars'
+            : 'admin.cars';
     }
 
-    private function shouldDeleteStoredImage($image): bool
+    private function checkAccess(): void
     {
-        return is_string($image)
-            && $image !== ''
-            && ! filter_var($image, FILTER_VALIDATE_URL);
+        if (!auth()->check() || !in_array((int) auth()->user()->role_id, [1, 4])) {
+            abort(403, 'Access denied.');
+        }
     }
 
     public function cars()
     {
-        $brands = Brand::all();
-        $carTypes = CarType::all();
-        $transmissions = Transmission::all();
-        $fuelTypes = FuelType::all();
-        $trackers = Tracker::orderBy('imei')->get();
+        $this->checkAccess();
 
         $cars = Car::with(['brand', 'carType', 'transmission', 'fuelType', 'tracker'])
             ->withCount('bookings')
-            ->paginate(9);
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $brands = Brand::orderBy('name')->get();
+        $carTypes = CarType::orderBy('name')->get();
+        $transmissions = Transmission::orderBy('type')->get();
+        $fuelTypes = FuelType::orderBy('type')->get();
+
+        $trackers = Tracker::orderBy('imei')->get();
 
         return view('admin.admincars', compact(
+            'cars',
             'brands',
             'carTypes',
             'transmissions',
             'fuelTypes',
-            'trackers',
-            'cars'
-        ));
-    }
-
-    public function create()
-    {
-        $brands = Brand::all();
-        $carTypes = CarType::all();
-        $transmissions = Transmission::all();
-        $fuelTypes = FuelType::all();
-        $trackers = Tracker::orderBy('imei')->get();
-
-        $cars = Car::with(['brand', 'carType', 'transmission', 'fuelType', 'tracker'])
-            ->withCount('bookings')
-            ->paginate(15);
-
-        return view('admin.cars', compact(
-            'brands',
-            'carTypes',
-            'transmissions',
-            'fuelTypes',
-            'trackers',
-            'cars'
+            'trackers'
         ));
     }
 
     public function store(Request $request)
     {
-        $request->merge([
-            'plate_number' => $request->plate_number
-                ? strtoupper(trim($request->plate_number))
-                : null,
-        ]);
+        $this->checkAccess();
 
         $validated = $request->validate([
-            'brand_id' => 'required|exists:brands,id',
-            'car_type_id' => 'required|exists:car_types,id',
-            'transmission_id' => 'required|exists:transmissions,id',
-            'fuel_type_id' => 'required|exists:fuel_types,id',
-            'model' => 'required|string|max:255',
-            'plate_number' => 'nullable|string|max:20|unique:cars,plate_number',
-            'seats' => 'nullable|integer|min:2|max:18',
-            'price_per_day' => 'required|numeric|min:0.01',
-            'description' => 'nullable|string',
-            'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'active' => 'nullable|boolean',
-            'tracker_id' => 'nullable|exists:trackers,id',
-        ], [
-            'plate_number.unique' => 'This plate number is already registered to another car.',
-            'plate_number.max' => 'The plate number must not be greater than 20 characters.',
+            'brand_id' => ['required', 'exists:brands,id'],
+            'car_type_id' => ['required', 'exists:car_types,id'],
+            'model' => ['required', 'string', 'max:255'],
+            'plate_number' => ['nullable', 'string', 'max:20'],
+            'transmission_id' => ['required', 'exists:transmissions,id'],
+            'fuel_type_id' => ['required', 'exists:fuel_types,id'],
+            'seats' => ['nullable', 'integer', 'min:2', 'max:18'],
+            'price_per_day' => ['required', 'numeric', 'min:0'],
+            'description' => ['nullable', 'string'],
+            'tracker_id' => ['nullable', 'exists:trackers,id'],
+            'images' => ['nullable', 'array'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
-        if (!empty($validated['tracker_id'])) {
-            $trackerAlreadyUsed = Car::where('tracker_id', $validated['tracker_id'])->exists();
-
-            if ($trackerAlreadyUsed) {
-                return back()
-                    ->withErrors(['tracker_id' => 'This tracker is already assigned to another car.'])
-                    ->withInput();
-            }
-        }
-
-        $images = [];
-        $disk = $this->carDisk();
+        $imagePaths = [];
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
-                $path = $image->store('cars', $disk);
-                $images[] = $path;
+                $imagePaths[] = $image->store('cars', config('filesystems.default'));
             }
         }
 
-        $validated['images'] = json_encode($images);
-        $validated['active'] = $request->has('active') ? 1 : 0;
+        Car::create([
+            'brand_id' => $validated['brand_id'],
+            'car_type_id' => $validated['car_type_id'],
+            'model' => $validated['model'],
+            'plate_number' => $request->filled('plate_number')
+                ? strtoupper($request->plate_number)
+                : null,
+            'transmission_id' => $validated['transmission_id'],
+            'fuel_type_id' => $validated['fuel_type_id'],
+            'seats' => $validated['seats'] ?? 4,
+            'price_per_day' => $validated['price_per_day'],
+            'description' => $validated['description'] ?? null,
+            'tracker_id' => $validated['tracker_id'] ?? null,
+            'images' => $imagePaths,
+            'active' => $request->has('active'),
+        ]);
 
-        Car::create($validated);
+        return redirect()
+            ->route($this->carsRoute())
+            ->with('success', 'Car added successfully.');
+    }
 
-        return redirect()->route('admin.cars')->with('success', 'Car added successfully!');
+    public function edit($id)
+    {
+        $this->checkAccess();
+
+        $car = Car::with(['brand', 'carType', 'transmission', 'fuelType', 'tracker'])->findOrFail($id);
+
+        return response()->json($car);
     }
 
     public function update(Request $request, $id)
     {
+        $this->checkAccess();
+
         $car = Car::findOrFail($id);
 
-        $request->merge([
-            'plate_number' => $request->plate_number
-                ? strtoupper(trim($request->plate_number))
-                : null,
-        ]);
-
         $validated = $request->validate([
-            'brand_id' => 'required|exists:brands,id',
-            'car_type_id' => 'required|exists:car_types,id',
-            'transmission_id' => 'required|exists:transmissions,id',
-            'fuel_type_id' => 'required|exists:fuel_types,id',
-            'model' => 'required|string|max:255',
-            'plate_number' => 'nullable|string|max:20|unique:cars,plate_number,' . $car->id,
-            'seats' => 'nullable|integer|min:2|max:18',
-            'price_per_day' => 'required|numeric|min:0.01',
-            'description' => 'nullable|string',
-            'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'active' => 'nullable|boolean',
-            'tracker_id' => 'nullable|exists:trackers,id',
-        ], [
-            'plate_number.unique' => 'This plate number is already registered to another car.',
-            'plate_number.max' => 'The plate number must not be greater than 20 characters.',
+            'brand_id' => ['required', 'exists:brands,id'],
+            'car_type_id' => ['required', 'exists:car_types,id'],
+            'model' => ['required', 'string', 'max:255'],
+            'plate_number' => ['nullable', 'string', 'max:20'],
+            'transmission_id' => ['required', 'exists:transmissions,id'],
+            'fuel_type_id' => ['required', 'exists:fuel_types,id'],
+            'seats' => ['nullable', 'integer', 'min:2', 'max:18'],
+            'price_per_day' => ['required', 'numeric', 'min:0'],
+            'description' => ['nullable', 'string'],
+            'tracker_id' => ['nullable', 'exists:trackers,id'],
+            'images' => ['nullable', 'array'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
-        if (!empty($validated['tracker_id'])) {
-            $trackerAlreadyUsed = Car::where('tracker_id', $validated['tracker_id'])
-                ->where('id', '!=', $car->id)
-                ->exists();
+        $imagePaths = [];
 
-            if ($trackerAlreadyUsed) {
-                return back()
-                    ->withErrors(['tracker_id' => 'This tracker is already assigned to another car.'])
-                    ->withInput();
-            }
+        if (is_array($car->images)) {
+            $imagePaths = $car->images;
+        } elseif (is_string($car->images)) {
+            $decodedImages = json_decode($car->images, true);
+            $imagePaths = is_array($decodedImages) ? $decodedImages : [];
         }
-
-        $disk = $this->carDisk();
 
         if ($request->hasFile('images')) {
-            if ($car->images) {
-                $oldImages = json_decode($car->images, true);
-
-                if (is_array($oldImages)) {
-                    foreach ($oldImages as $oldImage) {
-                        if ($this->shouldDeleteStoredImage($oldImage)) {
-                            Storage::disk($disk)->delete($oldImage);
-                        }
-                    }
-                }
-            }
-
-            $images = [];
-
             foreach ($request->file('images') as $image) {
-                $path = $image->store('cars', $disk);
-                $images[] = $path;
+                $imagePaths[] = $image->store('cars', config('filesystems.default'));
             }
-
-            $validated['images'] = json_encode($images);
-        } else {
-            unset($validated['images']);
         }
 
-        $validated['active'] = $request->has('active') ? 1 : 0;
+        $car->update([
+            'brand_id' => $validated['brand_id'],
+            'car_type_id' => $validated['car_type_id'],
+            'model' => $validated['model'],
+            'plate_number' => $request->filled('plate_number')
+                ? strtoupper($request->plate_number)
+                : null,
+            'transmission_id' => $validated['transmission_id'],
+            'fuel_type_id' => $validated['fuel_type_id'],
+            'seats' => $validated['seats'] ?? 4,
+            'price_per_day' => $validated['price_per_day'],
+            'description' => $validated['description'] ?? null,
+            'tracker_id' => $validated['tracker_id'] ?? null,
+            'images' => $imagePaths,
+            'active' => $request->has('active'),
+        ]);
 
-        $car->update($validated);
-
-        return redirect()->route('admin.cars')->with('success', 'Car updated successfully!');
+        return redirect()
+            ->route($this->carsRoute())
+            ->with('success', 'Car updated successfully.');
     }
 
     public function destroy($id)
     {
+        $this->checkAccess();
+
         $car = Car::findOrFail($id);
-        $disk = $this->carDisk();
-
-        if ($car->images) {
-            $oldImages = json_decode($car->images, true);
-
-            if (is_array($oldImages)) {
-                foreach ($oldImages as $oldImage) {
-                    if ($this->shouldDeleteStoredImage($oldImage)) {
-                        Storage::disk($disk)->delete($oldImage);
-                    }
-                }
-            }
-        }
 
         $car->delete();
 
-        return redirect()->route('admin.cars')->with('success', 'Car deleted successfully!');
+        return redirect()
+            ->route($this->carsRoute())
+            ->with('success', 'Car deleted successfully.');
     }
 }
