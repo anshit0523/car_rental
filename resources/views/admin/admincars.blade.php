@@ -2,6 +2,22 @@
 
 @section('content')
 
+    @php
+        $isManager = request()->routeIs('manager.*');
+
+        $storeCarRoute = $isManager
+            ? route('manager.cars.store')
+            : route('admin.cars.store');
+
+        $updateCarRoute = $isManager
+            ? route('manager.cars.update', ':id')
+            : route('admin.cars.update', ':id');
+
+        $destroyCarRoute = fn ($carId) => $isManager
+            ? route('manager.cars.destroy', $carId)
+            : route('admin.cars.destroy', $carId);
+    @endphp
+
     <div class="flex h-screen overflow-hidden">
         <div class="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100">
             <div class="flex-1 p-6 lg:p-8 w-full lg:ml-0">
@@ -173,7 +189,7 @@
                                                 </button>
 
                                                 <form id="deleteForm-{{ $car->id }}"
-                                                    action="{{ route('admin.cars.destroy', $car->id) }}" method="POST">
+                                                    action="{{ $destroyCarRoute($car->id) }}" method="POST">
                                                     @csrf
                                                     @method('DELETE')
 
@@ -215,12 +231,12 @@
                         </div>
 
                         <form id="addCarForm"
-                            action="{{ route('admin.cars.store') }}"
+                            action="{{ $storeCarRoute }}"
                             method="POST"
                             enctype="multipart/form-data"
                             class="p-6 space-y-6"
-                            data-store-route="{{ route('admin.cars.store') }}"
-                            data-update-route="{{ route('admin.cars.update', ':id') }}">
+                            data-store-route="{{ $storeCarRoute }}"
+                            data-update-route="{{ $updateCarRoute }}">
                             @csrf
 
                             <input type="hidden" id="carId" name="car_id">
@@ -405,9 +421,10 @@
                 </div>
             </div>
         </div>
+    </div>
 
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/admin/admincars.js') }}"></script>
+    <script src="{{ asset('js/admin/admincars.js') }}?v={{ time() }}"></script>
 @endsection

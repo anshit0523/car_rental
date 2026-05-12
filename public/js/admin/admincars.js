@@ -26,7 +26,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const trackerId = document.getElementById('trackerId');
     const activeCheckbox = document.getElementById('activeCheckbox');
 
-    const storeRoute = addCarForm?.getAttribute('data-store-route') || '/admin/cars';
+    const storeRoute =
+        addCarForm?.getAttribute('data-store-route') || '/admin/cars';
+
+    const updateRouteTemplate =
+        addCarForm?.getAttribute('data-update-route') || '/admin/cars/:id';
 
     if (plateNumberInput) {
         plateNumberInput.addEventListener('input', function () {
@@ -37,7 +41,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (addCarBtn) {
         addCarBtn.addEventListener('click', () => {
             resetForm();
+
             modal.classList.remove('hidden');
+
             modalTitle.textContent = 'Add New Car';
             submitBtnText.textContent = 'Add Car';
         });
@@ -61,7 +67,9 @@ document.addEventListener('DOMContentLoaded', function () {
             };
 
             populateForm(car);
+
             modal.classList.remove('hidden');
+
             modalTitle.textContent = 'Edit Car';
             submitBtnText.textContent = 'Update Car';
         });
@@ -95,13 +103,16 @@ document.addEventListener('DOMContentLoaded', function () {
         if (deleteModal) {
             deleteModal.classList.add('hidden');
         }
+
         deleteForm = null;
     }
 
     document.querySelectorAll('.deleteCarBtn').forEach(btn => {
         btn.addEventListener('click', function (e) {
             e.preventDefault();
+
             const formId = this.getAttribute('data-form-id');
+
             deleteForm = document.getElementById(formId);
 
             if (deleteModal) {
@@ -126,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function populateForm(car) {
         carId.value = car.id || '';
+
         methodField.value = 'PUT';
 
         brandId.value = car.brand_id || '';
@@ -148,13 +160,17 @@ document.addEventListener('DOMContentLoaded', function () {
             car.active === true ||
             car.active === '1';
 
-        addCarForm.action = `/admin/cars/${car.id}`;
+        addCarForm.action =
+            updateRouteTemplate.replace(':id', car.id);
     }
 
     function resetForm() {
         addCarForm.reset();
+
         carId.value = '';
+
         methodField.value = 'POST';
+
         addCarForm.action = storeRoute;
 
         brandId.value = '';
@@ -171,6 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
         priceInput.value = '';
         descriptionInput.value = '';
         trackerId.value = '';
+
         activeCheckbox.checked = true;
     }
 });
