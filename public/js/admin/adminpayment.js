@@ -162,7 +162,13 @@ function closeReceiptModal() {
 }
 
 // ───────────────── APPROVE MODAL ─────────────────
-function openApproveModal(paymentId, bookingId = '', paymentType = 'booking', issueTitle = '') {
+function openApproveModal(
+    paymentId,
+    bookingId = '',
+    paymentType = 'booking',
+    issueTitle = '',
+    approveUrl = ''
+) {
     const modal = document.getElementById('approveModal');
     const form = document.getElementById('approveForm');
     const bookingLabel = document.getElementById('approveBookingLabel');
@@ -174,7 +180,7 @@ function openApproveModal(paymentId, bookingId = '', paymentType = 'booking', is
     const issueText = document.getElementById('approveIssueText');
 
     if (form) {
-        form.action = `/admin/payments/${paymentId}/approve`;
+        form.action = approveUrl || `/admin/payments/${paymentId}/approve`;
     }
 
     if (bookingLabel) {
@@ -244,7 +250,13 @@ function closeApproveModal() {
 }
 
 // ───────────────── REJECT MODAL ─────────────────
-function openRejectModal(paymentId, bookingId = '', paymentType = 'booking', issueTitle = '') {
+function openRejectModal(
+    paymentId,
+    bookingId = '',
+    paymentType = 'booking',
+    issueTitle = '',
+    rejectUrl = ''
+) {
     const modal = document.getElementById('rejectModal');
     const form = document.getElementById('rejectForm');
     const bookingLabel = document.getElementById('rejectBookingLabel');
@@ -256,7 +268,7 @@ function openRejectModal(paymentId, bookingId = '', paymentType = 'booking', iss
     const issueText = document.getElementById('rejectIssueText');
 
     if (form) {
-        form.action = `/admin/payments/${paymentId}/reject`;
+        form.action = rejectUrl || `/admin/payments/${paymentId}/reject`;
     }
 
     if (bookingLabel) {
