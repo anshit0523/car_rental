@@ -249,4 +249,20 @@ class ReturnIssueController extends Controller
         ->route($this->returnIssuesIndexRoute())
         ->with('success', 'Return issue updated successfully.');
 }
+public function show(ReturnIssue $returnIssue)
+{
+    if ($returnIssue->booking->user_id !== auth()->id()) {
+        abort(403);
+    }
+
+    $returnIssue->load([
+        'booking.car',
+        'booking.status',
+        'issueStatus',
+        'histories.changedBy',
+    ]);
+
+    return view('user.user_return_issue', compact('returnIssue'));
+}
+
 }
