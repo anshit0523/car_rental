@@ -10,7 +10,7 @@
 
     .otp-page {
         min-height: 100vh;
-        padding: 24px;
+        padding: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -20,7 +20,7 @@
     .otp-shell {
         width: 100%;
         max-width: 1050px;
-        min-height: 600px;
+        height: 560px;
         background: #ffffff;
         border-radius: 22px;
         overflow: hidden;
@@ -30,7 +30,7 @@
     }
 
     .otp-left {
-        padding: 42px 48px;
+        padding: 30px 48px;
         display: flex;
         align-items: center;
     }
@@ -40,42 +40,42 @@
     }
 
     .otp-icon {
-        width: 62px;
-        height: 62px;
+        width: 52px;
+        height: 52px;
         border-radius: 14px;
         background: #fff;
         box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 24px;
+        margin-bottom: 18px;
     }
 
     .otp-icon i {
-        font-size: 28px;
+        font-size: 24px;
         color: #ff4d00;
     }
 
     .otp-title {
-        font-size: 34px;
+        font-size: 30px;
         font-weight: 800;
         color: #111827;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
 
     .otp-subtitle {
-        font-size: 16px;
-        line-height: 1.55;
+        font-size: 15px;
+        line-height: 1.5;
         color: #64748b;
-        margin-bottom: 24px;
-        max-width: 500px;
+        margin-bottom: 18px;
+        max-width: 480px;
     }
 
     .otp-alert {
         border-radius: 11px;
-        padding: 13px 16px;
-        margin-bottom: 12px;
-        font-size: 14px;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        font-size: 13px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -100,15 +100,15 @@
     }
 
     .otp-alert-icon {
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
         border-radius: 999px;
         color: #fff;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
-        font-size: 13px;
+        font-size: 12px;
     }
 
     .otp-alert-success .otp-alert-icon {
@@ -121,26 +121,26 @@
 
     .otp-label {
         display: block;
-        margin-top: 24px;
-        margin-bottom: 12px;
-        font-size: 17px;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        font-size: 16px;
         font-weight: 700;
         color: #111827;
     }
 
     .otp-boxes {
         display: flex;
-        gap: 14px;
-        margin-bottom: 24px;
+        gap: 12px;
+        margin-bottom: 22px;
     }
 
     .otp-box {
-        width: 58px;
-        height: 58px;
+        width: 52px;
+        height: 52px;
         border-radius: 10px;
         border: 1px solid #d8dee8;
         text-align: center;
-        font-size: 26px;
+        font-size: 24px;
         font-weight: 700;
         color: #111827;
         outline: none;
@@ -154,12 +154,12 @@
 
     .otp-submit {
         width: 100%;
-        height: 54px;
+        height: 50px;
         border: none;
         border-radius: 10px;
         background: linear-gradient(135deg, #ff6a00, #f03300);
         color: white;
-        font-size: 17px;
+        font-size: 16px;
         font-weight: 700;
         box-shadow: 0 12px 22px rgba(255, 77, 0, 0.22);
         display: flex;
@@ -176,40 +176,40 @@
 
     .resend-wrap {
         text-align: center;
-        margin-top: 20px;
+        margin-top: 16px;
     }
 
     .resend-text {
         color: #64748b;
-        font-size: 15px;
-        margin-bottom: 4px;
+        font-size: 14px;
+        margin-bottom: 3px;
     }
 
     .resend-btn {
         border: none;
         background: transparent;
         color: #ff4d00;
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 600;
         cursor: pointer;
     }
 
     .security-note {
-        margin-top: 28px;
-        padding: 14px 16px;
+        margin-top: 18px;
+        padding: 12px 14px;
         background: #f8fafc;
         border: 1px solid #e5e7eb;
         border-radius: 10px;
         color: #64748b;
         display: flex;
         align-items: center;
-        gap: 12px;
-        font-size: 14px;
+        gap: 10px;
+        font-size: 13px;
     }
 
     .security-note i {
         color: #94a3b8;
-        font-size: 18px;
+        font-size: 16px;
     }
 
     .otp-right {
@@ -231,7 +231,7 @@
     @media (max-width: 1024px) {
         .otp-shell {
             max-width: 560px;
-            min-height: auto;
+            height: auto;
             grid-template-columns: 1fr;
         }
 
@@ -240,26 +240,22 @@
         }
 
         .otp-left {
-            padding: 36px 26px;
+            padding: 32px 24px;
         }
 
         .otp-title {
-            font-size: 30px;
-        }
-
-        .otp-subtitle {
-            font-size: 15px;
+            font-size: 28px;
         }
 
         .otp-boxes {
-            gap: 9px;
+            gap: 8px;
             justify-content: space-between;
         }
 
         .otp-box {
-            width: 48px;
-            height: 54px;
-            font-size: 23px;
+            width: 46px;
+            height: 50px;
+            font-size: 22px;
         }
     }
 
@@ -269,13 +265,13 @@
         }
 
         .otp-left {
-            padding: 30px 18px;
+            padding: 26px 16px;
         }
 
         .otp-box {
-            width: 42px;
-            height: 50px;
-            font-size: 21px;
+            width: 40px;
+            height: 46px;
+            font-size: 20px;
         }
     }
 </style>
@@ -285,11 +281,14 @@
 
         <div class="otp-left">
             <div class="otp-content">
+
                 <div class="otp-icon">
                     <i class="fas fa-envelope-open-text"></i>
                 </div>
 
-                <h1 class="otp-title">Verify Your Email</h1>
+                <h1 class="otp-title">
+                    Verify Your Email
+                </h1>
 
                 <p class="otp-subtitle">
                     We sent a 6-digit OTP to your email. Enter the code below to complete your account registration.
@@ -328,9 +327,16 @@
                 <form method="POST" action="{{ route('register.otp.verify') }}" id="otpForm">
                     @csrf
 
-                    <input type="hidden" name="otp" id="otp" value="{{ old('otp') }}">
+                    <input
+                        type="hidden"
+                        name="otp"
+                        id="otp"
+                        value="{{ old('otp') }}"
+                    >
 
-                    <label class="otp-label">OTP Code</label>
+                    <label class="otp-label">
+                        OTP Code
+                    </label>
 
                     <div class="otp-boxes">
                         @for ($i = 0; $i < 6; $i++)
@@ -354,7 +360,9 @@
                 <form method="POST" action="{{ route('register.otp.resend') }}" class="resend-wrap">
                     @csrf
 
-                    <p class="resend-text">Didn't receive the code?</p>
+                    <p class="resend-text">
+                        Didn't receive the code?
+                    </p>
 
                     <button type="submit" class="resend-btn">
                         Resend OTP
@@ -363,17 +371,21 @@
 
                 <div class="security-note">
                     <i class="fas fa-shield-alt"></i>
-                    <span>For your security, the OTP will expire in <strong>10 minutes.</strong></span>
+
+                    <span>
+                        For your security, the OTP will expire in <strong>10 minutes.</strong>
+                    </span>
                 </div>
+
             </div>
         </div>
 
         <div class="otp-right">
-           <img
-    src="{{ Storage::disk('s3')->url('images/otp-side.png') }}"
-    alt="Dumaguete EZE Car Rental OTP Side Design"
-    class="otp-side-image"
->
+            <img
+                src="{{ Storage::disk('s3')->url('images/otp.png') }}"
+                alt="Dumaguete EZE Car Rental OTP Side Design"
+                class="otp-side-image"
+            >
         </div>
 
     </div>
@@ -381,12 +393,15 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+
         const boxes = document.querySelectorAll('.otp-box');
         const hiddenOtp = document.getElementById('otp');
         const form = document.getElementById('otpForm');
 
         function updateOtpValue() {
-            hiddenOtp.value = Array.from(boxes).map(box => box.value).join('');
+            hiddenOtp.value = Array.from(boxes)
+                .map(box => box.value)
+                .join('');
         }
 
         if (hiddenOtp.value) {
@@ -398,7 +413,9 @@
         }
 
         boxes.forEach((box, index) => {
+
             box.addEventListener('input', function () {
+
                 this.value = this.value.replace(/[^0-9]/g, '');
 
                 if (this.value && index < boxes.length - 1) {
@@ -409,12 +426,14 @@
             });
 
             box.addEventListener('keydown', function (event) {
+
                 if (event.key === 'Backspace' && !this.value && index > 0) {
                     boxes[index - 1].focus();
                 }
             });
 
             box.addEventListener('paste', function (event) {
+
                 event.preventDefault();
 
                 const pasted = (event.clipboardData || window.clipboardData)
@@ -423,6 +442,7 @@
                     .slice(0, 6);
 
                 pasted.split('').forEach((digit, pasteIndex) => {
+
                     if (boxes[pasteIndex]) {
                         boxes[pasteIndex].value = digit;
                     }
