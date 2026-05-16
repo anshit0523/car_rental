@@ -128,11 +128,13 @@
         color: #111827;
     }
 
-    .otp-boxes {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 22px;
-    }
+  .otp-boxes {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 22px;
+    justify-content: center;
+    width: 100%;
+}
 
     .otp-box {
         width: 52px;
