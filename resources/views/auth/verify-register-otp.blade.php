@@ -197,7 +197,7 @@
     .security-note {
         margin-top: 18px;
         padding: 12px 14px;
-        background: #f8fafc;
+        background: #77b7f7;
         border: 1px solid #e5e7eb;
         border-radius: 10px;
         color: #64748b;
@@ -221,12 +221,13 @@
     }
 
     .otp-side-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center;
-        display: block;
-    }
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    
+    padding: 10px;
+    display: block;
+}
 
     @media (max-width: 1024px) {
         .otp-shell {
