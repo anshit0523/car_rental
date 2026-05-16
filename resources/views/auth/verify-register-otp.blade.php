@@ -336,9 +336,7 @@
                         value="{{ old('otp') }}"
                     >
 
-                    <label class="otp-label">
-                        OTP Code
-                    </label>
+                  
 
                     <div class="otp-boxes">
                         @for ($i = 0; $i < 6; $i++)
