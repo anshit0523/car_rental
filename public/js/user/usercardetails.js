@@ -5,6 +5,8 @@
   const taxRate = Number(cfg.taxRate || 0);
   const discountRate = Number(cfg.discountRate || 0);
   const unavailableUrl = cfg.unavailableUrl || "";
+  const availablePoints = Number(cfg.availablePoints || 0);
+  const pointsPerPeso = Number(cfg.pointsPerPeso || 10);
 
   let unavailableSet = new Set();
   let isSubmitting = false;
@@ -50,13 +52,85 @@
 
   function renderTotals() {
     const total = calculateBaseTotal();
-    if (total === null) return;
 
+    const pointsInput = document.getElementById("points_to_use");
+    const discountEl = document.getElementById("points-discount");
+    const finalTotalEl = document.getElementById("final-total-price");
     const elTotal = document.getElementById("total-price");
     const elTotalInput = document.getElementById("total-price-input");
 
+    if (total === null) {
+      if (elTotal) elTotal.textContent = money(0);
+      if (elTotalInput) elTotalInput.value = "0";
+      if (discountEl) discountEl.textContent = "-₱0.00";
+      if (finalTotalEl) finalTotalEl.textContent = money(0);
+      return;
+    }
+
+    let pointsToUse = Number(pointsInput?.value || 0);
+
+    if (pointsToUse < 0) pointsToUse = 0;
+
+    if (pointsToUse > availablePoints) {
+      pointsToUse = availablePoints;
+    }
+
+    const maxUsablePointsByTotal = Math.floor(total * pointsPerPeso);
+
+    if (pointsToUse > maxUsablePointsByTotal) {
+      pointsToUse = maxUsablePointsByTotal;
+    }
+
+    if (pointsInput) {
+      pointsInput.value = pointsToUse;
+    }
+
+    const pointsDiscount = pointsToUse / pointsPerPeso;
+    const finalTotal = Math.max(0, total - pointsDiscount);
+
     if (elTotal) elTotal.textContent = money(total);
     if (elTotalInput) elTotalInput.value = total.toFixed(2);
+
+    if (discountEl) {
+      discountEl.textContent = "-₱" + pointsDiscount.toFixed(2);
+    }
+
+    if (finalTotalEl) {
+      finalTotalEl.textContent = money(finalTotal);
+    }
+  }
+
+  function initPointsDiscount() {
+    const pointsInput = document.getElementById("points_to_use");
+    const useMaxBtn = document.getElementById("useMaxPointsBtn");
+
+    if (!pointsInput) return;
+
+    pointsInput.addEventListener("input", function () {
+      this.value = this.value.replace(/[^0-9]/g, "");
+      renderTotals();
+    });
+
+    if (useMaxBtn) {
+      useMaxBtn.addEventListener("click", function () {
+        const total = calculateBaseTotal();
+
+        if (total === null) {
+          pointsInput.value = 0;
+          renderTotals();
+          return;
+        }
+
+        const maxUsablePointsByTotal = Math.floor(total * pointsPerPeso);
+
+        pointsInput.value = Math.min(
+          availablePoints,
+          maxUsablePointsByTotal
+        );
+
+        renderTotals();
+      });
+    }
   }
 
   function initDatePicker() {
@@ -280,6 +354,8 @@
 
     if (isSubmitting) return;
 
+    renderTotals();
+
     const form = document.getElementById("bookingForm");
     const submitBtn = document.getElementById("confirmBtn");
     const agree = document.getElementById("agree_terms");
@@ -302,9 +378,6 @@
       } else {
         if (phoneError) phoneError.style.display = "none";
 
-        // Submit clean phone number to database.
-        // Example visible: 0946-979-4208
-        // Example submitted: 09469794208
         phone.value = phoneValue;
       }
     }
@@ -404,6 +477,7 @@
     initPickupReturnTimeSync();
     initPhoneNumberValidation();
     initBookingFormSubmit();
+    initPointsDiscount();
 
     loadUnavailableDates();
     renderTotals();

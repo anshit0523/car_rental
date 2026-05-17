@@ -14,7 +14,7 @@ class PaymentMethodsSeeder extends Seeder
     public function run(): void
     {
           $methods = [
-            ['name' => 'PayPal', 'code' => 'paypal'],
+          
             ['name' => 'Cash', 'code' => 'cash'],
             ['name' => 'GCash', 'code' => 'gcash'],
              ['name' => 'Bank Transfer', 'code' => 'bank'],

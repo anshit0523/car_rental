@@ -33,82 +33,101 @@ class UserBookingController extends Controller
      * If not logged in yet, keep the booking data in session,
      * then redirect to login/register.
      */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'car_id' => 'required|exists:cars,id',
-            'pickup_date' => 'required|date|after_or_equal:today',
-            'pickup_time' => 'required|date_format:H:i',
-            'return_date' => 'required|date|after:pickup_date',
-            'return_time' => 'required|date_format:H:i',
-            'total_price' => 'required|numeric|min:0',
-            'service_type_id' => 'required|exists:service_types,id',
-            'service_location' => 'nullable|string|max:255',
-            'phone' => 'required|string|max:30',
-        ]);
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'car_id' => 'required|exists:cars,id',
+        'pickup_date' => 'required|date|after_or_equal:today',
+        'pickup_time' => 'required|date_format:H:i',
+        'return_date' => 'required|date|after_or_equal:pickup_date',
+        'return_time' => 'required|date_format:H:i',
+        'total_price' => 'required|numeric|min:0',
+        'service_type_id' => 'required|exists:service_types,id',
+        'service_location' => 'nullable|string|max:255',
+        'phone' => 'required|string|max:30',
+        'points_to_use' => 'nullable|integer|min:0',
+    ]);
 
-        $serviceTypeName = DB::table('service_types')
-            ->where('id', $validated['service_type_id'])
-            ->value('name');
+    $user = auth()->user();
 
-        if (stripos($serviceTypeName, 'deliver') !== false && empty($validated['service_location'])) {
-            return back()
-                ->withErrors(['service_location' => 'Location is required for Delivery.'])
-                ->withInput();
-        }
-
-        if (!auth()->check()) {
-            session([
-                'guest_booking_payload' => $validated,
-            ]);
-
-            return redirect()->route('login')
-                ->with('info', 'Please sign in or create an account to continue to payment.');
-        }
-
-        try {
-            $booking = $this->createBookingForUser(auth()->user(), $validated);
-
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Booking created successfully!',
-                    'redirect' => route('user.payments', ['booking_id' => $booking->id]),
-                ]);
-            }
-
-            return redirect()
-                ->route('user.payments', ['booking_id' => $booking->id])
-                ->with('success', 'Booking created successfully!');
-        } catch (\RuntimeException $e) {
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage(),
-                    'error_type' => 'unavailable_dates',
-                ], 422);
-            }
-
-            return back()
-                ->withErrors(['booking' => $e->getMessage()])
-                ->withInput();
-        } catch (\Exception $e) {
-            \Log::error('Booking error: ' . $e->getMessage());
-
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error creating booking.',
-                    'error_type' => 'general_error',
-                ], 500);
-            }
-
-            return back()
-                ->withErrors(['booking' => 'Error creating booking. Please try again.'])
-                ->withInput();
-        }
+    if (!$user->phone || $user->phone !== $request->input('phone')) {
+        $user->update(['phone' => $request->input('phone')]);
     }
 
+    $serviceTypeName = DB::table('service_types')
+        ->where('id', $validated['service_type_id'])
+        ->value('name');
+
+    if (stripos($serviceTypeName, 'deliver') !== false && empty($validated['service_location'])) {
+        return back()
+            ->withErrors(['service_location' => 'Location is required for Delivery.'])
+            ->withInput();
+    }
+
+    try {
+        $pickupDateTime = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $validated['pickup_date'] . ' ' . $validated['pickup_time']
+        );
+
+        $returnDateTime = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $validated['return_date'] . ' ' . $validated['return_time']
+        );
+
+        if ($returnDateTime <= $pickupDateTime) {
+            return back()
+                ->withErrors(['return_date' => 'Return date/time must be after pickup date/time.'])
+                ->withInput();
+        }
+
+        $existingBooking = Booking::where('car_id', $validated['car_id'])
+            ->whereIn('status_id', [1, 2, 6])
+            ->where(function ($query) use ($pickupDateTime, $returnDateTime) {
+                $query->where('pickup_at', '<', $returnDateTime)
+                    ->where('return_at', '>', $pickupDateTime);
+            })
+            ->exists();
+
+        if ($existingBooking) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This car is not available for the selected dates.',
+                'error_type' => 'unavailable_dates',
+            ], 422);
+        }
+
+        $pendingStatus = Status::firstOrCreate(['name' => 'Pending']);
+
+        $booking = $this->createBookingForUser(
+            $user,
+            $validated,
+            $pendingStatus,
+            $pickupDateTime,
+            $returnDateTime
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking created successfully!',
+                'redirect' => route('user.payments', ['booking_id' => $booking->id]),
+            ]);
+        }
+
+        return redirect()
+            ->route('user.payments', ['booking_id' => $booking->id])
+            ->with('success', 'Booking created successfully!');
+    } catch (\Exception $e) {
+        \Log::error('Booking error: ' . $e->getMessage());
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Error creating booking: ' . $e->getMessage(),
+            'error_type' => 'general_error',
+        ], 500);
+    }
+}
     /**
      * Called right after login/register.
      * Creates the real booking from the guest session,
@@ -219,88 +238,96 @@ class UserBookingController extends Controller
     /**
      * Shared booking creation logic for logged-in users and guest-then-login flow.
      */
-    private function createBookingForUser($user, array $validated): Booking
-    {
-        if (!$user->phone || $user->phone !== $validated['phone']) {
-            $user->update(['phone' => $validated['phone']]);
+   private function createBookingForUser(
+    $user,
+    array $validated,
+    Status $pendingStatus,
+    Carbon $pickupDateTime,
+    Carbon $returnDateTime
+): Booking {
+    $POINTS_PER_PESO = 10;
+
+    return DB::transaction(function () use (
+        $user,
+        $validated,
+        $pendingStatus,
+        $pickupDateTime,
+        $returnDateTime,
+        $POINTS_PER_PESO
+    ) {
+        $userRow = DB::table('users')
+            ->where('id', $user->id)
+            ->lockForUpdate()
+            ->first();
+
+        $balanceBefore = (int) ($userRow->points_balance ?? 0);
+        $pointsRequested = (int) ($validated['points_to_use'] ?? 0);
+        $totalPrice = (float) $validated['total_price'];
+
+        $maxUsablePointsByTotal = (int) floor($totalPrice * $POINTS_PER_PESO);
+
+        $pointsUsed = min(
+            $pointsRequested,
+            $balanceBefore,
+            $maxUsablePointsByTotal
+        );
+
+        $discountAmount = $pointsUsed / $POINTS_PER_PESO;
+        $finalTotal = max(0, $totalPrice - $discountAmount);
+        $balanceAfter = $balanceBefore - $pointsUsed;
+
+        if ($pointsUsed > 0) {
+            DB::table('users')
+                ->where('id', $user->id)
+                ->update([
+                    'points_balance' => $balanceAfter,
+                    'updated_at' => now(),
+                ]);
         }
 
-        $pickupDateTime = Carbon::createFromFormat(
-            'Y-m-d H:i',
-            $validated['pickup_date'] . ' ' . $validated['pickup_time']
-        );
+        $booking = Booking::create([
+            'car_id' => $validated['car_id'],
+            'user_id' => $user->id,
+            'pickup_at' => $pickupDateTime,
+            'return_at' => $returnDateTime,
+            'total_price' => $totalPrice,
+            'points_used' => $pointsUsed,
+            'discount_amount' => $discountAmount,
+            'final_total' => $finalTotal,
+            'status_id' => $pendingStatus->id,
+            'service_type_id' => $validated['service_type_id'],
+            'service_location' => $validated['service_location'] ?? null,
+        ]);
 
-        $returnDateTime = Carbon::createFromFormat(
-            'Y-m-d H:i',
-            $validated['return_date'] . ' ' . $validated['return_time']
-        );
+        if ($pointsUsed > 0) {
+            $redeemTypeId = DB::table('points_transaction_types')
+                ->where('name', 'redeem')
+                ->value('id');
 
-        $blockingStatusIds = Status::whereIn('name', [
-            'Pending',
-            'Pending Payment',
-            'Pending Payment Verification',
-            'Confirmed',
-            'Active',
-            'Reserved',
-        ])->pluck('id')->toArray();
-
-        $pendingStatus = Status::firstOrCreate(['name' => 'Pending Payment']);
-
-        $awaitingPaymentStatus = PaymentStatus::firstOrCreate(
-            ['code' => 'awaiting_payment'],
-            ['name' => 'Awaiting Payment']
-        );
-
-        return DB::transaction(function () use (
-            $user,
-            $validated,
-            $pickupDateTime,
-            $returnDateTime,
-            $pendingStatus,
-            $awaitingPaymentStatus,
-            $blockingStatusIds
-        ) {
-            $existingBooking = Booking::where('car_id', $validated['car_id'])
-                ->whereIn('status_id', $blockingStatusIds)
-                ->where(function ($query) use ($pickupDateTime, $returnDateTime) {
-                    $query->where('pickup_at', '<', $returnDateTime)
-                        ->where('return_at', '>', $pickupDateTime);
-                })
-                ->lockForUpdate()
-                ->exists();
-
-            if ($existingBooking) {
-                throw new \RuntimeException('This car is not available for the selected dates.');
+            if (! $redeemTypeId) {
+                $redeemTypeId = DB::table('points_transaction_types')->insertGetId([
+                    'name' => 'redeem',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
             }
 
-            $totalPrice = (float) $validated['total_price'];
-
-            $booking = Booking::create([
-                'car_id' => $validated['car_id'],
+            DB::table('points_transactions')->insert([
                 'user_id' => $user->id,
-                'pickup_at' => $pickupDateTime,
-                'return_at' => $returnDateTime,
-                'total_price' => $totalPrice,
-                'final_total' => $totalPrice,
-                'status_id' => $pendingStatus->id,
-                'service_type_id' => $validated['service_type_id'],
-                'service_location' => $validated['service_location'] ?? null,
-            ]);
-
-            Payment::create([
                 'booking_id' => $booking->id,
-                'payment_date' => null,
-                'amount' => $booking->final_total ?? $booking->total_price ?? 0,
-                'payment_method_id' => null,
-                'payment_status_id' => $awaitingPaymentStatus->id,
-                'transaction_id' => null,
-                'notes' => 'Awaiting customer payment submission',
+                'points_id' => $redeemTypeId,
+                'points_change' => -$pointsUsed,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
+                'note' => 'Redeemed points for booking',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
+        }
 
-            return $booking;
-        });
-    }
-
+        return $booking;
+    });
+}
     public function confirmation($id)
     {
         $booking = Booking::with(['car', 'user', 'payments', 'receipts'])->findOrFail($id);
