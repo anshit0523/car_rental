@@ -324,10 +324,7 @@ Route::middleware(['auth', 'staff'])
         Route::put('/bookings/{booking}/update-status', [StaffBookingController::class, 'updateStatus'])
             ->name('bookings.update-status');
 
-        Route::get('/payments', [StaffPaymentController::class, 'index'])->name('payments.index');
-        Route::post('/payments/{payment}/approve', [StaffPaymentController::class, 'approve'])->name('payments.approve');
-        Route::post('/payments/{payment}/reject', [StaffPaymentController::class, 'reject'])->name('payments.reject');
-
+        
         Route::get('/live-map', [StaffMapController::class, 'index'])->name('live-map');
         Route::get('/live/positions', [StaffMapController::class, 'positions'])->name('live.positions');
         Route::get('/replay', [StaffMapController::class, 'replayPage'])->name('replay');
