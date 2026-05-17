@@ -468,21 +468,21 @@
 
     .points-row .form-input {
         flex: 1;
-        height: 54px;
-        font-size: 20px;
-        font-weight: 800;
-        border-radius: 16px;
+        height: 40px;
+        font-size: 16px;
+        font-weight: 750;
+        border-radius: 8px;
     }
 
     .points-btn {
         min-width: 105px;
-        height: 54px;
+        height: 43px;
         border: none;
-        border-radius: 16px;
+        border-radius: 12px;
         background: linear-gradient(135deg, #2563eb, #1d4ed8);
         color: #fff;
         font-size: 15px;
-        font-weight: 900;
+        font-weight: 700;
         cursor: pointer;
         transition: 0.2s ease;
     }
@@ -513,16 +513,16 @@
 
     .total-box p {
         margin: 0 0 6px;
-        font-size: 12px;
+        font-size: 11px;
         color: #64748b;
-        font-weight: 900;
+        font-weight: 750;
         text-transform: uppercase;
         letter-spacing: 0.06em;
     }
 
     .total-box h4 {
         margin: 0;
-        font-size: 32px;
+        font-size: 18px;
         line-height: 1;
         color: #0f172a;
         font-weight: 900;
@@ -530,7 +530,7 @@
 
     #final-total-price {
         color: #16a34a !important;
-        font-size: 42px !important;
+        font-size: 18px !important;
         margin-top: 4px;
     }
 
@@ -560,11 +560,11 @@
         width: 100%;
         min-height: 58px;
         border: none;
-        border-radius: 18px;
+        border-radius: 12px;
         background: linear-gradient(135deg, #2563eb, #1d4ed8);
         color: #fff;
-        font-size: 18px;
-        font-weight: 900;
+        font-size: 17px;
+        font-weight: 700;
         margin-top: 22px;
         transition: 0.25s ease;
         box-shadow: 0 10px 24px rgba(37, 99, 235, 0.25);
