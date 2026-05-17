@@ -44,18 +44,7 @@
                     ] : null,
                 ])),
             ],
-            [
-                'label' => 'Finance & Settings',
-                'items' => array_values(array_filter([
-                    Route::has('staff.payments.index') ? [
-                        'label' => 'Payments',
-                        'route' => route('staff.payments.index'),
-                        'pattern' => 'staff.payments*',
-                        'icon' => 'fas fa-credit-card',
-                        'badge' => $pendingPaymentsCount ?? 0,
-                    ] : null,
-                ])),
-            ],
+            
         ];
     @endphp
 
