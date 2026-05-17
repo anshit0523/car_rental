@@ -194,7 +194,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 setText('viewUserName', data.user?.name || 'N/A');
                 setText('viewUserEmail', data.user?.email || 'N/A');
                 setText('viewUserPhone', data.user?.phone || 'N/A');
+
                 setText('viewCarName', `${data.car?.brand || 'N/A'} ${data.car?.model || ''}`.trim());
+                setText('viewPlateNumber', data.car?.plate_number || 'N/A');
+
                 setText('viewPickupAt', data.pickup_at || 'N/A');
                 setText('viewReturnAt', data.return_at || 'N/A');
                 setText('viewTotalPrice', data.total_price || '0.00');
@@ -203,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const locationWrapper = document.getElementById('viewServiceLocationWrapper');
                 if (locationWrapper) {
-                    if (data.service_location) {
+                    if (data.service_location && data.service_location !== 'N/A') {
                         locationWrapper.classList.remove('hidden');
                     } else {
                         locationWrapper.classList.add('hidden');

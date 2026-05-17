@@ -239,7 +239,8 @@
             <p><strong>User:</strong> <span id="viewUserName">-</span></p>
             <p><strong>Email:</strong> <span id="viewUserEmail">-</span></p>
             <p><strong>Phone:</strong> <span id="viewUserPhone">-</span></p>
-            <p><strong>Car:</strong> <span id="viewCarName">-</span></p>
+           <p><strong>Car:</strong> <span id="viewCarName">-</span>— <strong>Plate:</strong> 
+            <span id="viewPlateNumber">-</span></p>
             <p><strong>Pickup:</strong> <span id="viewPickupAt">-</span></p>
             <p><strong>Return:</strong> <span id="viewReturnAt">-</span></p>
             <p><strong>Total Price:</strong> ₱<span id="viewTotalPrice">-</span></p>

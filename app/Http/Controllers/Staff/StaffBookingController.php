@@ -330,47 +330,48 @@ class StaffBookingController extends Controller
     }
 
     public function showJson(Booking $booking): JsonResponse
-    {
-        try {
-            $booking->load([
-                'user:id,name,email,phone',
-                'car:id,model,brand_id',
-                'car.brand:id,name',
-                'status:id,name',
-                'serviceType:id,name',
-            ]);
+{
+    try {
+        $booking->load([
+            'user:id,name,email,phone',
+            'car:id,model,brand_id,plate_number',
+            'car.brand:id,name',
+            'status:id,name',
+            'serviceType:id,name',
+        ]);
 
-            return response()->json([
-                'success' => true,
-                'id' => $booking->id,
-                'status' => $booking->status->name ?? 'N/A',
-                'pickup_at' => $booking->pickup_at?->format('M d, Y h:i A') ?? 'N/A',
-                'pickup_at_iso' => $booking->pickup_at?->toIso8601String(),
-                'return_at' => $booking->return_at?->format('M d, Y h:i A') ?? 'N/A',
-                'return_at_iso' => $booking->return_at?->toIso8601String(),
-                'total_price' => number_format((float) ($booking->total_price ?? 0), 2),
-                'service_type' => $booking->serviceType->name ?? 'N/A',
-                'service_location' => $booking->service_location ?? 'N/A',
-                'user' => [
-                    'id' => $booking->user->id ?? null,
-                    'name' => $booking->user->name ?? 'N/A',
-                    'email' => $booking->user->email ?? 'N/A',
-                    'phone' => $booking->user->phone ?? 'N/A',
-                ],
-                'car' => [
-                    'id' => $booking->car->id ?? null,
-                    'name' => trim(($booking->car->brand->name ?? 'Unknown') . ' ' . ($booking->car->model ?? '')),
-                    'brand' => $booking->car->brand->name ?? 'N/A',
-                    'model' => $booking->car->model ?? 'N/A',
-                ],
-            ]);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load booking details.',
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'id' => $booking->id,
+            'status' => $booking->status->name ?? 'N/A',
+            'pickup_at' => $booking->pickup_at?->format('M d, Y h:i A') ?? 'N/A',
+            'return_at' => $booking->return_at?->format('M d, Y h:i A') ?? 'N/A',
+            'total_price' => number_format($booking->total_price ?? 0, 2),
+            'service_type' => $booking->serviceType->name ?? 'N/A',
+            'service_location' => $booking->service_location ?? null,
+
+            'user' => [
+                'id' => $booking->user->id ?? null,
+                'name' => $booking->user->name ?? 'N/A',
+                'email' => $booking->user->email ?? 'N/A',
+                'phone' => $booking->user->phone ?? 'N/A',
+            ],
+
+            'car' => [
+                'id' => $booking->car->id ?? null,
+                'brand' => $booking->car->brand->name ?? 'N/A',
+                'model' => $booking->car->model ?? 'N/A',
+                'plate_number' => $booking->car->plate_number ?? 'N/A',
+            ],
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage(),
+        ], 500);
     }
+}
+
 
     public function updateStatus(Request $request, Booking $booking)
     {
