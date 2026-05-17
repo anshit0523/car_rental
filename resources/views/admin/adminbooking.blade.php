@@ -251,6 +251,14 @@
             <p><strong>User:</strong> <span id="viewUserName">-</span></p>
             <p><strong>Email:</strong> <span id="viewUserEmail">-</span></p>
             <p><strong>Phone:</strong> <span id="viewUserPhone">-</span></p>
+                        <p>
+                <strong>Car:</strong>
+                <span id="viewCarBrand">-</span>
+                <span id="viewCarModel">-</span>
+                —
+                <strong>Plate:</strong>
+                <span id="viewPlateNumber">-</span>
+                     </p>
             <p><strong>Service Type:</strong> <span id="viewServiceType">-</span></p>
 
             <p id="viewServiceLocationWrapper">

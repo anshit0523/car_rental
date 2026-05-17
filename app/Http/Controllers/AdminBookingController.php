@@ -26,6 +26,8 @@ class AdminBookingController extends Controller
         return $roleName === 'manager' ? 'manager' : 'admin';
     }
 
+
+
     public function index(Request $request)
     {
         $query = Booking::with(['user', 'car.brand', 'status']);
@@ -52,6 +54,11 @@ class AdminBookingController extends Controller
 
         return view('admin.adminbooking', compact('bookings', 'statuses', 'panelPrefix'));
     }
+
+
+
+
+
 
     public function create(Car $car)
     {
@@ -488,7 +495,7 @@ class AdminBookingController extends Controller
         try {
             $booking->load([
                 'user:id,name,email,phone',
-                'car:id,model,brand_id',
+                'car:id,model,brand_id,plate_number',
                 'car.brand:id,name',
                 'status:id,name',
                 'serviceType:id,name',
@@ -505,15 +512,20 @@ class AdminBookingController extends Controller
                 'total_price' => number_format($booking->total_price ?? 0, 2),
                 'service_type' => $booking->serviceType->name ?? 'N/A',
                 'service_location' => $booking->service_location ?? 'N/A',
+
                 'user' => [
                     'id' => $booking->user->id ?? null,
                     'name' => $booking->user->name ?? 'N/A',
                     'email' => $booking->user->email ?? 'N/A',
                     'phone' => $booking->user->phone ?? 'N/A',
                 ],
+
                 'car' => [
                     'id' => $booking->car->id ?? null,
-                    'name' => ($booking->car->brand->name ?? 'Unknown') . ' ' . ($booking->car->model ?? ''),
+                    'brand' => $booking->car->brand->name ?? 'N/A',
+                    'model' => $booking->car->model ?? 'N/A',
+                    'plate_number' => $booking->car->plate_number ?? 'N/A',
+                    'name' => trim(($booking->car->brand->name ?? '') . ' ' . ($booking->car->model ?? '')),
                 ],
             ]);
         } catch (\Exception $e) {
@@ -523,6 +535,7 @@ class AdminBookingController extends Controller
             ], 500);
         }
     }
+
 
     private function bookingErrorResponse(Request $request, string $message, int $statusCode = 422)
     {

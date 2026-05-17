@@ -53,6 +53,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const statusMap = window.bookingStatusMap || {};
 
+    function setText(id, value = '-') {
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.textContent = value ?? '-';
+        }
+    }
+
     function toggleAdminMessageField() {
         if (!statusDropdown || !adminMessageWrapper) return;
 
@@ -175,12 +183,17 @@ document.addEventListener('DOMContentLoaded', function () {
             viewModal.classList.remove('hidden');
             viewModal.classList.add('flex');
 
-            document.getElementById('viewBookingId').textContent = '';
-            document.getElementById('viewUserName').textContent = '';
-            document.getElementById('viewUserEmail').textContent = '';
-            document.getElementById('viewUserPhone').textContent = '';
-            document.getElementById('viewServiceType').textContent = '';
-            document.getElementById('viewServiceLocation').textContent = '';
+            setText('viewBookingId', '');
+            setText('viewUserName', '');
+            setText('viewUserEmail', '');
+            setText('viewUserPhone', '');
+
+            setText('viewCarBrand', '');
+            setText('viewCarModel', '');
+            setText('viewPlateNumber', '');
+
+            setText('viewServiceType', '');
+            setText('viewServiceLocation', '');
 
             if (serviceLocationWrapper) {
                 serviceLocationWrapper.classList.remove('hidden');
@@ -204,14 +217,19 @@ document.addEventListener('DOMContentLoaded', function () {
                     throw new Error(data.message || 'Failed to load booking details.');
                 }
 
-                document.getElementById('viewBookingId').textContent = data.id ?? '-';
-                document.getElementById('viewUserName').textContent = data.user?.name ?? '-';
-                document.getElementById('viewUserEmail').textContent = data.user?.email ?? '-';
-                document.getElementById('viewUserPhone').textContent = data.user?.phone ?? '-';
+                setText('viewBookingId', data.id ?? '-');
+                setText('viewUserName', data.user?.name ?? '-');
+                setText('viewUserEmail', data.user?.email ?? '-');
+                setText('viewUserPhone', data.user?.phone ?? '-');
+
+                setText('viewCarBrand', data.car?.brand ?? '-');
+                setText('viewCarModel', data.car?.model ?? '-');
+                setText('viewPlateNumber', data.car?.plate_number ?? '-');
 
                 const serviceType = data.service_type ?? '-';
-                document.getElementById('viewServiceType').textContent = serviceType;
-                document.getElementById('viewServiceLocation').textContent = data.service_location ?? '-';
+
+                setText('viewServiceType', serviceType);
+                setText('viewServiceLocation', data.service_location ?? '-');
 
                 if (serviceLocationWrapper) {
                     if (serviceType.toLowerCase() === 'pickup') {
@@ -223,12 +241,17 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (error) {
                 console.error(error);
 
-                document.getElementById('viewBookingId').textContent = 'Error';
-                document.getElementById('viewUserName').textContent = '-';
-                document.getElementById('viewUserEmail').textContent = '-';
-                document.getElementById('viewUserPhone').textContent = '-';
-                document.getElementById('viewServiceType').textContent = '-';
-                document.getElementById('viewServiceLocation').textContent = '-';
+                setText('viewBookingId', 'Error');
+                setText('viewUserName', '-');
+                setText('viewUserEmail', '-');
+                setText('viewUserPhone', '-');
+
+                setText('viewCarBrand', '-');
+                setText('viewCarModel', '-');
+                setText('viewPlateNumber', '-');
+
+                setText('viewServiceType', '-');
+                setText('viewServiceLocation', '-');
 
                 if (serviceLocationWrapper) {
                     serviceLocationWrapper.classList.remove('hidden');
