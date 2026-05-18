@@ -374,75 +374,145 @@ class StaffBookingController extends Controller
 
 
     public function updateStatus(Request $request, Booking $booking)
-    {
-        $request->validate([
-            'status_id' => 'required|exists:statuses,id',
-            'admin_message' => 'nullable|string|max:500',
-        ]);
+{
+    $request->validate([
+        'status_id' => 'required|exists:statuses,id',
+        'admin_message' => 'nullable|string|max:500',
+    ]);
 
-        $newStatus = Status::findOrFail($request->status_id);
-        $currentStatus = $booking->status->name ?? null;
+    $newStatus = Status::findOrFail($request->status_id);
+    $currentStatus = $booking->status->name ?? null;
 
-        $allowedTransitions = [
-            'Pending' => ['Cancelled'],
-            'Confirmed' => ['Cancelled'],
-            'Return' => ['Checkup', 'Damage', 'Needs Repair', 'Completed'],
-            'Active' => [],
-            'Completed' => [],
-            'Cancelled' => [],
-            'Checkup' => [],
-            'Damage' => [],
-            'Needs Repair' => [],
-            'Failed' => [],
-        ];
+    $allowedTransitions = [
+        'Pending' => ['Cancelled'],
+        'Pending Payment' => ['Cancelled'],
+        
+        'Confirmed' => ['Cancelled'],
+        'Return' => ['Checkup', 'Damage', 'Needs Repair', 'Completed'],
+        'Active' => [],
+        'Completed' => [],
+        'Cancelled' => [],
+        'Checkup' => [],
+        'Damage' => [],
+        'Needs Repair' => [],
+        'Failed' => [],
+    ];
 
-        if (!array_key_exists($currentStatus, $allowedTransitions)) {
-            return redirect()
-                ->route('staff.bookings.index')
-                ->with('error', 'Invalid current booking status.');
-        }
+    if (!array_key_exists($currentStatus, $allowedTransitions)) {
+        return redirect()
+            ->route('staff.bookings.index')
+            ->with('error', 'Invalid current booking status.');
+    }
 
-        if (!in_array($newStatus->name, $allowedTransitions[$currentStatus])) {
-            return redirect()
-                ->route('staff.bookings.index')
-                ->with('error', "Cannot change status from {$currentStatus} to {$newStatus->name}.");
-        }
+    if (!in_array($newStatus->name, $allowedTransitions[$currentStatus])) {
+        return redirect()
+            ->route('staff.bookings.index')
+            ->with('error', "Cannot change status from {$currentStatus} to {$newStatus->name}.");
+    }
 
+    $adminMessage = trim($request->admin_message ?? '');
+    $notificationMessage = "Your booking status has been updated to {$newStatus->name}.";
+    $notificationTitle = match ($newStatus->name) {
+        'Damage' => 'Vehicle Damage Notice',
+        'Needs Repair' => 'Vehicle Repair Notice',
+        'Checkup' => 'Vehicle Checkup Notice',
+        'Completed' => ' Reward Points Earned',
+        'Cancelled' => 'Booking Cancelled',
+        default => 'Booking Update',
+    };
+
+    DB::transaction(function () use (
+        $booking,
+        $newStatus,
+        $currentStatus,
+        $adminMessage,
+        &$notificationMessage
+    ) {
         $booking->update([
             'status_id' => $newStatus->id,
         ]);
 
-        $adminMessage = trim($request->admin_message ?? '');
+        if ($currentStatus === 'Return' && $newStatus->name === 'Completed') {
+            $POINTS_EARN_PER_PESO = 100;
+            $amountForPoints = (float) ($booking->final_total ?? $booking->total_price ?? 0);
+            $earnedPoints = (int) floor($amountForPoints / $POINTS_EARN_PER_PESO);
 
-        if ($currentStatus === 'Return') {
-            $notificationMessage = "Your booking status has been updated to {$newStatus->name}.";
+            if ($earnedPoints > 0) {
+                $alreadyEarned = DB::table('points_transactions')
+                    ->where('booking_id', $booking->id)
+                    ->where('note', 'Earned points from completed booking')
+                    ->exists();
 
-            if (!empty($adminMessage)) {
-                $notificationMessage .= " Admin note: {$adminMessage}";
+                if (!$alreadyEarned) {
+                    $userRow = DB::table('users')
+                        ->where('id', $booking->user_id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    $balanceBefore = (int) ($userRow->points_balance ?? 0);
+                    $balanceAfter = $balanceBefore + $earnedPoints;
+
+                    DB::table('users')
+                        ->where('id', $booking->user_id)
+                        ->update([
+                            'points_balance' => $balanceAfter,
+                            'updated_at' => now(),
+                        ]);
+
+                    $earnTypeId = DB::table('points_transaction_types')
+                        ->where('name', 'earn')
+                        ->value('id');
+
+                    if (!$earnTypeId) {
+                        $earnTypeId = DB::table('points_transaction_types')->insertGetId([
+                            'name' => 'earn',
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+
+                    DB::table('points_transactions')->insert([
+                        'user_id' => $booking->user_id,
+                        'booking_id' => $booking->id,
+                        'points_id' => $earnTypeId,
+                        'points_change' => $earnedPoints,
+                        'balance_before' => $balanceBefore,
+                        'balance_after' => $balanceAfter,
+                        'note' => 'Earned points from completed booking',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    $notificationMessage =
+                        "Your booking has been completed successfully. " .
+                        "+{$earnedPoints} reward points have been added to your account. " .
+                        "Current Balance: {$balanceAfter} Points. " .
+                        "Thank you for choosing EZE Car Rental.";
+                }
             }
-
-            $title = match ($newStatus->name) {
-                'Damage' => 'Vehicle Damage Notice',
-                'Needs Repair' => 'Vehicle Repair Notice',
-                'Checkup' => 'Vehicle Checkup Notice',
-                'Completed' => 'Booking Completed',
-                default => 'Booking Return Update',
-            };
-
-            Notification::create([
-                'user_id' => $booking->user_id,
-                'booking_id' => $booking->id,
-                'title' => $title,
-                'message' => $notificationMessage,
-                'type' => 'booking',
-                'link' => route('user.booking.confirmation', $booking->id),
-            ]);
         }
 
-        return redirect()
-            ->route('staff.bookings.index')
-            ->with('success', 'Booking status updated successfully.');
+        if (!empty($adminMessage)) {
+            $notificationMessage .= " Admin note: {$adminMessage}";
+        }
+    });
+
+    if ($currentStatus === 'Return' || $newStatus->name === 'Cancelled') {
+        Notification::create([
+            'user_id' => $booking->user_id,
+            'booking_id' => $booking->id,
+            'title' => $notificationTitle,
+            'message' => $notificationMessage,
+            'type' => 'booking',
+            'link' => route('user.booking.confirmation', $booking->id),
+        ]);
     }
+
+    return redirect()
+        ->route('staff.bookings.index')
+        ->with('success', 'Booking status updated successfully.');
+}
+
 
     private function bookingErrorResponse(Request $request, string $message, int $statusCode = 422)
     {
