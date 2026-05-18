@@ -201,9 +201,7 @@
 
 <div class="rewards-page">
     <h1 class="rewards-title">My Rewards / Points History</h1>
-    <div class="rewards-breadcrumb">
-        <span>Home</span> &nbsp;›&nbsp; My Rewards
-    </div>
+    
 
     <div class="summary-card">
         <div class="summary-grid">

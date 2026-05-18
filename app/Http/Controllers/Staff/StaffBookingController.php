@@ -504,7 +504,9 @@ class StaffBookingController extends Controller
             'title' => $notificationTitle,
             'message' => $notificationMessage,
             'type' => 'booking',
-            'link' => route('user.booking.confirmation', $booking->id),
+            'link' => $newStatus->name === 'Completed'
+    ? route('user.rewards') : route('user.booking.confirmation', $booking->id),
+
         ]);
     }
 
