@@ -16,17 +16,6 @@
         margin-bottom: 2px;
     }
 
-    .rewards-breadcrumb {
-        color: #64748b;
-        font-size: 14px;
-        margin-bottom: 28px;
-    }
-
-    .rewards-breadcrumb span {
-        color: #ff5a1f;
-        font-weight: 800;
-    }
-
     .summary-card,
     .history-card {
         background: #fff;
@@ -87,9 +76,17 @@
         margin-top: 6px;
     }
 
-    .text-green { color: #16a34a; }
-    .text-red { color: #dc2626; }
-    .text-orange { color: #ff5a1f; }
+    .text-green {
+        color: #16a34a;
+    }
+
+    .text-red {
+        color: #dc2626;
+    }
+
+    .text-orange {
+        color: #ff5a1f;
+    }
 
     .reward-info {
         padding: 16px 24px;
@@ -109,6 +106,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 14px;
         margin-bottom: 22px;
     }
 
@@ -126,6 +124,13 @@
         padding: 10px 14px;
         font-weight: 800;
         color: #111827;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .filter-btn:focus {
+        border-color: #ff5a1f;
+        box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.12);
     }
 
     .points-table {
@@ -155,6 +160,9 @@
         border-radius: 999px;
         font-size: 12px;
         font-weight: 750;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
     }
 
     .badge-earned {
@@ -177,7 +185,17 @@
         font-weight: 900;
     }
 
+    .empty-row {
+        text-align: center;
+        color: #64748b;
+        padding: 24px 10px !important;
+    }
+
     @media (max-width: 900px) {
+        .rewards-page {
+            padding: 18px 14px;
+        }
+
         .summary-grid {
             grid-template-columns: 1fr;
             gap: 20px;
@@ -187,6 +205,15 @@
             border-right: none;
             border-bottom: 1px solid #e5e7eb;
             padding-bottom: 18px;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-header {
+            align-items: flex-start;
+            flex-direction: column;
         }
 
         .points-table {
@@ -201,7 +228,6 @@
 
 <div class="rewards-page">
     <h1 class="rewards-title">My Rewards / Points History</h1>
-    
 
     <div class="summary-card">
         <div class="summary-grid">
@@ -254,7 +280,12 @@
     <div class="history-card">
         <div class="history-header">
             <h3>Points History</h3>
-            <button class="filter-btn">All Transactions ▾</button>
+
+            <select id="pointsFilter" class="filter-btn">
+                <option value="all">All Transactions</option>
+                <option value="earned">Earned Points</option>
+                <option value="redeemed">Redeemed Points</option>
+            </select>
         </div>
 
         <div class="table-wrap">
@@ -269,13 +300,14 @@
                         <th>Note</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     @forelse($transactions as $transaction)
                         @php
                             $isEarned = $transaction->points_change > 0;
                         @endphp
 
-                        <tr>
+                        <tr data-type="{{ $isEarned ? 'earned' : 'redeemed' }}">
                             <td>{{ \Carbon\Carbon::parse($transaction->created_at)->format('M d, Y h:i A') }}</td>
                             <td>#{{ $transaction->booking_id ?? 'N/A' }}</td>
                             <td>
@@ -291,7 +323,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" style="text-align:center;color:#64748b;">
+                            <td colspan="6" class="empty-row">
                                 No points history yet.
                             </td>
                         </tr>
@@ -305,4 +337,23 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const filter = document.getElementById('pointsFilter');
+        const rows = document.querySelectorAll('.points-table tbody tr[data-type]');
+
+        if (!filter) return;
+
+        filter.addEventListener('change', function () {
+            const selected = this.value;
+
+            rows.forEach(function (row) {
+                row.style.display = selected === 'all' || row.dataset.type === selected
+                    ? ''
+                    : 'none';
+            });
+        });
+    });
+</script>
 @endsection
