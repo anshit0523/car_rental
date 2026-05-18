@@ -11,9 +11,9 @@
 
     .rewards-title {
         font-size: 30px;
-        font-weight: 900;
+        font-weight: 750;
         color: #111827;
-        margin-bottom: 6px;
+        margin-bottom: 2px;
     }
 
     .rewards-breadcrumb {
@@ -69,13 +69,13 @@
     .summary-label {
         font-size: 14px;
         color: #111827;
-        font-weight: 800;
+        font-weight: 700;
         margin-bottom: 6px;
     }
 
     .summary-value {
         font-size: 30px;
-        font-weight: 900;
+        font-weight: 800;
         color: #111827;
         line-height: 1;
     }
@@ -96,7 +96,7 @@
         background: #fff7ed;
         color: #f04b00;
         font-size: 14px;
-        font-weight: 700;
+        font-weight: 500;
         border-top: 1px solid #fed7aa;
     }
 
@@ -115,7 +115,7 @@
     .history-header h3 {
         margin: 0;
         font-size: 22px;
-        font-weight: 900;
+        font-weight: 800;
         color: #111827;
     }
 
@@ -147,14 +147,14 @@
         border-bottom: 1px solid #e5e7eb;
         font-size: 14px;
         color: #111827;
-        font-weight: 700;
+        font-weight: 650;
     }
 
     .badge {
         padding: 6px 12px;
         border-radius: 999px;
         font-size: 12px;
-        font-weight: 900;
+        font-weight: 750;
     }
 
     .badge-earned {
