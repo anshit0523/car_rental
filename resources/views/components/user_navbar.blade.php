@@ -193,6 +193,11 @@
         border-bottom: 1px solid #f5f5f5;
     }
 
+    .dropdown-profile-link:hover {
+        background: #fff3ed !important;
+        color: #ff5a1f;
+    }
+
     .dropdown-logout-btn {
         width: 100%;
         display: flex;
@@ -524,7 +529,6 @@
                                               d="M15 7h3a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h3m6 0V5a3 3 0 00-6 0v2m6 0H9m3 5v4" />
                                     </svg>
                                 </span>
-
                                 <span class="nav-text">Rentals</span>
                             </a>
                         </li>
@@ -560,7 +564,6 @@
                                               d="M5.121 17.804A9.003 9.003 0 0112 15a9.003 9.003 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
                                 </span>
-
                                 <span class="nav-text">Profile</span>
                             </a>
                         </li>
@@ -684,6 +687,13 @@
                                style="background:{{ request()->routeIs('user.profile') ? '#fff3ed' : '#fff' }};">
                                 <span><i class="fas fa-user"></i></span>
                                 <span>Profile</span>
+                            </a>
+
+                            <a href="{{ route('user.rewards') }}"
+                               class="dropdown-profile-link"
+                               style="background:{{ request()->routeIs('user.rewards') ? '#fff3ed' : '#fff' }};">
+                                <span><i class="fa-solid fa-star" style="color:#ff5a1f;"></i></span>
+                                <span>My Points History</span>
                             </a>
 
                             <form action="{{ route('logout') }}?clear=1" method="POST" style="margin:0;">
