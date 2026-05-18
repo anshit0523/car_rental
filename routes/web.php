@@ -28,6 +28,7 @@ use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\UserNotificationController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserRentalController;
+use App\Http\Controllers\UserRewardsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -176,6 +177,8 @@ Route::middleware(['auth', 'user'])
 
         Route::get('/return-issues/{returnIssue}', [ReturnIssueController::class, 'show'])
             ->name('return-issues.show');
+
+            Route::get('/rewards', [UserRewardsController::class, 'index'])->name('user.rewards');
     });
 
 /*
