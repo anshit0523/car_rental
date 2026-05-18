@@ -160,43 +160,61 @@ public function store(Request $request)
      * Creates the real booking from the guest session,
      * then redirects directly to payment page.
      */
-    public function continueGuestBooking()
-    {
-        if (!auth()->check()) {
-            return redirect()->route('login');
-        }
-
-        $payload = session('guest_booking_payload');
-
-        if (!$payload) {
-            return redirect()->route('user.browse')
-                ->with('error', 'No pending booking found. Please select a car again.');
-        }
-
-        try {
-            $booking = $this->createBookingForUser(auth()->user(), $payload);
-
-            session()->forget('guest_booking_payload');
-
-            return redirect()
-                ->route('user.payments', ['booking_id' => $booking->id])
-                ->with('success', 'Booking created successfully. Please continue with payment.');
-        } catch (\RuntimeException $e) {
-            session()->forget('guest_booking_payload');
-
-            return redirect()
-                ->route('user.browse')
-                ->withErrors(['booking' => $e->getMessage()]);
-        } catch (\Exception $e) {
-            \Log::error('Continue guest booking error: ' . $e->getMessage());
-
-            session()->forget('guest_booking_payload');
-
-            return redirect()
-                ->route('user.browse')
-                ->withErrors(['booking' => 'Error creating booking. Please try again.']);
-        }
+   public function continueGuestBooking()
+{
+    if (!auth()->check()) {
+        return redirect()->route('login');
     }
+
+    $payload = session('guest_booking_payload');
+
+    if (!$payload) {
+        return redirect()->route('user.browse')
+            ->with('error', 'No pending booking found. Please select a car again.');
+    }
+
+    try {
+        $pickupDateTime = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $payload['pickup_date'] . ' ' . $payload['pickup_time']
+        );
+
+        $returnDateTime = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $payload['return_date'] . ' ' . $payload['return_time']
+        );
+
+        $pendingStatus = Status::firstOrCreate(['name' => 'Pending Payment']);
+
+        $booking = $this->createBookingForUser(
+            auth()->user(),
+            $payload,
+            $pendingStatus,
+            $pickupDateTime,
+            $returnDateTime
+        );
+
+        session()->forget('guest_booking_payload');
+
+        return redirect()
+            ->route('user.payments', ['booking_id' => $booking->id])
+            ->with('success', 'Booking created successfully. Please continue with payment.');
+    } catch (\RuntimeException $e) {
+        session()->forget('guest_booking_payload');
+
+        return redirect()
+            ->route('user.browse')
+            ->withErrors(['booking' => $e->getMessage()]);
+    } catch (\Exception $e) {
+        \Log::error('Continue guest booking error: ' . $e->getMessage());
+
+        session()->forget('guest_booking_payload');
+
+        return redirect()
+            ->route('user.browse')
+            ->withErrors(['booking' => 'Error creating booking. Please try again.']);
+    }
+}
 
     /**
      * Create a brand-new booking when the previous booking was rejected/failed.
@@ -333,7 +351,7 @@ public function store(Request $request)
 
         Payment::create([
             'booking_id' => $booking->id,
-            'payment_date' => null,
+            'payment_date' => now(),
             'amount' => $finalTotal,
             'payment_method_id' => null,
             'payment_status_id' => $awaitingPaymentStatus->id,
