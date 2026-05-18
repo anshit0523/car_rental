@@ -178,7 +178,7 @@ Route::middleware(['auth', 'user'])
         Route::get('/return-issues/{returnIssue}', [ReturnIssueController::class, 'show'])
             ->name('return-issues.show');
 
-            Route::get('/rewards', [UserRewardsController::class, 'index'])->name('user.rewards');
+            Route::get('/rewards', [UserRewardsController::class, 'index'])->name('rewards');
     });
 
 /*
