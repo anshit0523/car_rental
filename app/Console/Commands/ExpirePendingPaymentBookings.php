@@ -153,7 +153,7 @@ class ExpirePendingPaymentBookings extends Command
 
                 if (!$alreadyNotified) {
                     $pointsMessage = (int) ($booking->points_used ?? 0) > 0
-                        ? ' Your redeemed points have been returned to your account.'
+                        ? 'redeemed points have been returned to your account.'
                         : '';
 
                     Notification::create([
