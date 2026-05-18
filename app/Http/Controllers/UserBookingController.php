@@ -48,12 +48,6 @@ public function store(Request $request)
         'points_to_use' => 'nullable|integer|min:0',
     ]);
 
-    $user = auth()->user();
-
-    if (!$user->phone || $user->phone !== $request->input('phone')) {
-        $user->update(['phone' => $request->input('phone')]);
-    }
-
     $serviceTypeName = DB::table('service_types')
         ->where('id', $validated['service_type_id'])
         ->value('name');
@@ -62,6 +56,18 @@ public function store(Request $request)
         return back()
             ->withErrors(['service_location' => 'Location is required for Delivery.'])
             ->withInput();
+    }
+
+    if (!auth()->check()) {
+        $validated['points_to_use'] = 0;
+
+        session([
+            'guest_booking_payload' => $validated,
+        ]);
+
+        return redirect()
+            ->route('login')
+            ->with('info', 'Please sign in or create an account to continue to payment.');
     }
 
     try {
@@ -81,8 +87,17 @@ public function store(Request $request)
                 ->withInput();
         }
 
+        $blockingStatusIds = Status::whereIn('name', [
+            'Pending Payment',
+            'Pending Payment Verification',
+            'Confirmed',
+            'Active',
+            'Reserved',
+            'Return',
+        ])->pluck('id')->toArray();
+
         $existingBooking = Booking::where('car_id', $validated['car_id'])
-            ->whereIn('status_id', [1, 2, 6])
+            ->whereIn('status_id', $blockingStatusIds)
             ->where(function ($query) use ($pickupDateTime, $returnDateTime) {
                 $query->where('pickup_at', '<', $returnDateTime)
                     ->where('return_at', '>', $pickupDateTime);
@@ -90,17 +105,23 @@ public function store(Request $request)
             ->exists();
 
         if ($existingBooking) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This car is not available for the selected dates.',
-                'error_type' => 'unavailable_dates',
-            ], 422);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This car is not available for the selected dates.',
+                    'error_type' => 'unavailable_dates',
+                ], 422);
+            }
+
+            return back()
+                ->withErrors(['booking' => 'This car is not available for the selected dates.'])
+                ->withInput();
         }
 
-        $pendingStatus = Status::firstOrCreate(['name' => 'Pending']);
+        $pendingStatus = Status::firstOrCreate(['name' => 'Pending Payment']);
 
         $booking = $this->createBookingForUser(
-            $user,
+            auth()->user(),
             $validated,
             $pendingStatus,
             $pickupDateTime,
@@ -121,11 +142,17 @@ public function store(Request $request)
     } catch (\Exception $e) {
         \Log::error('Booking error: ' . $e->getMessage());
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Error creating booking: ' . $e->getMessage(),
-            'error_type' => 'general_error',
-        ], 500);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating booking: ' . $e->getMessage(),
+                'error_type' => 'general_error',
+            ], 500);
+        }
+
+        return back()
+            ->withErrors(['booking' => 'Error creating booking: ' . $e->getMessage()])
+            ->withInput();
     }
 }
     /**
@@ -297,6 +324,21 @@ public function store(Request $request)
             'status_id' => $pendingStatus->id,
             'service_type_id' => $validated['service_type_id'],
             'service_location' => $validated['service_location'] ?? null,
+        ]);
+
+        $awaitingPaymentStatus = PaymentStatus::firstOrCreate(
+            ['code' => 'awaiting_payment'],
+            ['name' => 'Awaiting Payment']
+        );
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'payment_date' => null,
+            'amount' => $finalTotal,
+            'payment_method_id' => null,
+            'payment_status_id' => $awaitingPaymentStatus->id,
+            'transaction_id' => null,
+            'notes' => 'Awaiting customer payment submission',
         ]);
 
         if ($pointsUsed > 0) {
