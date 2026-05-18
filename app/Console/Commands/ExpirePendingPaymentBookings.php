@@ -40,7 +40,7 @@ class ExpirePendingPaymentBookings extends Command
                 'car.brand',
             ])
             ->where('status_id', $pendingPaymentStatus->id)
-          ->where('created_at', '<=', now()->subMinutes(15))
+            ->where('created_at', '<=', now()->subMinutes(15))
             ->whereHas('payments', function ($query) use ($awaitingPaymentStatus) {
                 $query->whereNull('return_issue_id')
                     ->where('payment_status_id', $awaitingPaymentStatus->id);
@@ -83,11 +83,55 @@ class ExpirePendingPaymentBookings extends Command
                         'notes' => 'System expired this payment because no receipt was submitted within 24 hours.',
                     ]);
 
-                /*
-                |--------------------------------------------------------------------------
-                | Build readable car name for notification
-                |--------------------------------------------------------------------------
-                */
+                if ((int) ($booking->points_used ?? 0) > 0) {
+                    $alreadyReturned = DB::table('points_transactions')
+                        ->where('booking_id', $booking->id)
+                        ->where('note', 'Returned redeemed points from expired unpaid booking')
+                        ->exists();
+
+                    if (!$alreadyReturned) {
+                        $userRow = DB::table('users')
+                            ->where('id', $booking->user_id)
+                            ->lockForUpdate()
+                            ->first();
+
+                        $pointsToReturn = (int) $booking->points_used;
+                        $balanceBefore = (int) ($userRow->points_balance ?? 0);
+                        $balanceAfter = $balanceBefore + $pointsToReturn;
+
+                        DB::table('users')
+                            ->where('id', $booking->user_id)
+                            ->update([
+                                'points_balance' => $balanceAfter,
+                                'updated_at' => now(),
+                            ]);
+
+                        $returnTypeId = DB::table('points_transaction_types')
+                            ->where('name', 'return')
+                            ->value('id');
+
+                        if (!$returnTypeId) {
+                            $returnTypeId = DB::table('points_transaction_types')->insertGetId([
+                                'name' => 'return',
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+
+                        DB::table('points_transactions')->insert([
+                            'user_id' => $booking->user_id,
+                            'booking_id' => $booking->id,
+                            'points_id' => $returnTypeId,
+                            'points_change' => $pointsToReturn,
+                            'balance_before' => $balanceBefore,
+                            'balance_after' => $balanceAfter,
+                            'note' => 'Returned redeemed points from expired unpaid booking',
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+
                 $carName = trim(
                     (optional(optional($booking->car)->brand)->name ?? '') . ' ' .
                     (optional($booking->car)->model ?? '')
@@ -108,11 +152,15 @@ class ExpirePendingPaymentBookings extends Command
                     ->exists();
 
                 if (!$alreadyNotified) {
+                    $pointsMessage = (int) ($booking->points_used ?? 0) > 0
+                        ? ' Your redeemed points have been returned to your account.'
+                        : '';
+
                     Notification::create([
                         'user_id' => $booking->user_id,
                         'booking_id' => $booking->id,
                         'title' => 'Booking Expired',
-                        'message' => 'Your booking for ' . $carName . ' was cancelled because no payment receipt was submitted within 24 hours.',
+                        'message' => 'Your booking for ' . $carName . ' was cancelled because no payment receipt was submitted within 24 hours.' . $pointsMessage,
                         'type' => 'booking_payment_expired',
                         'link' => 'user/cancelled',
                     ]);
