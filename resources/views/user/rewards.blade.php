@@ -175,6 +175,16 @@
         color: #dc2626;
     }
 
+    .badge-returned {
+        background: #fff7ed;
+        color: #ff5a1f;
+    }
+
+    .badge-manual {
+        background: #eef2ff;
+        color: #4338ca;
+    }
+
     .points-positive {
         color: #16a34a;
         font-weight: 900;
@@ -285,6 +295,8 @@
                 <option value="all">All Transactions</option>
                 <option value="earned">Earned Points</option>
                 <option value="redeemed">Redeemed Points</option>
+                <option value="returned">Returned Points</option>
+                <option value="manual">Manual Adjustments</option>
             </select>
         </div>
 
@@ -304,19 +316,39 @@
                 <tbody>
                     @forelse($transactions as $transaction)
                         @php
-                            $isEarned = $transaction->points_change > 0;
+                            $note = strtolower($transaction->note ?? '');
+
+                            if (str_contains($note, 'returned')) {
+                                $typeLabel = 'Returned';
+                                $typeClass = 'badge-returned';
+                                $rowType = 'returned';
+                            } elseif (str_contains($note, 'manual')) {
+                                $typeLabel = 'Manual';
+                                $typeClass = 'badge-manual';
+                                $rowType = 'manual';
+                            } elseif ($transaction->points_change > 0) {
+                                $typeLabel = 'Earned';
+                                $typeClass = 'badge-earned';
+                                $rowType = 'earned';
+                            } else {
+                                $typeLabel = 'Redeemed';
+                                $typeClass = 'badge-redeemed';
+                                $rowType = 'redeemed';
+                            }
+
+                            $isPositive = $transaction->points_change > 0;
                         @endphp
 
-                        <tr data-type="{{ $isEarned ? 'earned' : 'redeemed' }}">
+                        <tr data-type="{{ $rowType }}">
                             <td>{{ \Carbon\Carbon::parse($transaction->created_at)->format('M d, Y h:i A') }}</td>
                             <td>#{{ $transaction->booking_id ?? 'N/A' }}</td>
                             <td>
-                                <span class="badge {{ $isEarned ? 'badge-earned' : 'badge-redeemed' }}">
-                                    {{ $isEarned ? 'Earned' : 'Redeemed' }}
+                                <span class="badge {{ $typeClass }}">
+                                    {{ $typeLabel }}
                                 </span>
                             </td>
-                            <td class="{{ $isEarned ? 'points-positive' : 'points-negative' }}">
-                                {{ $isEarned ? '+' : '' }}{{ number_format($transaction->points_change) }}
+                            <td class="{{ $isPositive ? 'points-positive' : 'points-negative' }}">
+                                {{ $isPositive ? '+' : '' }}{{ number_format($transaction->points_change) }}
                             </td>
                             <td>{{ number_format($transaction->balance_after) }}</td>
                             <td>{{ $transaction->note }}</td>
