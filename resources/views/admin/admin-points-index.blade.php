@@ -34,7 +34,7 @@
         border-radius: 12px;
         background: #fff;
         color: #111827;
-        font-weight: 800;
+        font-weight: 780;
         cursor: pointer;
         border: 1px solid #e5e7eb;
     }
@@ -121,12 +121,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 900;
+        font-weight: 750;
         flex-shrink: 0;
     }
 
     .user-name {
-        font-weight: 900;
+        font-weight: 750;
         color: #111827;
     }
 
@@ -147,7 +147,7 @@
         padding: 9px 12px;
         border-radius: 10px;
         font-size: 12px;
-        font-weight: 900;
+        font-weight: 700;
         cursor: pointer;
     }
 
@@ -220,7 +220,7 @@
     .points-modal-header h3 {
         margin: 0;
         font-size: 20px;
-        font-weight: 900;
+        font-weight: 700;
         color: #111827;
     }
 
@@ -251,7 +251,7 @@
         margin-bottom: 8px;
         color: #111827;
         font-size: 13px;
-        font-weight: 900;
+        font-weight: 780;
     }
 
     .form-control {
@@ -260,7 +260,7 @@
         border-radius: 12px;
         padding: 12px 14px;
         outline: none;
-        font-weight: 650;
+        font-weight: 600;
     }
 
     .form-control:focus {
@@ -280,7 +280,7 @@
         border-radius: 12px;
         padding: 12px;
         cursor: pointer;
-        font-weight: 800;
+        font-weight: 650;
     }
 
     .modal-actions {
@@ -296,7 +296,7 @@
         color: #111827;
         padding: 11px 16px;
         border-radius: 12px;
-        font-weight: 900;
+        font-weight: 700;
         cursor: pointer;
     }
 
@@ -306,7 +306,7 @@
         color: #fff;
         padding: 11px 16px;
         border-radius: 12px;
-        font-weight: 900;
+        font-weight: 700;
         cursor: pointer;
     }
 
@@ -517,7 +517,7 @@
                 <div class="modal-user-box">
                     <div class="user-name" id="modalUserName">Customer</div>
                     <div class="user-email" id="modalUserEmail">email@example.com</div>
-                    <div style="margin-top:8px;font-weight:900;">
+                    <div style="margin-top:8px;font-weight:700;">
                         Current Balance:
                         <span class="text-orange" id="modalUserBalance">0 Points</span>
                     </div>
