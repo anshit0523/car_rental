@@ -89,6 +89,12 @@
                         'pattern' => 'admin.payment-settings*',
                         'icon' => 'fas fa-cog',
                     ],
+                    [
+                        'label' => 'Reward Points',
+                        'route' => route('admin.points.index'),
+                        'pattern' => 'admin.points*',
+                        'icon' => 'fas fa-star',
+                    ],
                 ],
             ],
         ];

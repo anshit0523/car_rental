@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\AdminPaymentSettingController;
+use App\Http\Controllers\AdminPointsController;
 use App\Http\Controllers\AdminTrackerController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
@@ -297,7 +298,18 @@ Route::middleware(['auth', 'admin'])
 
         Route::get('/trackers/create', [AdminTrackerController::class, 'create'])->name('trackers.create');
         Route::post('/trackers', [AdminTrackerController::class, 'store'])->name('trackers.store');
-    });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Points Management
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/points', [AdminPointsController::class, 'index'])->name('points.index');
+        Route::post('/points/{user}/adjust', [AdminPointsController::class, 'adjust'])->name('points.adjust');
+
+});
 
 /*
 |--------------------------------------------------------------------------
