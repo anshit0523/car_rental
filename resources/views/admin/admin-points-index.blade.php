@@ -66,21 +66,42 @@
         justify-content: space-between;
         align-items: center;
         gap: 14px;
+        flex-wrap: wrap;
     }
 
-    .points-search {
-        width: 320px;
-        max-width: 100%;
+    .points-search,
+    .transaction-search,
+    .transaction-filter {
         border: 1px solid #d1d5db;
         border-radius: 12px;
         padding: 11px 14px;
         outline: none;
         font-weight: 600;
+        background: #fff;
     }
 
-    .points-search:focus {
+    .points-search {
+        width: 320px;
+        max-width: 100%;
+    }
+
+    .transaction-search {
+        width: 260px;
+        max-width: 100%;
+    }
+
+    .points-search:focus,
+    .transaction-search:focus,
+    .transaction-filter:focus {
         border-color: #ff5a1f;
         box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.12);
+    }
+
+    .transaction-tools {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
     }
 
     .points-table-wrap {
@@ -289,6 +310,20 @@
         font-weight: 650;
     }
 
+    .deduct-warning {
+        display: none;
+        margin-top: -4px;
+        margin-bottom: 16px;
+        padding: 12px;
+        border-radius: 12px;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        color: #9a3412;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.5;
+    }
+
     .modal-actions {
         display: flex;
         justify-content: flex-end;
@@ -327,13 +362,13 @@
         <p class="points-subtitle">Manage customer reward points and transactions.</p>
 
         @if(session('success'))
-            <div style="background:#dcfce7;color:#166534;padding:14px 16px;border-radius:12px;margin-bottom:16px;font-weight:800;">
+            <div style="background:#dcfce7;color:#166534;padding:14px 16px;border-radius:12px;margin-bottom:16px;font-weight:700;">
                 {{ session('success') }}
             </div>
         @endif
 
         @if($errors->any())
-            <div style="background:#fee2e2;color:#991b1b;padding:14px 16px;border-radius:12px;margin-bottom:16px;font-weight:800;">
+            <div style="background:#fee2e2;color:#991b1b;padding:14px 16px;border-radius:12px;margin-bottom:16px;font-weight:700;">
                 @foreach($errors->all() as $error)
                     <div>{{ $error }}</div>
                 @endforeach
@@ -443,10 +478,27 @@
             <div class="points-card">
                 <div class="points-card-header">
                     <strong style="font-size:18px;color:#111827;">Points Transactions History</strong>
+
+                    <div class="transaction-tools">
+                        <input
+                            type="text"
+                            id="transactionSearch"
+                            class="transaction-search"
+                            placeholder="Search user, booking, note..."
+                        >
+
+                        <select id="transactionFilter" class="transaction-filter">
+                            <option value="all">All</option>
+                            <option value="earn">Earned</option>
+                            <option value="redeem">Redeemed</option>
+                            <option value="return">Returned</option>
+                            <option value="manual">Manual</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="points-table-wrap">
-                    <table class="points-table">
+                    <table class="points-table" id="transactionsTable">
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -464,6 +516,8 @@
                                 @php
                                     $type = $transaction->type_name ?? 'default';
                                     $isPositive = $transaction->points_change > 0;
+                                    $filterType = in_array($type, ['manual_add', 'manual_deduct']) ? 'manual' : $type;
+
                                     $badgeClass = match($type) {
                                         'earn' => 'badge-earned',
                                         'redeem' => 'badge-redeemed',
@@ -474,7 +528,7 @@
                                     };
                                 @endphp
 
-                                <tr>
+                                <tr data-type="{{ $filterType }}">
                                     <td>{{ \Carbon\Carbon::parse($transaction->created_at)->format('M d, Y h:i A') }}</td>
                                     <td>
                                         <div class="user-name">{{ $transaction->user_name ?? 'N/A' }}</div>
@@ -499,6 +553,12 @@
                                     </td>
                                 </tr>
                             @endforelse
+
+                            <tr id="noTransactionMatch" style="display:none;">
+                                <td colspan="7" style="text-align:center;color:#64748b;padding:24px;">
+                                    No matching transactions found.
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -544,6 +604,10 @@
                     </label>
                 </div>
 
+                <div id="deductWarning" class="deduct-warning">
+                    ⚠️ Deducting points will reduce the customer’s balance. Please confirm before saving.
+                </div>
+
                 <div style="margin-bottom:16px;">
                     <label class="form-label">Points Amount</label>
                     <input type="number" name="points" class="form-control" min="1" required placeholder="Enter points amount">
@@ -587,6 +651,7 @@
         const form = document.getElementById('adjustPointsForm');
         const closeBtn = document.getElementById('closeAdjustModal');
         const cancelBtn = document.getElementById('cancelAdjustModal');
+        const deductWarning = document.getElementById('deductWarning');
 
         document.querySelectorAll('.adjust-btn').forEach(button => {
             button.addEventListener('click', function () {
@@ -597,6 +662,7 @@
                 document.getElementById('modalUserBalance').textContent =
                     Number(this.dataset.balance || 0).toLocaleString() + ' Points';
 
+                deductWarning.style.display = 'none';
                 modal.classList.add('show');
             });
         });
@@ -604,6 +670,7 @@
         function closeModal() {
             modal.classList.remove('show');
             form.reset();
+            deductWarning.style.display = 'none';
         }
 
         closeBtn.addEventListener('click', closeModal);
@@ -614,6 +681,57 @@
                 closeModal();
             }
         });
+
+        form.querySelectorAll('input[name="action"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                deductWarning.style.display = this.value === 'deduct' ? 'block' : 'none';
+            });
+        });
+
+        form.addEventListener('submit', function (e) {
+            const selectedAction = form.querySelector('input[name="action"]:checked')?.value;
+
+            if (selectedAction === 'deduct') {
+                const confirmed = confirm('Are you sure you want to deduct points from this customer?');
+
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        const transactionSearch = document.getElementById('transactionSearch');
+        const transactionFilter = document.getElementById('transactionFilter');
+        const transactionRows = document.querySelectorAll('#transactionsTable tbody tr[data-type]');
+        const noMatchRow = document.getElementById('noTransactionMatch');
+
+        function filterTransactions() {
+            const searchValue = (transactionSearch?.value || '').toLowerCase().trim();
+            const selectedType = transactionFilter?.value || 'all';
+            let visibleCount = 0;
+
+            transactionRows.forEach(row => {
+                const rowText = row.textContent.toLowerCase();
+                const rowType = row.dataset.type;
+
+                const matchesSearch = rowText.includes(searchValue);
+                const matchesType = selectedType === 'all' || rowType === selectedType;
+
+                if (matchesSearch && matchesType) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            if (noMatchRow) {
+                noMatchRow.style.display = visibleCount === 0 ? '' : 'none';
+            }
+        }
+
+        transactionSearch?.addEventListener('input', filterTransactions);
+        transactionFilter?.addEventListener('change', filterTransactions);
     });
 </script>
 @endsection
