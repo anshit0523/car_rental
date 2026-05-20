@@ -3,10 +3,17 @@
 @section('content')
 <style>
     .points-page {
+        height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
         padding: 24px;
         background: #f8fafc;
-        min-height: 100vh;
         font-family: 'Outfit', sans-serif;
+    }
+
+    .points-content-wrap {
+        max-width: 100%;
+        padding-bottom: 40px;
     }
 
     .points-title {
@@ -29,14 +36,13 @@
     }
 
     .points-tab {
-        border: none;
+        border: 1px solid #e5e7eb;
         padding: 12px 18px;
         border-radius: 12px;
         background: #fff;
         color: #111827;
         font-weight: 780;
         cursor: pointer;
-        border: 1px solid #e5e7eb;
     }
 
     .points-tab.active {
@@ -316,188 +322,190 @@
 </style>
 
 <div class="points-page">
-    <h1 class="points-title">Rewards & Points Management</h1>
-    <p class="points-subtitle">Manage customer reward points and transactions.</p>
+    <div class="points-content-wrap">
+        <h1 class="points-title">Rewards & Points Management</h1>
+        <p class="points-subtitle">Manage customer reward points and transactions.</p>
 
-    @if(session('success'))
-        <div style="background:#dcfce7;color:#166534;padding:14px 16px;border-radius:12px;margin-bottom:16px;font-weight:800;">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div style="background:#fee2e2;color:#991b1b;padding:14px 16px;border-radius:12px;margin-bottom:16px;font-weight:800;">
-            @foreach($errors->all() as $error)
-                <div>{{ $error }}</div>
-            @endforeach
-        </div>
-    @endif
-
-    <div class="points-tabs">
-        <button type="button" class="points-tab active" data-tab="balances">User Balances</button>
-        <button type="button" class="points-tab" data-tab="transactions">Transactions History</button>
-    </div>
-
-    <div id="balancesPanel" class="tab-panel active">
-        <div class="points-card">
-            <div class="points-card-header">
-                <form method="GET" action="{{ route('admin.points.index') }}">
-                    <input
-                        type="text"
-                        name="search"
-                        value="{{ request('search') }}"
-                        class="points-search"
-                        placeholder="Search user..."
-                    >
-                </form>
-
-                <strong style="color:#111827;">Total Users: {{ $users->total() }}</strong>
+        @if(session('success'))
+            <div style="background:#dcfce7;color:#166534;padding:14px 16px;border-radius:12px;margin-bottom:16px;font-weight:800;">
+                {{ session('success') }}
             </div>
+        @endif
 
-            <div class="points-table-wrap">
-                <table class="points-table">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Current Balance</th>
-                            <th>Total Earned</th>
-                            <th>Total Redeemed</th>
-                            <th>Last Activity</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
+        @if($errors->any())
+            <div style="background:#fee2e2;color:#991b1b;padding:14px 16px;border-radius:12px;margin-bottom:16px;font-weight:800;">
+                @foreach($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+        @endif
 
-                    <tbody>
-                        @forelse($users as $user)
+        <div class="points-tabs">
+            <button type="button" class="points-tab active" data-tab="balances">User Balances</button>
+            <button type="button" class="points-tab" data-tab="transactions">Transactions History</button>
+        </div>
+
+        <div id="balancesPanel" class="tab-panel active">
+            <div class="points-card">
+                <div class="points-card-header">
+                    <form method="GET" action="{{ route('admin.points.index') }}">
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ request('search') }}"
+                            class="points-search"
+                            placeholder="Search user..."
+                        >
+                    </form>
+
+                    <strong style="color:#111827;">Total Users: {{ $users->total() }}</strong>
+                </div>
+
+                <div class="points-table-wrap">
+                    <table class="points-table">
+                        <thead>
                             <tr>
-                                <td>
-                                    <div class="user-cell">
-                                        <div class="user-avatar-sm">
-                                            {{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}
+                                <th>User</th>
+                                <th>Current Balance</th>
+                                <th>Total Earned</th>
+                                <th>Total Redeemed</th>
+                                <th>Last Activity</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @forelse($users as $user)
+                                <tr>
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="user-avatar-sm">
+                                                {{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}
+                                            </div>
+                                            <div>
+                                                <div class="user-name">{{ $user->name }}</div>
+                                                <div class="user-email">{{ $user->email }}</div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div class="user-name">{{ $user->name }}</div>
-                                            <div class="user-email">{{ $user->email }}</div>
-                                        </div>
-                                    </div>
-                                </td>
+                                    </td>
 
-                                <td>
-                                    <span class="text-orange">{{ number_format($user->points_balance ?? 0) }}</span>
-                                    <small>Points</small>
-                                </td>
+                                    <td>
+                                        <span class="text-orange">{{ number_format($user->points_balance ?? 0) }}</span>
+                                        <small>Points</small>
+                                    </td>
 
-                                <td>
-                                    <span class="text-green">{{ number_format($user->total_earned ?? 0) }}</span>
-                                    <small>Points</small>
-                                </td>
+                                    <td>
+                                        <span class="text-green">{{ number_format($user->total_earned ?? 0) }}</span>
+                                        <small>Points</small>
+                                    </td>
 
-                                <td>
-                                    <span class="text-red">{{ number_format($user->total_redeemed ?? 0) }}</span>
-                                    <small>Points</small>
-                                </td>
+                                    <td>
+                                        <span class="text-red">{{ number_format($user->total_redeemed ?? 0) }}</span>
+                                        <small>Points</small>
+                                    </td>
 
-                                <td>
-                                    {{ $user->last_activity ? \Carbon\Carbon::parse($user->last_activity)->format('M d, Y h:i A') : 'N/A' }}
-                                </td>
+                                    <td>
+                                        {{ $user->last_activity ? \Carbon\Carbon::parse($user->last_activity)->format('M d, Y h:i A') : 'N/A' }}
+                                    </td>
 
-                                <td>
-                                    <button
-                                        type="button"
-                                        class="adjust-btn"
-                                        data-user-id="{{ $user->id }}"
-                                        data-user-name="{{ $user->name }}"
-                                        data-user-email="{{ $user->email }}"
-                                        data-balance="{{ $user->points_balance ?? 0 }}"
-                                        data-action="{{ route('admin.points.adjust', $user->id) }}"
-                                    >
-                                        Adjust Points
-                                    </button>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" style="text-align:center;color:#64748b;padding:24px;">
-                                    No users found.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            class="adjust-btn"
+                                            data-user-id="{{ $user->id }}"
+                                            data-user-name="{{ $user->name }}"
+                                            data-user-email="{{ $user->email }}"
+                                            data-balance="{{ $user->points_balance ?? 0 }}"
+                                            data-action="{{ route('admin.points.adjust', $user->id) }}"
+                                        >
+                                            Adjust Points
+                                        </button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" style="text-align:center;color:#64748b;padding:24px;">
+                                        No users found.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="pagination-wrap">
-                {{ $users->links() }}
+                <div class="pagination-wrap">
+                    {{ $users->links() }}
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="transactionsPanel" class="tab-panel">
-        <div class="points-card">
-            <div class="points-card-header">
-                <strong style="font-size:18px;color:#111827;">Points Transactions History</strong>
-            </div>
+        <div id="transactionsPanel" class="tab-panel">
+            <div class="points-card">
+                <div class="points-card-header">
+                    <strong style="font-size:18px;color:#111827;">Points Transactions History</strong>
+                </div>
 
-            <div class="points-table-wrap">
-                <table class="points-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>User</th>
-                            <th>Booking ID</th>
-                            <th>Type</th>
-                            <th>Points</th>
-                            <th>Balance After</th>
-                            <th>Note</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @forelse($transactions as $transaction)
-                            @php
-                                $type = $transaction->type_name ?? 'default';
-                                $isPositive = $transaction->points_change > 0;
-                                $badgeClass = match($type) {
-                                    'earn' => 'badge-earned',
-                                    'redeem' => 'badge-redeemed',
-                                    'return' => 'badge-return',
-                                    'manual_add' => 'badge-manual_add',
-                                    'manual_deduct' => 'badge-manual_deduct',
-                                    default => 'badge-default',
-                                };
-                            @endphp
-
+                <div class="points-table-wrap">
+                    <table class="points-table">
+                        <thead>
                             <tr>
-                                <td>{{ \Carbon\Carbon::parse($transaction->created_at)->format('M d, Y h:i A') }}</td>
-                                <td>
-                                    <div class="user-name">{{ $transaction->user_name ?? 'N/A' }}</div>
-                                    <div class="user-email">{{ $transaction->user_email ?? '' }}</div>
-                                </td>
-                                <td>{{ $transaction->booking_id ? '#' . $transaction->booking_id : 'N/A' }}</td>
-                                <td>
-                                    <span class="badge {{ $badgeClass }}">
-                                        {{ ucwords(str_replace('_', ' ', $type)) }}
-                                    </span>
-                                </td>
-                                <td class="{{ $isPositive ? 'text-green' : 'text-red' }}">
-                                    {{ $isPositive ? '+' : '' }}{{ number_format($transaction->points_change) }}
-                                </td>
-                                <td>{{ number_format($transaction->balance_after) }}</td>
-                                <td>{{ $transaction->note }}</td>
+                                <th>Date</th>
+                                <th>User</th>
+                                <th>Booking ID</th>
+                                <th>Type</th>
+                                <th>Points</th>
+                                <th>Balance After</th>
+                                <th>Note</th>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" style="text-align:center;color:#64748b;padding:24px;">
-                                    No transactions found.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
 
-            <div class="pagination-wrap">
-                {{ $transactions->links() }}
+                        <tbody>
+                            @forelse($transactions as $transaction)
+                                @php
+                                    $type = $transaction->type_name ?? 'default';
+                                    $isPositive = $transaction->points_change > 0;
+                                    $badgeClass = match($type) {
+                                        'earn' => 'badge-earned',
+                                        'redeem' => 'badge-redeemed',
+                                        'return' => 'badge-return',
+                                        'manual_add' => 'badge-manual_add',
+                                        'manual_deduct' => 'badge-manual_deduct',
+                                        default => 'badge-default',
+                                    };
+                                @endphp
+
+                                <tr>
+                                    <td>{{ \Carbon\Carbon::parse($transaction->created_at)->format('M d, Y h:i A') }}</td>
+                                    <td>
+                                        <div class="user-name">{{ $transaction->user_name ?? 'N/A' }}</div>
+                                        <div class="user-email">{{ $transaction->user_email ?? '' }}</div>
+                                    </td>
+                                    <td>{{ $transaction->booking_id ? '#' . $transaction->booking_id : 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge {{ $badgeClass }}">
+                                            {{ ucwords(str_replace('_', ' ', $type)) }}
+                                        </span>
+                                    </td>
+                                    <td class="{{ $isPositive ? 'text-green' : 'text-red' }}">
+                                        {{ $isPositive ? '+' : '' }}{{ number_format($transaction->points_change) }}
+                                    </td>
+                                    <td>{{ number_format($transaction->balance_after) }}</td>
+                                    <td>{{ $transaction->note }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" style="text-align:center;color:#64748b;padding:24px;">
+                                        No transactions found.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-wrap">
+                    {{ $transactions->links() }}
+                </div>
             </div>
         </div>
     </div>
