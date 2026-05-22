@@ -478,16 +478,17 @@ public function cancel($bookingId)
             $balanceBefore = (int) $user->points_balance;
             $balanceAfter = $balanceBefore + $pointsUsed;
 
-            DB::table('points_transactions')->insert([
-                'user_id' => $user->id,
-                'booking_id' => $booking->id,
-                'points_change' => $pointsUsed,
-                'balance_before' => $balanceBefore,
-                'balance_after' => $balanceAfter,
-                'note' => 'Returned points after customer cancelled booking within 24 hours.',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        DB::table('points_transactions')->insert([
+    'user_id' => $user->id,
+    'booking_id' => $booking->id,
+    'points_id' => 2,
+    'points_change' => $pointsUsed,
+    'balance_before' => $balanceBefore,
+    'balance_after' => $balanceAfter,
+    'note' => 'Returned points after customer cancelled booking within 24 hours.',
+    'created_at' => now(),
+    'updated_at' => now(),
+]);
 
             $user->update([
                 'points_balance' => $balanceAfter,
