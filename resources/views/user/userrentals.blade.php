@@ -263,6 +263,7 @@
             background: #ffffff;
             color: #dc2626;
             border: 1.5px solid #fecaca;
+            cursor: pointer;
         }
 
         .rental-btn-secondary:hover {
@@ -374,6 +375,86 @@
             background: #ff5a1f;
             border-color: #ff5a1f;
             color: #ffffff;
+        }
+
+        .cancel-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .cancel-modal-box {
+            width: 100%;
+            max-width: 440px;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+        }
+
+        .cancel-modal-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 999px;
+            background: #fef2f2;
+            color: #dc2626;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 14px;
+        }
+
+        .cancel-modal-title {
+            margin: 0 0 8px;
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .cancel-modal-text {
+            margin: 0 0 20px;
+            color: #64748b;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .cancel-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .cancel-modal-keep,
+        .cancel-modal-confirm {
+            min-height: 42px;
+            padding: 0 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .cancel-modal-keep {
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            color: #334155;
+        }
+
+        .cancel-modal-confirm {
+            border: none;
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+        .cancel-modal-confirm:hover {
+            background: #b91c1c;
         }
 
         @media (max-width: 899px) {
@@ -519,7 +600,7 @@
 
                                     <div class="rental-meta-grid">
                                         <div class="rental-meta-card">
-                                            <div class="rental-meta-icon"> <i class="far fa-calendar-alt"></i></div>
+                                            <div class="rental-meta-icon"><i class="far fa-calendar-alt"></i></div>
                                             <div>
                                                 <p class="rental-meta-label">Pick-up</p>
                                                 <p class="rental-meta-value">
@@ -529,7 +610,7 @@
                                         </div>
 
                                         <div class="rental-meta-card">
-                                            <div class="rental-meta-icon"> <i class="far fa-calendar-alt"></i></div>
+                                            <div class="rental-meta-icon"><i class="far fa-calendar-alt"></i></div>
                                             <div>
                                                 <p class="rental-meta-label">Return</p>
                                                 <p class="rental-meta-value">
@@ -539,7 +620,7 @@
                                         </div>
 
                                         <div class="rental-meta-card">
-                                            <div class="rental-meta-icon"> <i class="far fa-clock"></i></div>
+                                            <div class="rental-meta-icon"><i class="far fa-clock"></i></div>
                                             <div>
                                                 <p class="rental-meta-label">Duration</p>
                                                 <p class="rental-meta-value">
@@ -561,14 +642,16 @@
                                 </div>
 
                                 <div class="rental-actions">
-                                    @if(($booking->status->name ?? '') !== 'Cancelled' && ($booking->status->name ?? '') !== 'Failed' && $booking->pickup_at && $booking->pickup_at > now()->addHours(24))
-                                        <form action="{{ route('user.booking.cancel', $booking->id) }}" method="POST" class="inline"
-                                            onsubmit="return confirm('Are you sure you want to cancel this booking?');">
-                                            @csrf
-                                            <button type="submit" class="rental-btn-secondary">
-                                                Cancel Booking
-                                            </button>
-                                        </form>
+                                    @if(
+                                        ($booking->status->name ?? '') === 'Reserved' &&
+                                        $booking->created_at &&
+                                        $booking->created_at > now()->subHours(24)
+                                    )
+                                        <button type="button"
+                                            class="rental-btn-secondary"
+                                            onclick="openCancelModal('{{ route('user.booking.cancel', $booking->id) }}')">
+                                            Cancel Booking
+                                        </button>
                                     @else
                                         <button disabled class="rental-btn-disabled">
                                             Cancel Booking
@@ -605,4 +688,71 @@
             </div>
         </div>
     </div>
+
+    <div id="cancelModal" class="cancel-modal">
+        <div class="cancel-modal-box">
+            <div class="cancel-modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+
+            <h3 class="cancel-modal-title">Cancel Booking?</h3>
+
+            <p class="cancel-modal-text">
+                Are you sure you want to cancel this booking? If you used points, they will be returned automatically.
+            </p>
+
+            <form id="cancelBookingForm" method="POST">
+                @csrf
+
+                <div class="cancel-modal-actions">
+                    <button type="button" class="cancel-modal-keep" onclick="closeCancelModal()">
+                        No, Keep Booking
+                    </button>
+
+                    <button type="submit" class="cancel-modal-confirm">
+                        Yes, Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openCancelModal(actionUrl) {
+            const modal = document.getElementById('cancelModal');
+            const form = document.getElementById('cancelBookingForm');
+
+            if (!modal || !form) return;
+
+            form.action = actionUrl;
+            modal.style.display = 'flex';
+        }
+
+        function closeCancelModal() {
+            const modal = document.getElementById('cancelModal');
+            const form = document.getElementById('cancelBookingForm');
+
+            if (!modal || !form) return;
+
+            modal.style.display = 'none';
+            form.action = '';
+        }
+
+        document.addEventListener('click', function (event) {
+            const modal = document.getElementById('cancelModal');
+            const modalBox = document.querySelector('.cancel-modal-box');
+
+            if (!modal || !modalBox) return;
+
+            if (modal.style.display === 'flex' && event.target === modal) {
+                closeCancelModal();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeCancelModal();
+            }
+        });
+    </script>
 @endsection
