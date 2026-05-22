@@ -439,7 +439,7 @@ public function store(Request $request)
         ]);
     }
 
-   public function cancel($bookingId)
+public function cancel($bookingId)
 {
     $booking = Booking::with(['status', 'user'])->findOrFail($bookingId);
 
@@ -467,14 +467,22 @@ public function store(Request $request)
         if ($pointsUsed > 0) {
             $user = $booking->user;
 
-            $user->increment('points_balance', $pointsUsed);
+            $balanceBefore = (int) $user->points_balance;
+            $balanceAfter = $balanceBefore + $pointsUsed;
 
-            PointTransaction::create([
+            DB::table('points_transactions')->insert([
                 'user_id' => $user->id,
                 'booking_id' => $booking->id,
-                'type' => 'Returned',
-                'points' => $pointsUsed,
-                'description' => 'Points returned after customer cancelled booking within 24 hours.',
+                'points_change' => $pointsUsed,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
+                'note' => 'Returned points after customer cancelled booking within 24 hours.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $user->update([
+                'points_balance' => $balanceAfter,
             ]);
         }
 
