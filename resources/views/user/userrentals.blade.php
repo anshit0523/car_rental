@@ -571,7 +571,8 @@
                         }
 
                         $bookingStatus = $booking->status->name ?? '';
-                        $canCancelBooking = in_array($bookingStatus, ['Pending', 'Reserved'])
+                        $canCancelBooking = in_array($bookingStatus, ['pending payment verification',
+            'confirmed', 'reserved'])
                             && $booking->created_at
                             && $booking->created_at > now()->subHours(24);
                     @endphp
