@@ -458,17 +458,33 @@ public function cancel($bookingId)
     $allowedStatuses = [
         'pending payment',
         'pending payment verification',
-        
     ];
 
     if (!in_array($bookingStatus, $allowedStatuses)) {
         return back()->withErrors([
-            'booking' => 'Only pending payment, pending verification, or reserved bookings can be cancelled by customer.'
+            'booking' => 'Only pending payment or pending verification bookings can be cancelled by customer.'
         ]);
     }
 
-    DB::transaction(function () use ($booking) {
+    DB::transaction(function () use ($booking, $bookingStatus) {
         $cancelledStatus = Status::firstOrCreate(['name' => 'Cancelled']);
+
+        if ($bookingStatus === 'pending payment verification') {
+            $cancelledPaymentStatusId = DB::table('payment_statuses')
+                ->where('name', 'Cancelled')
+                ->value('id');
+
+            if ($cancelledPaymentStatusId) {
+                DB::table('payments')
+                    ->where('booking_id', $booking->id)
+                    ->update([
+                        'payment_status_id' => $cancelledPaymentStatusId,
+                        'verified_by' => auth()->id(),
+                        'verified_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+            }
+        }
 
         $pointsUsed = (int) ($booking->points_used ?? 0);
 
@@ -478,17 +494,17 @@ public function cancel($bookingId)
             $balanceBefore = (int) $user->points_balance;
             $balanceAfter = $balanceBefore + $pointsUsed;
 
-        DB::table('points_transactions')->insert([
-    'user_id' => $user->id,
-    'booking_id' => $booking->id,
-    'points_id' => 2,
-    'points_change' => $pointsUsed,
-    'balance_before' => $balanceBefore,
-    'balance_after' => $balanceAfter,
-    'note' => 'Returned points after customer cancelled booking within 24 hours.',
-    'created_at' => now(),
-    'updated_at' => now(),
-]);
+            DB::table('points_transactions')->insert([
+                'user_id' => $user->id,
+                'booking_id' => $booking->id,
+                'points_id' => 2,
+                'points_change' => $pointsUsed,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
+                'note' => 'Returned points after customer cancelled booking within 24 hours.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
             $user->update([
                 'points_balance' => $balanceAfter,
