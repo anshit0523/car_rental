@@ -570,11 +570,15 @@
                             }
                         }
 
-                        $bookingStatus = $booking->status->name ?? '';
-                        $canCancelBooking = in_array($bookingStatus, ['pending payment verification',
-            'confirmed', 'reserved'])
+                        $bookingStatus = strtolower(trim($booking->status->name ?? ''));
+
+                        $canCancelBooking = in_array($bookingStatus, [
+                                'pending payment verification',
+                                'confirmed',
+                                'reserved',
+                            ])
                             && $booking->created_at
-                            && $booking->created_at > now()->subHours(24);
+                            && $booking->created_at->gt(now()->subHours(24));
                     @endphp
 
                     <div class="rental-card">
@@ -582,7 +586,8 @@
 
                             <div class="rental-image-wrap">
                                 <img src="{{ $imageUrl }}"
-                                    alt="{{ $booking->car->model ?? 'Car image' }}" class="rental-image"
+                                    alt="{{ $booking->car->model ?? 'Car image' }}"
+                                    class="rental-image"
                                     onerror="this.onerror=null;this.src='{{ $fallbackImage }}';">
                             </div>
 
@@ -591,10 +596,14 @@
                                     <div class="rental-top">
                                         <div>
                                             <h3 class="rental-title">
-                                                {{ $booking->car->brand->name ?? 'N/A' }} {{ $booking->car->model ?? '' }}
+                                                {{ $booking->car->brand->name ?? 'N/A' }}
+                                                {{ $booking->car->model ?? '' }}
                                             </h3>
+
                                             <p class="rental-subtitle">
-                                                {{ $booking->car->fuelType->type ?? 'N/A' }} • {{ $booking->car->transmission->type ?? 'N/A' }}
+                                                {{ $booking->car->fuelType->type ?? 'N/A' }}
+                                                •
+                                                {{ $booking->car->transmission->type ?? 'N/A' }}
                                             </p>
                                         </div>
 
@@ -606,7 +615,9 @@
 
                                     <div class="rental-meta-grid">
                                         <div class="rental-meta-card">
-                                            <div class="rental-meta-icon"><i class="far fa-calendar-alt"></i></div>
+                                            <div class="rental-meta-icon">
+                                                <i class="far fa-calendar-alt"></i>
+                                            </div>
                                             <div>
                                                 <p class="rental-meta-label">Pick-up</p>
                                                 <p class="rental-meta-value">
@@ -616,7 +627,9 @@
                                         </div>
 
                                         <div class="rental-meta-card">
-                                            <div class="rental-meta-icon"><i class="far fa-calendar-alt"></i></div>
+                                            <div class="rental-meta-icon">
+                                                <i class="far fa-calendar-alt"></i>
+                                            </div>
                                             <div>
                                                 <p class="rental-meta-label">Return</p>
                                                 <p class="rental-meta-value">
@@ -626,7 +639,9 @@
                                         </div>
 
                                         <div class="rental-meta-card">
-                                            <div class="rental-meta-icon"><i class="far fa-clock"></i></div>
+                                            <div class="rental-meta-icon">
+                                                <i class="far fa-clock"></i>
+                                            </div>
                                             <div>
                                                 <p class="rental-meta-label">Duration</p>
                                                 <p class="rental-meta-value">
@@ -637,7 +652,7 @@
                                         </div>
                                     </div>
 
-                                    @if($bookingStatus === 'Failed' && $booking->photoReceipt?->admin_note)
+                                    @if($bookingStatus === 'failed' && $booking->photoReceipt?->admin_note)
                                         <div class="rental-alert-box">
                                             <p class="rental-alert-title">Payment Rejection Reason</p>
                                             <p class="rental-alert-text">
@@ -660,7 +675,7 @@
                                         </button>
                                     @endif
 
-                                    @if($bookingStatus === 'Failed')
+                                    @if($bookingStatus === 'failed')
                                         <form action="{{ route('user.booking.retry', $booking->id) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" class="rental-btn">
