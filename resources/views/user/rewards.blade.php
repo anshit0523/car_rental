@@ -364,9 +364,10 @@
             </table>
         </div>
 
-        <!-- Pagination -->
+        
+         <!-- Pagination -->
                 <div class="p-4 border-t border-gray-200">
-                    {{ $bookings->links() }}
+                    {{  $transactions->links() }}
                 </div>
     </div>
 </div>
