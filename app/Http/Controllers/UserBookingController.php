@@ -439,23 +439,53 @@ public function store(Request $request)
         ]);
     }
 
-    public function cancel($bookingId)
-    {
-        $booking = Booking::findOrFail($bookingId);
+   public function cancel($bookingId)
+{
+    $booking = Booking::with(['status', 'user'])->findOrFail($bookingId);
 
-        if ($booking->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
-        if ($booking->pickup_at <= Carbon::now()->addHours(24)) {
-            return back()->withErrors(['booking' => 'Cannot cancel within 24 hours of pickup.']);
-        }
-
-        $cancelledStatus = Status::firstOrCreate(['name' => 'Cancelled']);
-        $booking->update(['status_id' => $cancelledStatus->id]);
-
-        return back()->with('success', 'Booking cancelled successfully.');
+    if ($booking->user_id !== auth()->id()) {
+        abort(403, 'Unauthorized');
     }
+
+    if ($booking->created_at <= Carbon::now()->subHours(24)) {
+        return back()->withErrors([
+            'booking' => 'Cannot cancel after 24 hours from booking creation.'
+        ]);
+    }
+
+    if ($booking->status && $booking->status->name !== 'Reserved') {
+        return back()->withErrors([
+            'booking' => 'Only reserved bookings can be cancelled by customer.'
+        ]);
+    }
+
+    DB::transaction(function () use ($booking) {
+        $cancelledStatus = Status::firstOrCreate(['name' => 'Cancelled']);
+
+        $pointsUsed = (int) ($booking->points_used ?? 0);
+
+        if ($pointsUsed > 0) {
+            $user = $booking->user;
+
+            $user->increment('points_balance', $pointsUsed);
+
+            PointTransaction::create([
+                'user_id' => $user->id,
+                'booking_id' => $booking->id,
+                'type' => 'Returned',
+                'points' => $pointsUsed,
+                'description' => 'Points returned after customer cancelled booking within 24 hours.',
+            ]);
+        }
+
+        $booking->update([
+            'status_id' => $cancelledStatus->id,
+        ]);
+    });
+
+    return back()->with('success', 'Booking cancelled successfully. Points were returned if used.');
+}
+
 
     public function myBookings()
     {
