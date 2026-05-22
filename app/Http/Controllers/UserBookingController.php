@@ -453,11 +453,17 @@ public function cancel($bookingId)
         ]);
     }
 
-    $allowedStatuses = ['Pending', 'Reserved'];
+    $bookingStatus = strtolower(trim($booking->status->name ?? ''));
 
-    if ($booking->status && !in_array($booking->status->name, $allowedStatuses)) {
+    $allowedStatuses = [
+        'pending payment',
+        'pending payment verification',
+        
+    ];
+
+    if (!in_array($bookingStatus, $allowedStatuses)) {
         return back()->withErrors([
-            'booking' => 'Only pending or reserved bookings can be cancelled by customer.'
+            'booking' => 'Only pending payment, pending verification, or reserved bookings can be cancelled by customer.'
         ]);
     }
 
