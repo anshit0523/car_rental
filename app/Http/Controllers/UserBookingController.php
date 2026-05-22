@@ -453,9 +453,11 @@ public function cancel($bookingId)
         ]);
     }
 
-    if ($booking->status && $booking->status->name !== 'Reserved') {
+    $allowedStatuses = ['Pending', 'Reserved'];
+
+    if ($booking->status && !in_array($booking->status->name, $allowedStatuses)) {
         return back()->withErrors([
-            'booking' => 'Only reserved bookings can be cancelled by customer.'
+            'booking' => 'Only pending or reserved bookings can be cancelled by customer.'
         ]);
     }
 
@@ -493,7 +495,6 @@ public function cancel($bookingId)
 
     return back()->with('success', 'Booking cancelled successfully. Points were returned if used.');
 }
-
 
     public function myBookings()
     {

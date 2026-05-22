@@ -569,6 +569,11 @@
                                     : asset('storage/' . $cleanImagePath);
                             }
                         }
+
+                        $bookingStatus = $booking->status->name ?? '';
+                        $canCancelBooking = in_array($bookingStatus, ['Pending', 'Reserved'])
+                            && $booking->created_at
+                            && $booking->created_at > now()->subHours(24);
                     @endphp
 
                     <div class="rental-card">
@@ -631,7 +636,7 @@
                                         </div>
                                     </div>
 
-                                    @if(($booking->status->name ?? '') === 'Failed' && $booking->photoReceipt?->admin_note)
+                                    @if($bookingStatus === 'Failed' && $booking->photoReceipt?->admin_note)
                                         <div class="rental-alert-box">
                                             <p class="rental-alert-title">Payment Rejection Reason</p>
                                             <p class="rental-alert-text">
@@ -642,11 +647,7 @@
                                 </div>
 
                                 <div class="rental-actions">
-                                    @if(
-                                        ($booking->status->name ?? '') === 'Reserved' &&
-                                        $booking->created_at &&
-                                        $booking->created_at > now()->subHours(24)
-                                    )
+                                    @if($canCancelBooking)
                                         <button type="button"
                                             class="rental-btn-secondary"
                                             onclick="openCancelModal('{{ route('user.booking.cancel', $booking->id) }}')">
@@ -658,7 +659,7 @@
                                         </button>
                                     @endif
 
-                                    @if(($booking->status->name ?? '') === 'Failed')
+                                    @if($bookingStatus === 'Failed')
                                         <form action="{{ route('user.booking.retry', $booking->id) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" class="rental-btn">
@@ -740,9 +741,8 @@
 
         document.addEventListener('click', function (event) {
             const modal = document.getElementById('cancelModal');
-            const modalBox = document.querySelector('.cancel-modal-box');
 
-            if (!modal || !modalBox) return;
+            if (!modal) return;
 
             if (modal.style.display === 'flex' && event.target === modal) {
                 closeCancelModal();
