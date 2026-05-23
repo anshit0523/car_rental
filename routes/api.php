@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\AuthUserApiController;
 use App\Http\Controllers\Api\UserBrowseCarApiController;
+use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\UserBookingController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/user/login', [AuthUserApiController::class, 'login']);
@@ -15,6 +17,10 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/cars', [UserBrowseCarApiController::class, 'index']);
    Route::get('/cars/search', [UserBrowseCarApiController::class, 'search']);
    Route::get('/cars/{id}', [UserBrowseCarApiController::class, 'show']);
+
+   Route::get('/car/{id}/details', [UserBookingController::class, 'getCarDetails']);
+Route::post('/booking/check-availability', [AvailabilityController::class, 'check']);
+Route::get('/cars/{carId}/unavailable-dates', [AvailabilityController::class, 'unavailableDates']);
 
    
 });
