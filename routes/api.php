@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthUserApiController;
 use App\Http\Controllers\Api\UserBrowseCarApiController;
+use App\Http\Controllers\Api\UserPaymentApiController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\UserBookingController;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,8 @@ Route::get('/cars/{carId}/unavailable-dates', [AvailabilityController::class, 'u
 
 
    Route::post('/bookings', [UserBookingController::class, 'store']);
+   Route::get('/payments', [UserPaymentApiController::class, 'index']);
+Route::post('/payments/upload-receipt', [UserPaymentApiController::class, 'uploadReceipt']);
 
    
 });
