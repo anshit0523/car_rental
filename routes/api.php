@@ -22,5 +22,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/booking/check-availability', [AvailabilityController::class, 'check']);
 Route::get('/cars/{carId}/unavailable-dates', [AvailabilityController::class, 'unavailableDates']);
 
+
+   Route::post('/bookings', [UserBookingController::class, 'store']);
+
    
 });
