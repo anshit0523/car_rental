@@ -28,6 +28,15 @@ class UserBrowseCarApiController extends Controller
             ->filterSeats($request->min_seats)
             ->filterCarType($request->car_type_id);
 
+        if ($request->filled('pickup_date') && $request->filled('return_date')) {
+            $validated = $request->validate([
+                'pickup_date' => 'required|date|after_or_equal:today',
+                'return_date' => 'required|date|after:pickup_date',
+            ]);
+
+            $this->applyAvailabilityFilter($query, $validated);
+        }
+
         $this->applySorting($query, $request->get('sort_by', 'price_low'));
 
         $cars = $query->with(['brand', 'fuelType', 'transmission', 'carType'])
@@ -35,7 +44,7 @@ class UserBrowseCarApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'cars' => $cars,
+            'cars' => $this->formatPaginatedCars($cars),
             'filters' => $this->filters(),
         ]);
     }
@@ -61,7 +70,7 @@ class UserBrowseCarApiController extends Controller
         return response()->json([
             'success' => true,
             'car' => $this->formatCar($car),
-            'related_cars' => $relatedCars->map(fn ($car) => $this->formatCar($car)),
+            'related_cars' => $relatedCars->map(fn ($car) => $this->formatCar($car))->values(),
             'service_types' => DB::table('service_types')->orderBy('id')->get(),
         ]);
     }
@@ -71,7 +80,6 @@ class UserBrowseCarApiController extends Controller
         $validated = $request->validate([
             'pickup_date' => 'required|date|after_or_equal:today',
             'return_date' => 'required|date|after:pickup_date',
-            'time' => 'nullable|date_format:H:i',
         ]);
 
         $query = Car::query()
@@ -91,10 +99,23 @@ class UserBrowseCarApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'cars' => $cars,
+            'cars' => $this->formatPaginatedCars($cars),
             'filters' => $this->filters(),
             'search_params' => $validated,
         ]);
+    }
+
+    private function formatPaginatedCars($cars): array
+    {
+        return [
+            'data' => $cars->getCollection()
+                ->map(fn ($car) => $this->formatCar($car))
+                ->values(),
+            'current_page' => $cars->currentPage(),
+            'last_page' => $cars->lastPage(),
+            'per_page' => $cars->perPage(),
+            'total' => $cars->total(),
+        ];
     }
 
     private function blockingStatusIds(): array
@@ -117,8 +138,10 @@ class UserBrowseCarApiController extends Controller
         $query->whereDoesntHave('bookings', function ($bookingQuery) use ($pickup, $return, $statusIds) {
             $bookingQuery
                 ->whereIn('status_id', $statusIds)
-                ->where('pickup_at', '<', $return)
-                ->where('return_at', '>', $pickup);
+                ->where(function ($q) use ($pickup, $return) {
+                    $q->where('pickup_at', '<=', $return)
+                      ->where('return_at', '>=', $pickup);
+                });
         });
     }
 
