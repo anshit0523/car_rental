@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthUserApiController;
 use App\Http\Controllers\Api\UserBookingApiController;
 use App\Http\Controllers\Api\UserBrowseCarApiController;
+use App\Http\Controllers\Api\UserControlleApi;
 use App\Http\Controllers\Api\UserPaymentApiController;
 use App\Http\Controllers\Api\UserRentalApiController;
 use App\Http\Controllers\AvailabilityController;
@@ -14,26 +15,26 @@ Route::post('/user/register', [AuthUserApiController::class, 'register']);
 Route::post('/user/register/verify-otp', [AuthUserApiController::class, 'verifyRegisterOtp']);
 
 Route::middleware('auth:sanctum')->group(function () {
-   Route::get('/user/me', [AuthUserApiController::class, 'me']);
-   Route::post('/user/logout', [AuthUserApiController::class, 'logout']);
+    Route::get('/user/me', [AuthUserApiController::class, 'me']);
+    Route::post('/user/logout', [AuthUserApiController::class, 'logout']);
 
-   Route::get('/cars', [UserBrowseCarApiController::class, 'index']);
-   Route::get('/cars/search', [UserBrowseCarApiController::class, 'search']);
-   Route::get('/cars/{id}', [UserBrowseCarApiController::class, 'show']);
+    Route::post('/user/change-password/send-otp', [UserControlleApi::class, 'sendChangePasswordOtp']);
+    Route::post('/user/change-password', [UserControlleApi::class, 'changePasswordWithOtp']);
 
-   Route::get('/car/{id}/details', [UserBookingController::class, 'getCarDetails']);
-   Route::post('/booking/check-availability', [AvailabilityController::class, 'check']);
-   Route::get('/cars/{carId}/unavailable-dates', [AvailabilityController::class, 'unavailableDates']);
+    Route::get('/cars', [UserBrowseCarApiController::class, 'index']);
+    Route::get('/cars/search', [UserBrowseCarApiController::class, 'search']);
+    Route::get('/cars/{id}', [UserBrowseCarApiController::class, 'show']);
 
+    Route::get('/car/{id}/details', [UserBookingController::class, 'getCarDetails']);
+    Route::post('/booking/check-availability', [AvailabilityController::class, 'check']);
+    Route::get('/cars/{carId}/unavailable-dates', [AvailabilityController::class, 'unavailableDates']);
 
+    Route::post('/bookings', [UserBookingApiController::class, 'store']);
+    Route::post('/bookings/{booking}/cancel', [UserBookingApiController::class, 'cancel']);
 
-   Route::post('/bookings', [UserBookingApiController::class, 'store']);
-   Route::get('/payments', [UserPaymentApiController::class, 'index']);
-   Route::post('/payments/upload-receipt', [UserPaymentApiController::class, 'uploadReceipt']);
+    Route::get('/payments', [UserPaymentApiController::class, 'index']);
+    Route::post('/payments/upload-receipt', [UserPaymentApiController::class, 'uploadReceipt']);
 
-   Route::get('/rentals', [UserRentalApiController::class, 'index']);
-   Route::get('/rentals/{booking}', [UserRentalApiController::class, 'show']);
- Route::post('/bookings/{booking}/cancel', [UserBookingApiController::class, 'cancel']);
-
-
+    Route::get('/rentals', [UserRentalApiController::class, 'index']);
+    Route::get('/rentals/{booking}', [UserRentalApiController::class, 'show']);
 });
