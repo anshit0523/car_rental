@@ -11,43 +11,55 @@ use Illuminate\Support\Facades\Mail;
 
 class UserControlleApi extends Controller
 {
-    public function sendChangePasswordOtp(Request $request)
-    {
-        $user = $request->user();
+   public function sendChangePasswordOtp(Request $request)
+{
+    $validated = $request->validate([
+        'current_password' => 'required|string',
+    ]);
 
-        if (!$user || !$user->email) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User email not found.',
-            ], 422);
-        }
+    $user = $request->user();
 
-        $otp = (string) random_int(100000, 999999);
+    if (!$user || !$user->email) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User email not found.',
+        ], 422);
+    }
 
-        DB::table('password_change_otps')
-            ->where('user_id', $user->id)
-            ->whereNull('used_at')
-            ->update([
-                'used_at' => now(),
-                'updated_at' => now(),
-            ]);
+    if (!Hash::check($validated['current_password'], $user->password)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Current password is incorrect.',
+        ], 422);
+    }
 
-        DB::table('password_change_otps')->insert([
-            'user_id' => $user->id,
-            'email' => $user->email,
-            'otp' => $otp,
-            'expires_at' => now()->addMinutes(10),
-            'created_at' => now(),
+    $otp = (string) random_int(100000, 999999);
+
+    DB::table('password_change_otps')
+        ->where('user_id', $user->id)
+        ->whereNull('used_at')
+        ->update([
+            'used_at' => now(),
             'updated_at' => now(),
         ]);
 
-        Mail::to($user->email)->send(new PasswordChangeOtpMail($otp, $user));
+    DB::table('password_change_otps')->insert([
+        'user_id' => $user->id,
+        'email' => $user->email,
+        'otp' => $otp,
+        'expires_at' => now()->addMinutes(5),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'OTP has been sent to your email.',
-        ]);
-    }
+    Mail::to($user->email)->send(new PasswordChangeOtpMail($otp, $user));
+
+    return response()->json([
+        'success' => true,
+        'message' => 'OTP has been sent to your email.',
+    ]);
+}
+
 
     public function changePasswordWithOtp(Request $request)
     {
