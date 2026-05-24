@@ -192,6 +192,13 @@ public function cancel(Request $request, Booking $booking)
         ], 403);
     }
 
+    if ($booking->created_at <= Carbon::now()->subHours(24)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Cannot cancel after 24 hours from booking creation.',
+        ], 422);
+    }
+
     $bookingStatus = strtolower(trim($booking->status->name ?? ''));
 
     $allowedStatuses = [
@@ -206,9 +213,62 @@ public function cancel(Request $request, Booking $booking)
         ], 422);
     }
 
+    DB::transaction(function () use ($request, $booking, $bookingStatus) {
+        $cancelledStatus = Status::firstOrCreate(['name' => 'Cancelled']);
+
+        if ($bookingStatus === 'pending payment verification') {
+            $cancelledPaymentStatusId = DB::table('payment_statuses')
+                ->where('name', 'Cancelled')
+                ->orWhere('code', 'cancelled')
+                ->value('id');
+
+            if ($cancelledPaymentStatusId) {
+                DB::table('payments')
+                    ->where('booking_id', $booking->id)
+                    ->whereNull('return_issue_id')
+                    ->update([
+                        'payment_status_id' => $cancelledPaymentStatusId,
+                        'verified_by' => $request->user()->id,
+                        'verified_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+            }
+        }
+
+        $pointsUsed = (int) ($booking->points_used ?? 0);
+
+        if ($pointsUsed > 0) {
+            $user = $booking->user;
+
+            $balanceBefore = (int) ($user->points_balance ?? 0);
+            $balanceAfter = $balanceBefore + $pointsUsed;
+
+            DB::table('points_transactions')->insert([
+                'user_id' => $user->id,
+                'booking_id' => $booking->id,
+                'points_id' => 2,
+                'points_change' => $pointsUsed,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
+                'note' => 'Returned points after customer cancelled booking within 24 hours.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $user->update([
+                'points_balance' => $balanceAfter,
+            ]);
+        }
+
+        $booking->update([
+            'status_id' => $cancelledStatus->id,
+        ]);
+    });
+
     return response()->json([
         'success' => true,
-        'message' => 'Cancel method exists now.',
+        'message' => 'Booking cancelled successfully. Points were returned if used.',
+        'booking' => $booking->fresh(['status', 'user']),
     ]);
 }
     
