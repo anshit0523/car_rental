@@ -180,97 +180,121 @@ class UserBookingApiController extends Controller
         ], 201);
     }
 
-    
-public function cancel(Request $request, Booking $booking)
-{
-    $booking->load(['status', 'user']);
+    public function cancel(Request $request, Booking $booking)
+    {
+        $booking->load(['status', 'user']);
 
-    if ($booking->user_id !== $request->user()->id) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Unauthorized.',
-        ], 403);
-    }
+        if ($booking->user_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
 
-    if ($booking->created_at <= Carbon::now()->subHours(24)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Cannot cancel after 24 hours from booking creation.',
-        ], 422);
-    }
+        $payment = DB::table('payments')
+            ->leftJoin('payment_statuses', 'payments.payment_status_id', '=', 'payment_statuses.id')
+            ->where('payments.booking_id', $booking->id)
+            ->whereNull('payments.return_issue_id')
+            ->select(
+                'payments.id',
+                'payments.payment_status_id',
+                'payments.verified_at',
+                'payment_statuses.name as payment_status_name',
+                'payment_statuses.code as payment_status_code'
+            )
+            ->first();
 
-    $bookingStatus = strtolower(trim($booking->status->name ?? ''));
+        $paymentStatusName = strtolower(trim($payment->payment_status_name ?? ''));
+        $paymentStatusCode = strtolower(trim($payment->payment_status_code ?? ''));
 
-    $allowedStatuses = [
-        'pending payment',
-        'pending payment verification',
-    ];
+        if (
+            $payment &&
+            (
+                $paymentStatusName === 'verified' ||
+                $paymentStatusCode === 'verified' ||
+                !empty($payment->verified_at)
+            )
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Booking can no longer be cancelled because payment is already verified by admin.',
+            ], 422);
+        }
 
-    if (!in_array($bookingStatus, $allowedStatuses)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Only pending payment or pending verification bookings can be cancelled.',
-        ], 422);
-    }
+        if ($booking->created_at <= Carbon::now()->subHours(24)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot cancel after 24 hours from booking creation.',
+            ], 422);
+        }
 
-    DB::transaction(function () use ($request, $booking, $bookingStatus) {
-        $cancelledStatus = Status::firstOrCreate(['name' => 'Cancelled']);
+        $bookingStatus = strtolower(trim($booking->status->name ?? ''));
 
-        if ($bookingStatus === 'pending payment verification') {
-            $cancelledPaymentStatusId = DB::table('payment_statuses')
-                ->where('name', 'Cancelled')
-                ->orWhere('code', 'cancelled')
-                ->value('id');
+        $allowedStatuses = [
+            'pending payment',
+            'pending payment verification',
+        ];
 
-            if ($cancelledPaymentStatusId) {
-                DB::table('payments')
-                    ->where('booking_id', $booking->id)
-                    ->whereNull('return_issue_id')
-                    ->update([
-                        'payment_status_id' => $cancelledPaymentStatusId,
-                        'verified_by' => $request->user()->id,
-                        'verified_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+        if (!in_array($bookingStatus, $allowedStatuses, true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending payment or pending verification bookings can be cancelled.',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($request, $booking) {
+            $cancelledBookingStatus = Status::firstOrCreate(['name' => 'Cancelled']);
+
+            $cancelledPaymentStatus = PaymentStatus::firstOrCreate(
+                ['code' => 'cancelled'],
+                ['name' => 'Cancelled']
+            );
+
+            DB::table('payments')
+                ->where('booking_id', $booking->id)
+                ->whereNull('return_issue_id')
+                ->update([
+                    'payment_status_id' => $cancelledPaymentStatus->id,
+                    'verified_by' => $request->user()->id,
+                    'verified_at' => now(),
+                    'notes' => DB::raw("CONCAT(COALESCE(notes, ''), '\nCancelled by customer.')"),
+                    'updated_at' => now(),
+                ]);
+
+            $pointsUsed = (int) ($booking->points_used ?? 0);
+
+            if ($pointsUsed > 0) {
+                $user = $booking->user()->lockForUpdate()->first();
+
+                $balanceBefore = (int) ($user->points_balance ?? 0);
+                $balanceAfter = $balanceBefore + $pointsUsed;
+
+                DB::table('points_transactions')->insert([
+                    'user_id' => $user->id,
+                    'booking_id' => $booking->id,
+                    'points_id' => 2,
+                    'points_change' => $pointsUsed,
+                    'balance_before' => $balanceBefore,
+                    'balance_after' => $balanceAfter,
+                    'note' => 'Returned points after customer cancelled booking within 24 hours.',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $user->update([
+                    'points_balance' => $balanceAfter,
+                ]);
             }
-        }
 
-        $pointsUsed = (int) ($booking->points_used ?? 0);
-
-        if ($pointsUsed > 0) {
-            $user = $booking->user;
-
-            $balanceBefore = (int) ($user->points_balance ?? 0);
-            $balanceAfter = $balanceBefore + $pointsUsed;
-
-            DB::table('points_transactions')->insert([
-                'user_id' => $user->id,
-                'booking_id' => $booking->id,
-                'points_id' => 2,
-                'points_change' => $pointsUsed,
-                'balance_before' => $balanceBefore,
-                'balance_after' => $balanceAfter,
-                'note' => 'Returned points after customer cancelled booking within 24 hours.',
-                'created_at' => now(),
-                'updated_at' => now(),
+            $booking->update([
+                'status_id' => $cancelledBookingStatus->id,
             ]);
+        });
 
-            $user->update([
-                'points_balance' => $balanceAfter,
-            ]);
-        }
-
-        $booking->update([
-            'status_id' => $cancelledStatus->id,
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking cancelled successfully. Payment status synced and points were returned if used.',
+            'booking' => $booking->fresh(['status', 'user']),
         ]);
-    });
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Booking cancelled successfully. Points were returned if used.',
-        'booking' => $booking->fresh(['status', 'user']),
-    ]);
-}
-    
-
+    }
 }
