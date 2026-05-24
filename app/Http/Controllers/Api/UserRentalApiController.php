@@ -100,4 +100,29 @@ class UserRentalApiController extends Controller
                 : asset('storage/' . $cleanPath);
         })->filter()->values()->toArray();
     }
+
+
+    public function show(Request $request, Booking $booking)
+{
+    if ($booking->user_id !== $request->user()->id) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized.',
+        ], 403);
+    }
+
+    $booking->load([
+        'car.brand',
+        'car.fuelType',
+        'car.transmission',
+        'status',
+        'photoReceipt',
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'booking' => $this->formatBooking($booking),
+    ]);
+}
+
 }
