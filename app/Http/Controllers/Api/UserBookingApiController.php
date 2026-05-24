@@ -179,4 +179,38 @@ class UserBookingApiController extends Controller
             ],
         ], 201);
     }
+
+    
+public function cancel(Request $request, Booking $booking)
+{
+    $booking->load(['status', 'user']);
+
+    if ($booking->user_id !== $request->user()->id) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized.',
+        ], 403);
+    }
+
+    $bookingStatus = strtolower(trim($booking->status->name ?? ''));
+
+    $allowedStatuses = [
+        'pending payment',
+        'pending payment verification',
+    ];
+
+    if (!in_array($bookingStatus, $allowedStatuses)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Only pending payment or pending verification bookings can be cancelled.',
+        ], 422);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Cancel method exists now.',
+    ]);
+}
+    
+
 }
