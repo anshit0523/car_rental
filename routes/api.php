@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\AuthUserApiController;
+use App\Http\Controllers\Api\UserBookingApiController;
 use App\Http\Controllers\Api\UserBrowseCarApiController;
 use App\Http\Controllers\Api\UserPaymentApiController;
+use App\Http\Controllers\Api\UserRentalApiController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\UserBookingController;
 use Illuminate\Support\Facades\Route;
@@ -20,13 +22,16 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/cars/{id}', [UserBrowseCarApiController::class, 'show']);
 
    Route::get('/car/{id}/details', [UserBookingController::class, 'getCarDetails']);
-Route::post('/booking/check-availability', [AvailabilityController::class, 'check']);
-Route::get('/cars/{carId}/unavailable-dates', [AvailabilityController::class, 'unavailableDates']);
+   Route::post('/booking/check-availability', [AvailabilityController::class, 'check']);
+   Route::get('/cars/{carId}/unavailable-dates', [AvailabilityController::class, 'unavailableDates']);
 
 
-   Route::post('/bookings', [UserBookingController::class, 'store']);
+
+   Route::post('/bookings', [UserBookingApiController::class, 'store']);
    Route::get('/payments', [UserPaymentApiController::class, 'index']);
-Route::post('/payments/upload-receipt', [UserPaymentApiController::class, 'uploadReceipt']);
+   Route::post('/payments/upload-receipt', [UserPaymentApiController::class, 'uploadReceipt']);
+
+   Route::get('/rentals', [UserRentalApiController::class, 'index']);
 
    
 });
