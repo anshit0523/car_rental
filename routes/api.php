@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
    Route::get('/rentals', [UserRentalApiController::class, 'index']);
    Route::get('/rentals/{booking}', [UserRentalApiController::class, 'show']);
+   Route::post('/rentals/{booking}/cancel', [UserRentalApiController::class, 'cancel']);
 
 
 });
