@@ -129,8 +129,10 @@ class UserControlleApi extends Controller
 
     $validated = $request->validate([
         'name' => 'required|string|max:255',
-        'phone' => 'nullable|string|max:30',
+        'phone' => ['nullable', 'regex:/^09\d{9}$/'],
         'address' => 'nullable|string|max:255',
+    ], [
+        'phone.regex' => 'Phone number must be 11 digits and start with 09.',
     ]);
 
     $user->update([
