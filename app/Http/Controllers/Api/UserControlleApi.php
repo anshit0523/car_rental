@@ -122,4 +122,28 @@ class UserControlleApi extends Controller
             'message' => 'Password changed successfully.',
         ]);
     }
+
+    public function updateProfile(Request $request)
+{
+    $user = $request->user();
+
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'phone' => 'nullable|string|max:30',
+        'address' => 'nullable|string|max:255',
+    ]);
+
+    $user->update([
+        'name' => $validated['name'],
+        'phone' => $validated['phone'] ?? null,
+        'address' => $validated['address'] ?? null,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Profile updated successfully.',
+        'user' => $user->fresh(),
+    ]);
+}
+
 }
