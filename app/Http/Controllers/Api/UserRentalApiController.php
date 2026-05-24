@@ -44,6 +44,29 @@ class UserRentalApiController extends Controller
         ]);
     }
 
+    public function show(Request $request, Booking $booking)
+    {
+        if ($booking->user_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        $booking->load([
+            'car.brand',
+            'car.fuelType',
+            'car.transmission',
+            'status',
+            'photoReceipt',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'booking' => $this->formatBooking($booking),
+        ]);
+    }
+
     private function formatBooking($booking): array
     {
         return [
@@ -68,7 +91,7 @@ class UserRentalApiController extends Controller
                 'transmission' => $booking->car?->transmission?->type,
                 'images' => $this->carImages($booking->car),
             ],
-            'photo_receipt' => $booking->photoReceipt,
+            'photo_receipt' => $this->formatPhotoReceipt($booking->photoReceipt),
         ];
     }
 
@@ -101,28 +124,32 @@ class UserRentalApiController extends Controller
         })->filter()->values()->toArray();
     }
 
+    private function formatPhotoReceipt($receipt): ?array
+    {
+        if (!$receipt || !$receipt->image_path) {
+            return null;
+        }
 
-    public function show(Request $request, Booking $booking)
-{
-    if ($booking->user_id !== $request->user()->id) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Unauthorized.',
-        ], 403);
+        $path = $receipt->image_path;
+
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            $url = $path;
+        } else {
+            $cleanPath = ltrim(str_replace('storage/', '', $path), '/');
+
+            $url = config('filesystems.default') === 's3'
+                ? Storage::disk('s3')->url($cleanPath)
+                : asset('storage/' . $cleanPath);
+        }
+
+        return [
+            'id' => $receipt->id,
+            'image_path' => $path,
+            'image_url' => $url,
+            'status' => $receipt->status,
+            'payment_method' => $receipt->payment_method,
+            'created_at' => optional($receipt->created_at)->toDateTimeString(),
+            'updated_at' => optional($receipt->updated_at)->toDateTimeString(),
+        ];
     }
-
-    $booking->load([
-        'car.brand',
-        'car.fuelType',
-        'car.transmission',
-        'status',
-        'photoReceipt',
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'booking' => $this->formatBooking($booking),
-    ]);
-}
-
 }
