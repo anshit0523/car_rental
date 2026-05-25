@@ -10,9 +10,57 @@ use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class UserBookingApiController extends Controller
 {
+    public function index(Request $request)
+    {
+        $bookings = Booking::with([
+                'status',
+                'car.brand',
+                'serviceType',
+                'payments.paymentStatus',
+                'returnIssue.issueStatus',
+                'returnIssue.photos',
+                'returnIssue.histories.changedBy',
+            ])
+            ->where('user_id', $request->user()->id)
+            ->latest()
+            ->get()
+            ->map(fn ($booking) => $this->formatBooking($booking));
+
+        return response()->json([
+            'success' => true,
+            'bookings' => $bookings,
+        ]);
+    }
+
+    public function show(Request $request, Booking $booking)
+    {
+        if ($booking->user_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        $booking->load([
+            'status',
+            'car.brand',
+            'serviceType',
+            'payments.paymentStatus',
+            'returnIssue.issueStatus',
+            'returnIssue.photos',
+            'returnIssue.histories.changedBy',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'booking' => $this->formatBooking($booking),
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -65,6 +113,9 @@ class UserBookingApiController extends Controller
             'Active',
             'Reserved',
             'Return',
+            'Checkup',
+            'Damage',
+            'Needs Repair',
         ])->pluck('id')->toArray();
 
         $existingBooking = Booking::where('car_id', $validated['car_id'])
@@ -169,10 +220,20 @@ class UserBookingApiController extends Controller
             return $booking;
         });
 
+        $booking->load([
+            'status',
+            'car.brand',
+            'serviceType',
+            'payments.paymentStatus',
+            'returnIssue.issueStatus',
+            'returnIssue.photos',
+            'returnIssue.histories.changedBy',
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Booking created successfully.',
-            'booking' => $booking,
+            'booking' => $this->formatBooking($booking),
             'payment' => [
                 'booking_id' => $booking->id,
                 'amount' => $booking->final_total,
@@ -291,10 +352,145 @@ class UserBookingApiController extends Controller
             ]);
         });
 
+        $booking = $booking->fresh([
+            'status',
+            'user',
+            'car.brand',
+            'serviceType',
+            'payments.paymentStatus',
+            'returnIssue.issueStatus',
+            'returnIssue.photos',
+            'returnIssue.histories.changedBy',
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Booking cancelled successfully. Payment status synced and points were returned if used.',
-            'booking' => $booking->fresh(['status', 'user']),
+            'booking' => $this->formatBooking($booking),
         ]);
+    }
+
+    private function formatBooking(Booking $booking): array
+    {
+        return [
+            'id' => $booking->id,
+            'car_id' => $booking->car_id,
+            'user_id' => $booking->user_id,
+            'pickup_at' => optional($booking->pickup_at)->toDateTimeString(),
+            'return_at' => optional($booking->return_at)->toDateTimeString(),
+            'total_price' => (float) ($booking->total_price ?? 0),
+            'points_used' => (int) ($booking->points_used ?? 0),
+            'discount_amount' => (float) ($booking->discount_amount ?? 0),
+            'final_total' => (float) ($booking->final_total ?? $booking->total_price ?? 0),
+            'service_location' => $booking->service_location,
+            'created_at' => optional($booking->created_at)->toDateTimeString(),
+            'updated_at' => optional($booking->updated_at)->toDateTimeString(),
+            'status' => [
+                'id' => $booking->status?->id,
+                'name' => $booking->status?->name,
+            ],
+            'car' => $booking->car ? [
+                'id' => $booking->car->id,
+                'brand' => $booking->car->brand?->name,
+                'model' => $booking->car->model,
+                'plate_number' => $booking->car->plate_number ?? null,
+                'image' => $this->buildImageUrl($booking->car->image ?? null),
+            ] : null,
+            'service_type' => $booking->serviceType ? [
+                'id' => $booking->serviceType->id,
+                'name' => $booking->serviceType->name,
+            ] : null,
+            'payment' => $this->formatLatestBookingPayment($booking),
+            'return_issue' => $this->formatReturnIssue($booking->returnIssue),
+        ];
+    }
+
+    private function formatLatestBookingPayment(Booking $booking): ?array
+    {
+        $payment = $booking->payments
+            ? $booking->payments->whereNull('return_issue_id')->sortByDesc('created_at')->first()
+            : null;
+
+        if (!$payment) {
+            return null;
+        }
+
+        return [
+            'id' => $payment->id,
+            'amount' => (float) ($payment->amount ?? 0),
+            'transaction_id' => $payment->transaction_id,
+            'payment_date' => optional($payment->payment_date)->toDateTimeString(),
+            'verified_at' => optional($payment->verified_at)->toDateTimeString(),
+            'notes' => $payment->notes,
+            'status' => [
+                'id' => $payment->paymentStatus?->id,
+                'name' => $payment->paymentStatus?->name,
+                'code' => $payment->paymentStatus?->code,
+            ],
+        ];
+    }
+
+    private function formatReturnIssue($returnIssue): ?array
+    {
+        if (!$returnIssue) {
+            return null;
+        }
+
+        return [
+            'id' => $returnIssue->id,
+            'booking_id' => $returnIssue->booking_id,
+            'title' => $returnIssue->title,
+            'issue_type' => $returnIssue->issue_type,
+            'description' => $returnIssue->description,
+            'estimated_charge' => (float) ($returnIssue->estimated_charge ?? 0),
+            'final_charge' => (float) ($returnIssue->final_charge ?? 0),
+            'reported_at' => $returnIssue->reported_at
+                ? Carbon::parse($returnIssue->reported_at)->toDateTimeString()
+                : null,
+            'created_at' => optional($returnIssue->created_at)->toDateTimeString(),
+            'updated_at' => optional($returnIssue->updated_at)->toDateTimeString(),
+            'status' => [
+                'id' => $returnIssue->issueStatus?->id,
+                'name' => $returnIssue->issueStatus?->name ?? $returnIssue->status ?? 'pending',
+                'label' => $returnIssue->issueStatus?->label
+                    ?? ucfirst(str_replace('_', ' ', $returnIssue->issueStatus?->name ?? $returnIssue->status ?? 'pending')),
+            ],
+            'photos' => $returnIssue->photos
+                ? $returnIssue->photos->map(fn ($photo) => [
+                    'id' => $photo->id,
+                    'photo_path' => $photo->photo_path,
+                    'url' => $this->buildImageUrl($photo->photo_path),
+                ])->values()->toArray()
+                : [],
+            'histories' => $returnIssue->histories
+                ? $returnIssue->histories->sortByDesc('created_at')->map(fn ($history) => [
+                    'id' => $history->id,
+                    'title' => $history->title,
+                    'message' => $history->message,
+                    'created_at' => optional($history->created_at)->toDateTimeString(),
+                    'changed_by' => $history->changedBy ? [
+                        'id' => $history->changedBy->id,
+                        'name' => $history->changedBy->name,
+                    ] : null,
+                ])->values()->toArray()
+                : [],
+        ];
+    }
+
+    private function buildImageUrl(?string $path): ?string
+    {
+        if (!is_string($path) || trim($path) === '') {
+            return null;
+        }
+
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+
+        $cleanPath = ltrim(str_replace('storage/', '', $path), '/');
+
+        return config('filesystems.default') === 's3'
+            ? Storage::disk('s3')->url($cleanPath)
+            : asset('storage/' . $cleanPath);
     }
 }
