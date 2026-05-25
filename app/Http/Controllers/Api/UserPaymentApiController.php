@@ -129,4 +129,102 @@ class UserPaymentApiController extends Controller
             'payment' => $payment,
         ]);
     }
+
+
+    public function uploadReturnIssueReceipt(Request $request)
+{
+    $validated = $request->validate([
+        'booking_id' => 'required|exists:bookings,id',
+        'return_issue_id' => 'required|exists:return_issues,id',
+        'receipt' => 'required|image|max:5120',
+        'payment_method' => 'required|string',
+    ]);
+
+    $booking = Booking::with(['returnIssues.issueStatus'])
+        ->findOrFail($validated['booking_id']);
+
+    if ($booking->user_id !== $request->user()->id) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized.',
+        ], 403);
+    }
+
+    $returnIssue = $booking->returnIssues
+        ->where('id', $validated['return_issue_id'])
+        ->first();
+
+    if (!$returnIssue) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Return issue not found.',
+        ], 404);
+    }
+
+    $statusName = strtolower($returnIssue->issueStatus?->name ?? '');
+
+    if ($statusName !== 'awaiting_payment') {
+        return response()->json([
+            'success' => false,
+            'message' => 'Return issue is not awaiting payment.',
+        ], 422);
+    }
+
+    if ((float) $returnIssue->final_charge <= 0) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No payable final charge found for this return issue.',
+        ], 422);
+    }
+
+    $paymentMethod = PaymentMethod::where('name', $validated['payment_method'])->first();
+
+    if (!$paymentMethod) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid payment method.',
+        ], 422);
+    }
+
+    $pendingStatus = PaymentStatus::where('name', 'Pending Verification')->first();
+
+    if (!$pendingStatus) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Pending Verification payment status not found.',
+        ], 422);
+    }
+
+    return DB::transaction(function () use ($request, $booking, $returnIssue, $paymentMethod, $pendingStatus) {
+        $path = $request->file('receipt')->store('payment-receipts', 'public');
+
+        $payment = Payment::create([
+            'booking_id' => $booking->id,
+            'return_issue_id' => $returnIssue->id,
+            'payment_date' => now(),
+            'amount' => $returnIssue->final_charge,
+            'payment_method_id' => $paymentMethod->id,
+            'payment_status_id' => $pendingStatus->id,
+            'transaction_id' => null,
+            'notes' => 'Return issue payment uploaded from mobile.',
+        ]);
+
+        $receipt = PhotoReceipt::create([
+            'booking_id' => $booking->id,
+            'return_issue_id' => $returnIssue->id,
+            'payment_id' => $payment->id,
+            'image_path' => $path,
+            'payment_method' => $paymentMethod->name,
+            'status' => 'Pending Verification',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Return issue receipt uploaded successfully.',
+            'payment' => $payment,
+            'receipt' => $receipt,
+        ]);
+    });
+}
+
 }
