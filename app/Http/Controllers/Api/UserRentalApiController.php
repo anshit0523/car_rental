@@ -20,12 +20,26 @@ class UserRentalApiController extends Controller
                 'car.transmission',
                 'status',
                 'photoReceipt',
+                'returnIssues.issueStatus',
+                'returnIssues.photos',
+                'returnIssues.histories.changedBy',
             ]);
 
         if ($status && strtolower($status) !== 'all') {
-            $query->whereHas('status', function ($q) use ($status) {
-                $q->where('name', $status);
-            });
+            if ($status === 'return_group') {
+                $query->whereHas('status', function ($q) {
+                    $q->whereIn('name', [
+                        'Return',
+                        'Checkup',
+                        'Damage',
+                        'Needs Repair',
+                    ]);
+                });
+            } else {
+                $query->whereHas('status', function ($q) use ($status) {
+                    $q->where('name', $status);
+                });
+            }
         }
 
         $bookings = $query->orderBy('pickup_at', 'desc')
@@ -59,6 +73,9 @@ class UserRentalApiController extends Controller
             'car.transmission',
             'status',
             'photoReceipt',
+            'returnIssues.issueStatus',
+            'returnIssues.photos',
+            'returnIssues.histories.changedBy',
         ]);
 
         return response()->json([
@@ -69,6 +86,10 @@ class UserRentalApiController extends Controller
 
     private function formatBooking($booking): array
     {
+        $latestReturnIssue = $booking->returnIssues
+            ? $booking->returnIssues->sortByDesc('created_at')->first()
+            : null;
+
         return [
             'id' => $booking->id,
             'pickup_at' => optional($booking->pickup_at)->toDateTimeString(),
@@ -92,6 +113,7 @@ class UserRentalApiController extends Controller
                 'images' => $this->carImages($booking->car),
             ],
             'photo_receipt' => $this->formatPhotoReceipt($booking->photoReceipt),
+            'return_issue' => $this->formatReturnIssue($latestReturnIssue),
         ];
     }
 
@@ -150,6 +172,69 @@ class UserRentalApiController extends Controller
             'payment_method' => $receipt->payment_method,
             'created_at' => optional($receipt->created_at)->toDateTimeString(),
             'updated_at' => optional($receipt->updated_at)->toDateTimeString(),
+        ];
+    }
+
+    private function formatReturnIssue($returnIssue): ?array
+    {
+        if (!$returnIssue) {
+            return null;
+        }
+
+        return [
+            'id' => $returnIssue->id,
+            'title' => $returnIssue->title,
+            'issue_type' => $returnIssue->issue_type,
+            'description' => $returnIssue->description,
+            'estimated_charge' => $returnIssue->estimated_charge,
+            'final_charge' => $returnIssue->final_charge,
+            'reported_at' => optional($returnIssue->reported_at)->toDateTimeString(),
+            'created_at' => optional($returnIssue->created_at)->toDateTimeString(),
+            'updated_at' => optional($returnIssue->updated_at)->toDateTimeString(),
+
+            'status' => [
+                'id' => $returnIssue->issueStatus?->id,
+                'name' => $returnIssue->issueStatus?->name,
+                'label' => $returnIssue->issueStatus?->label,
+            ],
+
+            'photos' => collect($returnIssue->photos)->map(function ($photo) {
+                $path = $photo->photo_path;
+                $url = null;
+
+                if ($path) {
+                    if (filter_var($path, FILTER_VALIDATE_URL)) {
+                        $url = $path;
+                    } else {
+                        $cleanPath = ltrim(str_replace('storage/', '', $path), '/');
+
+                        $url = config('filesystems.default') === 's3'
+                            ? Storage::disk('s3')->url($cleanPath)
+                            : asset('storage/' . $cleanPath);
+                    }
+                }
+
+                return [
+                    'id' => $photo->id,
+                    'photo_path' => $path,
+                    'photo_url' => $url,
+                    'created_at' => optional($photo->created_at)->toDateTimeString(),
+                ];
+            })->values(),
+
+            'histories' => collect($returnIssue->histories)->sortByDesc('created_at')->map(function ($history) {
+                return [
+                    'id' => $history->id,
+                    'title' => $history->title,
+                    'message' => $history->message,
+                    'created_at' => optional($history->created_at)->toDateTimeString(),
+
+                    'changed_by' => $history->changedBy ? [
+                        'id' => $history->changedBy->id,
+                        'name' => $history->changedBy->name,
+                    ] : null,
+                ];
+            })->values(),
         ];
     }
 }
