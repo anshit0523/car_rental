@@ -126,7 +126,7 @@ Notification::create([
     'title' => $notificationTitle,
     'message' => $notificationMessage . " Current Balance: {$balanceAfter} Points.",
     'type' => 'points',
-    'link' => 'user.rewards',
+   'link' => route('user.rewards'),
 ]);
         });
 
