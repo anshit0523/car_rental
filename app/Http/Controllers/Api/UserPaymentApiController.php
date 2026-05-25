@@ -177,7 +177,7 @@ class UserPaymentApiController extends Controller
         ], 422);
     }
 
-    $paymentMethod = PaymentMethod::where('name', $validated['payment_method'])->first();
+    $paymentMethod = PaymentMethods::where('name', $validated['payment_method'])->first();
 
     if (!$paymentMethod) {
         return response()->json([
