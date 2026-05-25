@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\UserControlleApi;
 use App\Http\Controllers\Api\UserNotificationApiController;
 use App\Http\Controllers\Api\UserPaymentApiController;
 use App\Http\Controllers\Api\UserRentalApiController;
+use App\Http\Controllers\Api\UserRewardsApiController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\UserBookingController;
 use Illuminate\Support\Facades\Route;
@@ -43,4 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/notifications', [UserNotificationApiController::class, 'index']);
    Route::post('/notifications/{notification}/read', [UserNotificationApiController::class, 'markRead']);
    Route::post('/notifications/mark-all-read', [UserNotificationApiController::class, 'markAllRead']);
+
+   Route::get('/rewards', [UserRewardsApiController::class, 'index']);
+   
 });
