@@ -187,7 +187,7 @@ class UserPaymentApiController extends Controller
         ], 422);
     }
 
-    $pendingStatus = PaymentStatus::where('name', 'Pending Verification')->first();
+   $pendingStatus = PaymentStatus::where('name', 'Pending')->first();
 
     if (!$pendingStatus) {
         return response()->json([
@@ -218,7 +218,7 @@ class UserPaymentApiController extends Controller
             'payment_id' => $payment->id,
             'image_path' => $path,
             'payment_method' => $paymentMethod->name,
-            'status' => 'Pending Verification',
+            'status' => 'Pending',
         ]);
 
         return response()->json([
