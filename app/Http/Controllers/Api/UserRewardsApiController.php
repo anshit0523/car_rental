@@ -27,8 +27,21 @@ class UserRewardsApiController extends Controller
 
         $transactions = DB::table('points_transactions')
             ->where('user_id', $user->id)
-            ->when($filter === 'earned', fn ($q) => $q->where('points_change', '>', 0))
-            ->when($filter === 'redeemed', fn ($q) => $q->where('points_change', '<', 0))
+            ->when($filter === 'earned', function ($q) {
+                $q->where('points_change', '>', 0)
+                    ->where('note', 'not like', '%returned%')
+                    ->where('note', 'not like', '%manual%');
+            })
+            ->when($filter === 'redeemed', function ($q) {
+                $q->where('points_change', '<', 0)
+                    ->where('note', 'not like', '%manual%');
+            })
+            ->when($filter === 'returned', function ($q) {
+                $q->where('note', 'like', '%returned%');
+            })
+            ->when($filter === 'manual', function ($q) {
+                $q->where('note', 'like', '%manual%');
+            })
             ->latest('created_at')
             ->get();
 
