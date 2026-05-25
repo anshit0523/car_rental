@@ -107,7 +107,8 @@ class AdminPointsController extends Controller
                     'updated_at' => now(),
                 ]);
             }
-DB::table('points_transactions')->insert([
+
+         DB::table('points_transactions')->insert([
     'user_id' => $user->id,
     'booking_id' => null,
     'points_id' => $typeId,
@@ -125,8 +126,10 @@ Notification::create([
     'title' => $notificationTitle,
     'message' => $notificationMessage . " Current Balance: {$balanceAfter} Points.",
     'type' => 'points',
-    'link' => route('user.rewards'),
+    'link' => 'user.rewards',
 ]);
+        });
+
         return back()->with('success', 'User points updated successfully.');
     }
 }
