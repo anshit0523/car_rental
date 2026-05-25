@@ -10,8 +10,9 @@ use App\Models\PaymentSetting;
 use App\Models\PaymentStatus;
 use App\Models\PhotoReceipt;
 use App\Models\Status;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class UserPaymentApiController extends Controller
 {
@@ -36,10 +37,12 @@ class UserPaymentApiController extends Controller
             ->latest()
             ->get();
 
+        $paymentSetting = PaymentSetting::first();
+
         return response()->json([
             'success' => true,
             'payments' => $payments,
-            'payment_setting' => PaymentSetting::first(),
+            'payment_setting' => $this->formatPaymentSetting($paymentSetting),
         ]);
     }
 
@@ -131,7 +134,6 @@ class UserPaymentApiController extends Controller
         ]);
     }
 
-
     public function uploadReturnIssueReceipt(Request $request)
     {
         $validated = $request->validate([
@@ -192,7 +194,7 @@ class UserPaymentApiController extends Controller
         if (!$pendingStatus) {
             return response()->json([
                 'success' => false,
-                'message' => 'Pending Verification payment status not found.',
+                'message' => 'Pending payment status not found.',
             ], 422);
         }
 
@@ -212,8 +214,6 @@ class UserPaymentApiController extends Controller
                 'notes' => 'Return issue payment uploaded from mobile.',
             ]);
 
-
-
             $receipt = PhotoReceipt::create([
                 'booking_id' => $booking->id,
                 'payment_id' => $payment->id,
@@ -231,5 +231,32 @@ class UserPaymentApiController extends Controller
                 'receipt' => $receipt,
             ]);
         });
+    }
+
+    private function formatPaymentSetting(?PaymentSetting $paymentSetting): ?array
+    {
+        if (!$paymentSetting) {
+            return null;
+        }
+
+        $gcashQrUrl = null;
+
+        if ($paymentSetting->gcash_qr_image) {
+            $cleanPath = ltrim(str_replace('storage/', '', $paymentSetting->gcash_qr_image), '/');
+
+            $gcashQrUrl = config('filesystems.default') === 's3'
+                ? Storage::disk('s3')->url($cleanPath)
+                : asset('storage/' . $cleanPath);
+        }
+
+        return [
+            'gcash_account_name' => $paymentSetting->gcash_account_name,
+            'gcash_number' => $paymentSetting->gcash_number,
+            'gcash_qr_image' => $paymentSetting->gcash_qr_image,
+            'gcash_qr_url' => $gcashQrUrl,
+            'bank_name' => $paymentSetting->bank_name,
+            'bank_account_name' => $paymentSetting->bank_account_name,
+            'bank_account_number' => $paymentSetting->bank_account_number,
+        ];
     }
 }
