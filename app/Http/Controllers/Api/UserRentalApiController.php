@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\PhotoReceipt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -237,4 +238,67 @@ class UserRentalApiController extends Controller
             })->values(),
         ];
     }
+
+
+    public function uploadReturnIssueReceipt(Request $request)
+{
+    $validated = $request->validate([
+        'booking_id' => 'required|exists:bookings,id',
+        'return_issue_id' => 'required|exists:return_issues,id',
+        'receipt' => 'required|image|max:5120',
+        'payment_method' => 'required|string',
+    ]);
+
+    $booking = Booking::with(['returnIssues.issueStatus'])
+        ->findOrFail($validated['booking_id']);
+
+    if ($booking->user_id !== $request->user()->id) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized.',
+        ], 403);
+    }
+
+    $returnIssue = $booking->returnIssues
+        ->where('id', $validated['return_issue_id'])
+        ->first();
+
+    if (!$returnIssue) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Return issue not found.',
+        ], 404);
+    }
+
+    $statusName = strtolower(
+        $returnIssue->issueStatus?->name ?? ''
+    );
+
+    if ($statusName !== 'awaiting_payment') {
+        return response()->json([
+            'success' => false,
+            'message' => 'Return issue is not awaiting payment.',
+        ], 422);
+    }
+
+    $path = $request->file('receipt')
+        ->store('payment-receipts', 'public');
+
+    $receipt = PhotoReceipt::create([
+        'booking_id' => $booking->id,
+        'return_issue_id' => $returnIssue->id,
+        'image_path' => $path,
+        'payment_method' => $validated['payment_method'],
+        'status' => 'Pending Verification',
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Return issue receipt uploaded successfully.',
+        'receipt' => $receipt,
+    ]);
+}
+
+
+
 }

@@ -46,5 +46,6 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post('/notifications/mark-all-read', [UserNotificationApiController::class, 'markAllRead']);
 
    Route::get('/rewards', [UserRewardsApiController::class, 'index']);
+   Route::post('/payments/return-issue/upload-receipt', [UserPaymentApiController::class, 'uploadReturnIssueReceipt']);
    
 });
