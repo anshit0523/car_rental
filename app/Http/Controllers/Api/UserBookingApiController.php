@@ -21,9 +21,9 @@ class UserBookingApiController extends Controller
                 'car.brand',
                 'serviceType',
                 'payments.paymentStatus',
-                'returnIssue.issueStatus',
-                'returnIssue.photos',
-                'returnIssue.histories.changedBy',
+                'returnIssues.issueStatus',
+                'returnIssues.photos',
+                'returnIssues.histories.changedBy',
             ])
             ->where('user_id', $request->user()->id)
             ->latest()
@@ -50,9 +50,9 @@ class UserBookingApiController extends Controller
             'car.brand',
             'serviceType',
             'payments.paymentStatus',
-            'returnIssue.issueStatus',
-            'returnIssue.photos',
-            'returnIssue.histories.changedBy',
+            'returnIssues.issueStatus',
+            'returnIssues.photos',
+            'returnIssues.histories.changedBy',
         ]);
 
         return response()->json([
@@ -225,9 +225,9 @@ class UserBookingApiController extends Controller
             'car.brand',
             'serviceType',
             'payments.paymentStatus',
-            'returnIssue.issueStatus',
-            'returnIssue.photos',
-            'returnIssue.histories.changedBy',
+            'returnIssues.issueStatus',
+            'returnIssues.photos',
+            'returnIssues.histories.changedBy',
         ]);
 
         return response()->json([
@@ -358,9 +358,9 @@ class UserBookingApiController extends Controller
             'car.brand',
             'serviceType',
             'payments.paymentStatus',
-            'returnIssue.issueStatus',
-            'returnIssue.photos',
-            'returnIssue.histories.changedBy',
+            'returnIssues.issueStatus',
+            'returnIssues.photos',
+            'returnIssues.histories.changedBy',
         ]);
 
         return response()->json([
@@ -401,7 +401,11 @@ class UserBookingApiController extends Controller
                 'name' => $booking->serviceType->name,
             ] : null,
             'payment' => $this->formatLatestBookingPayment($booking),
-            'return_issue' => $this->formatReturnIssue($booking->returnIssue),
+            'return_issue' => $this->formatReturnIssue(
+                $booking->returnIssues
+                    ? $booking->returnIssues->sortByDesc('created_at')->first()
+                    : null
+            ),
         ];
     }
 
