@@ -10,6 +10,7 @@ use App\Models\PaymentSetting;
 use App\Models\PaymentStatus;
 use App\Models\PhotoReceipt;
 use App\Models\Status;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class UserPaymentApiController extends Controller
@@ -136,8 +137,8 @@ class UserPaymentApiController extends Controller
     $validated = $request->validate([
         'booking_id' => 'required|exists:bookings,id',
         'return_issue_id' => 'required|exists:return_issues,id',
-        'receipt' => 'required|image|max:5120',
-        'payment_method' => 'required|string',
+        'receipt' => 'required|image|mimes:jpg,jpeg,png|max:5120',
+        'payment_method' => 'required|in:gcash,bank',
     ]);
 
     $booking = Booking::with(['returnIssues.issueStatus'])
@@ -177,7 +178,7 @@ class UserPaymentApiController extends Controller
         ], 422);
     }
 
-    $paymentMethod = PaymentMethods::where('name', $validated['payment_method'])->first();
+    $paymentMethod = PaymentMethods::where('code', $validated['payment_method'])->first();
 
     if (!$paymentMethod) {
         return response()->json([
@@ -196,7 +197,9 @@ class UserPaymentApiController extends Controller
     }
 
     return DB::transaction(function () use ($request, $booking, $returnIssue, $paymentMethod, $pendingStatus) {
-        $path = $request->file('receipt')->store('payment-receipts', 'public');
+        $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+
+        $path = $request->file('receipt')->store('payment-receipts', $disk);
 
         $payment = Payment::create([
             'booking_id' => $booking->id,
