@@ -107,29 +107,26 @@ class AdminPointsController extends Controller
                     'updated_at' => now(),
                 ]);
             }
+DB::table('points_transactions')->insert([
+    'user_id' => $user->id,
+    'booking_id' => null,
+    'points_id' => $typeId,
+    'points_change' => $pointsChange,
+    'balance_before' => $balanceBefore,
+    'balance_after' => $balanceAfter,
+    'note' => 'Manual adjustment: ' . $validated['note'],
+    'created_at' => now(),
+    'updated_at' => now(),
+]);
 
-            DB::table('points_transactions')->insert([
-                'user_id' => $user->id,
-                'booking_id' => null,
-                'points_id' => $typeId,
-                'points_change' => $pointsChange,
-                'balance_before' => $balanceBefore,
-                'balance_after' => $balanceAfter,
-                'note' => $validated['note'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            Notification::create([
-                'user_id' => $user->id,
-                'booking_id' => null,
-                'title' => $notificationTitle,
-                'message' => $notificationMessage . " Current Balance: {$balanceAfter} Points.",
-                'type' => 'points',
-                'link' => route('user.rewards'),
-            ]);
-        });
-
+Notification::create([
+    'user_id' => $user->id,
+    'booking_id' => null,
+    'title' => $notificationTitle,
+    'message' => $notificationMessage . " Current Balance: {$balanceAfter} Points.",
+    'type' => 'points',
+    'link' => route('user.rewards'),
+]);
         return back()->with('success', 'User points updated successfully.');
     }
 }
