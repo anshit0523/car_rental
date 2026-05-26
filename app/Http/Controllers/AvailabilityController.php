@@ -117,4 +117,15 @@ class AvailabilityController extends Controller
 
         return response()->json(array_values(array_unique($dates)));
     }
+
+    public function unavailableDatesApi($carId)
+{
+    $dates = $this->unavailableDates($carId)->getData(true);
+
+    return response()->json([
+        'success' => true,
+        'unavailable_dates' => $dates,
+    ]);
+}
+
 }

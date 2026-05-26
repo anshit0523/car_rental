@@ -52,5 +52,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
    Route::get('/rewards', [UserRewardsApiController::class, 'index']);
    Route::post('/payments/return-issue/upload-receipt', [UserPaymentApiController::class, 'uploadReturnIssueReceipt']);
-   
+   Route::get('/cars/{carId}/unavailable-dates', [AvailabilityController::class, 'unavailableDatesApi']);
+
 });
