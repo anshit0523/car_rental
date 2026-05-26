@@ -16,6 +16,11 @@ Route::post('/user/login', [AuthUserApiController::class, 'login']);
 Route::post('/user/register', [AuthUserApiController::class, 'register']);
 Route::post('/user/register/verify-otp', [AuthUserApiController::class, 'verifyRegisterOtp']);
 
+// Public forgot password routes
+Route::post('/user/forgot-password/send-otp', [AuthUserApiController::class, 'sendForgotPasswordOtp']);
+Route::post('/user/forgot-password/reset', [AuthUserApiController::class, 'resetPasswordWithOtp']);
+
+
 Route::middleware('auth:sanctum')->group(function () {
    Route::get('/user/me', [AuthUserApiController::class, 'me']);
    Route::post('/user/logout', [AuthUserApiController::class, 'logout']);

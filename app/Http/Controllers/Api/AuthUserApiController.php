@@ -159,4 +159,76 @@ class AuthUserApiController extends Controller
             'message' => 'Logged out successfully.',
         ]);
     }
+
+
+    public function sendForgotPasswordOtp(Request $request)
+{
+    $validated = $request->validate([
+        'email' => 'required|email|exists:users,email',
+    ]);
+
+    $otp = rand(100000, 999999);
+
+    DB::table('password_reset_tokens')->updateOrInsert(
+        ['email' => $validated['email']],
+        [
+            'token' => $otp,
+            'created_at' => now(),
+        ]
+    );
+
+    Mail::raw("Your Dumaguete EZE password reset OTP is: {$otp}", function ($message) use ($validated) {
+        $message->to($validated['email'])
+            ->subject('Password Reset OTP');
+    });
+
+    return response()->json([
+        'success' => true,
+        'message' => 'OTP sent to your email.',
+    ]);
+}
+
+public function resetPasswordWithOtp(Request $request)
+{
+    $validated = $request->validate([
+        'email' => 'required|email|exists:users,email',
+        'otp' => 'required|string|size:6',
+        'password' => 'required|string|min:8|confirmed',
+    ]);
+
+    $reset = DB::table('password_reset_tokens')
+        ->where('email', $validated['email'])
+        ->where('token', $validated['otp'])
+        ->first();
+
+    if (!$reset) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid OTP.',
+        ], 422);
+    }
+
+    if (Carbon::parse($reset->created_at)->addMinutes(10)->isPast()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'OTP has expired.',
+        ], 422);
+    }
+
+    $user = User::where('email', $validated['email'])->firstOrFail();
+
+    $user->update([
+        'password' => Hash::make($validated['password']),
+    ]);
+
+    DB::table('password_reset_tokens')
+        ->where('email', $validated['email'])
+        ->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Password reset successfully.',
+    ]);
+}
+
 }
