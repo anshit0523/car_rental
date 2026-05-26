@@ -17,17 +17,20 @@ class UserNotificationApiController extends Controller
             ->when($filter === 'read', fn ($q) => $q->where('is_read', true))
             ->latest()
             ->get()
-            ->map(function ($notification) {
-                return [
-                    'id' => $notification->id,
-                    'title' => $notification->title,
-                    'message' => $notification->message,
-                    'link' => $notification->link,
-                    'is_read' => (bool) $notification->is_read,
-                    'time' => $notification->created_at->diffForHumans(),
-                    'created_at' => $notification->created_at,
-                ];
-            });
+           ->map(function ($notification) {
+    return [
+        'id' => $notification->id,
+        'title' => $notification->title,
+        'message' => $notification->message,
+        'link' => $notification->link,
+        'booking_id' => $notification->booking_id,   // ✅ add this
+        'payment_id' => $notification->payment_id,   // ✅ add this
+        'type' => $notification->type,               // ✅ add this too
+        'is_read' => (bool) $notification->is_read,
+        'time' => $notification->created_at->diffForHumans(),
+        'created_at' => $notification->created_at,
+    ];
+});
 
         $unreadCount = Notification::where('user_id', $request->user()->id)
             ->where('is_read', false)
